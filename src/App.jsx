@@ -1,11 +1,12 @@
+import SideNav from "./Component/Common/SideNavBar/SideNav";
 
 
 function App() {
 
   return (
-    <>
-      <h1 className="text-4xl text-green-500">Hisabify</h1>
-    </>
+    <div className="flex flex-row bg-gray-300" >
+      <SideNav />
+    </div>
   )
 }
 
