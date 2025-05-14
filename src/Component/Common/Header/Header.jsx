@@ -41,7 +41,7 @@ const Header = () => {
   //#endregion
 
   //#region Component renders
-  return(<div></div>);
+  return(<div> This is Header</div>);
   //#endregion
 }
 //#endregion
