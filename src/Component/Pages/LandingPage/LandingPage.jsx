@@ -1,17 +1,17 @@
+/* eslint-disable no-unused-vars */
 
 //#region imports
-import React from 'react';
-import Loginsignup from '../Component/Pages/LoginSignup/Loginsignup';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import LandingPage from '../Component/Pages/LandingPage/LandingPage';
-import Test from '../../../test.jsx'
+import React, { Children } from 'react';
+import Header from '../../Common/Header/Header.jsx';
+import SideNav from '../../Common/SideNavBar/SideNav.jsx';
+import { Box } from '@mui/material';
 //#endregion
 
 //#region Component make Styles
 //#endregion
 
 //#region Function Component
-const RoutesConfig = () => {
+const LandingPage = ({ children, navkey }) => {
   //#region Component states
   //#endregion
 
@@ -41,37 +41,27 @@ const RoutesConfig = () => {
   //#endregion
 
   //#region Component JSX.members
-  const routes = [
-    {
-        path : "/",
-        element : <Loginsignup />,
-    },
-    {
-        path : "/home",
-        element : <LandingPage />,
-    },
-      {
-        path : "/test",
-        element : <Test />,
-    },
-    
-  ]
   //#endregion
 
   //#region Component renders
   return(
-    <BrowserRouter>
-        <Routes>
-            {routes.map((props) => (
-                <Route key={props.path} path={props.path} element={props.element}/>
-            ))}
-        </Routes>
-    </BrowserRouter>
-  );
+    <Box >
+      
+      <Header />
+      <Box sx={{display:'flex', flexDirection:'row', flex:1 }}>
+        <SideNav  />
+        <Box sx={{flex:1 ,padding:2}}>
+          {children}
+        </Box>
+      </Box>
+
+
+    </Box>
+);
   //#endregion
 }
 //#endregion
 
 //#region Component export
-export default RoutesConfig;
+export default LandingPage;
 //#endregion
