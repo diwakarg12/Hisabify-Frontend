@@ -46,7 +46,6 @@ const LandingPage = ({ children, navkey }) => {
   //#region Component renders
   return(
     <Box >
-      
       <Header />
       <Box sx={{display:'flex', flexDirection:'row', flex:1 }}>
         <SideNav  />

@@ -3,37 +3,12 @@
 //#region imports
 import React from 'react';
 import  bgImage from '../../../assets/Login/background.svg';
-import loginImage from '../../../assets/Login/login.svg';
-import signupImage from '../../../assets/Login/signup.svg';
 import { useState } from 'react';
 import {
   Box,
-  Button,
-  Checkbox,
   Container,
-  Divider,
-  FormControlLabel,
-  IconButton,
-  InputAdornment,
-  Paper,
-  Stack,
-  TextField,
-  Typography
 } from '@mui/material';
-import {
-  AccountCircle,
-  AlternateEmail,
-  Facebook,
-  Google,
-  Lock,
-  Person,
-  Twitter,
-  Visibility,
-  VisibilityOff
-} from '@mui/icons-material';
-import PersonalInjuryOutlinedIcon from '@mui/icons-material/PersonalInjuryOutlined';
-import EmailIcon from '@mui/icons-material/Email';
-import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
+
 import Login from '../../Common/Login/Login';
 import Signup from '../../Common/Signup/Signup';
 //#endregion

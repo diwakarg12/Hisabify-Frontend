@@ -84,7 +84,6 @@ const Signup = () => {
         elevation={8}
         sx={{
             display: 'flex',
-            
             borderRadius: 3,
             // height: '90%',
             width: '100wh',
