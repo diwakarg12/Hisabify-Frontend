@@ -91,7 +91,7 @@ const RequestDailog = ({open, onClose}) => {
         margin: '20px',
         marginTop: '60px',
         maxHeight: '70vh',
-        backgroundColor: 'rgba(239, 68, 68, 1)',
+        backgroundColor: 'rgba(255, 100, 103, 1)',
         scrollbarWidth: 'thin',
         scrollbarColor: '#fff rgba(0, 0, 0, 0.1)',
       },
