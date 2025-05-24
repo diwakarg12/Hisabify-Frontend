@@ -5,7 +5,11 @@ import React from 'react';
 import Logo from "../../../assets/logo.png"
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
-import GroupAddOutlinedIcon from '@mui/icons-material/GroupAddOutlined';//#endregion
+import GroupAddOutlinedIcon from '@mui/icons-material/GroupAddOutlined';
+import Avatar from '@mui/material/Avatar';
+import { red } from '@mui/material/colors';
+import ProfileImg from '../../../assets/profile.jpg'
+//#endregion
 
 //#region Component make Styles
 //#endregion
@@ -86,22 +90,39 @@ const Header = () => {
 
 
 <div className='flex items-center space-x-6'>
-   
-    <div className='flex space-x-2'>
-      <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center'>
-        <GroupAddOutlinedIcon className=' text-white' fontSize="medium" cursor="pointer"/>
-      </div>
-      <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center' >
-        <NotificationsOutlinedIcon className='text-white' fontSize="medium" cursor="pointer"/>
-      </div>
-      <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center'>
-        <CalendarMonthOutlinedIcon className=' text-white' fontSize="medium" cursor="pointer"/>
-      </div>
-    </div>
+    
      <div className='text-right hidden md:block'>
           <div className='text-sm text-black'> {dayPart} </div>
           <div className='text-xs text-blue-400'>{formattedDate} </div>
      </div>
+   
+    <div className='flex space-x-2'>
+      <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center'>
+        <GroupAddOutlinedIcon className=' text-white' fontSize="medium" cursor="pointer" onClick = {() =>{
+          console.log('Avatar cicked')
+        }}/>
+      </div>
+      <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center' >
+        <NotificationsOutlinedIcon className='text-white' fontSize="medium" cursor="pointer" onClick = {() =>{
+          console.log('Avatar cicked')
+        }}/>
+      </div>
+      <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center'>
+        <CalendarMonthOutlinedIcon className='text-white' fontSize="medium" cursor="pointer" 
+        onClick = {() =>{
+          console.log('Avatar cicked')
+        }}
+       />
+      </div>
+      <div className='w-8 h-8 rounded flex items-center justify-center cursor-pointer'>
+        <Avatar alt="R" src={ProfileImg} sx={{ bgcolor: red[400], width: 36, height:36}} 
+        onClick = {() =>{
+          console.log('Avatar cicked')
+        }}
+        />
+      </div>
+    </div>
+   
      
 </div>
 

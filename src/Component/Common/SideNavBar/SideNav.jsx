@@ -63,39 +63,13 @@ const SideNav = () => {
 
   //#region Component renders
   return(
-   <div className={`h-screen bg-red-400 text-white flex flex-col transition-all duration-300 ease-in-out ${
-        isExpanded ? 'w-64' : 'w-16'
+   <div className={`h-[calc(100vh-4rem)]  bg-red-400 text-white flex flex-col transition-all duration-300 ease-in-out  ${
+        isExpanded ? 'w-64 ' : 'w-16'
       }`}
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}>
 
-    {/* Profile section only visiblewhen expanded  */}
-       <div className={`flex flex-col items-center border-b border-red-300 py-4 ${
-        isExpanded ? 'opacity-100' : 'opacity-0 h-0 py-0 overflow-hidden'
-      } transition-opacity duration-200`}>
-        <div className="w-16 h-16 rounded-full bg-white overflow-hidden border-2 border-white mb-3">
-          <img 
-            src={profileImage}
-            alt="Profile" 
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <h3 className="text-lg font-medium">Anshu Bharti</h3>
-        <p className="text-sm text-red-100">bhartianshu@gmail.com</p>
-        </div>
-
-        {/* whencollapsed  */}
-        <div className={`py-4 flex justify-center border-b border-red-300 ${
-        isExpanded ? 'opacity-0 h-0 py-0 overflow-hidden' : 'opacity-100'
-      } transition-opacity duration-200`}>
-        <div className="w-10 h-10 rounded-full bg-white overflow-hidden border-2 border-white">
-          <img 
-            src={profileImage}
-            alt="Profile" 
-            className="w-full h-full object-cover"
-          />
-        </div>
-      </div>
+    
 
     
 

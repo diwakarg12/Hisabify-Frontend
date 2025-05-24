@@ -1,6 +1,6 @@
 import Header from "./Component/Common/Header/Header";
 import SideNav from "./Component/Common/SideNavBar/SideNav";
-import Loginsignup from "./Component/Pages/Login_Signup/loginsignup";
+import Loginsignup from "./Component/Pages/LoginSignup/Loginsignup";
 import RoutesConfig from "./config/RoutesConfig";
 
 
