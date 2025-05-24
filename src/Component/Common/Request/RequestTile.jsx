@@ -43,8 +43,10 @@ const RequestTile = ({time , requester , teamName}) => {
   //#region Component renders
   return(
     <Box sx={{
-        backgroundColor: '#FBDADA', 
-        borderRadius: 2 ,
+        // backgroundColor: '#FBDADA', 
+        backgroundColor: '#fff', 
+
+        borderRadius: 1 ,
         
     }}>
         <Typography sx={{color:'black', padding:'1rem', paddingBottom:'0rem', fontSize:'16px' }}>

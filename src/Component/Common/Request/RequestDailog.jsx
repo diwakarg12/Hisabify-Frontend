@@ -91,14 +91,20 @@ const RequestDailog = ({open, onClose}) => {
         margin: '20px',
         marginTop: '60px',
         maxHeight: '70vh',
-      }
-    }}>
+        backgroundColor: 'rgba(239, 68, 68, 1)',
+        scrollbarWidth: 'thin',
+        scrollbarColor: '#fff rgba(0, 0, 0, 0.1)',
+      },
+    
+    }}
+    >
       <DialogTitle sx={{
         display:'flex',
         justifyContent:'space-between',
         fontWeight: 700,
         fontSize: '1.8rem',
-        alignItems:'center'
+        alignItems:'center',
+        color: '#fff'
         }}>
         Requests
         <CloseIcon
