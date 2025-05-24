@@ -4,7 +4,6 @@ import React from 'react';
 import Loginsignup from '../Component/Pages/LoginSignup/Loginsignup';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LandingPage from '../Component/Pages/LandingPage/LandingPage';
-import Test from '../../../test.jsx'
 //#endregion
 
 //#region Component make Styles
@@ -49,10 +48,6 @@ const RoutesConfig = () => {
     {
         path : "/home",
         element : <LandingPage />,
-    },
-      {
-        path : "/test",
-        element : <Test />,
     },
     
   ]
