@@ -2,7 +2,6 @@
 //#region imports
 import { Box, Typography } from '@mui/material';
 import React from 'react';
-import { red } from '@mui/material/colors';
 //#endregion
 
 //#region Component make Styles
@@ -44,24 +43,23 @@ const NotificationTile = ({amount, item, teamName , adderName, time}) => {
   //#region Component renders
   return(
     <Box sx={{
-        backgroundColor: red[300],
+        backgroundColor: 'white',
         borderRadius: 1,
         display: 'flex',
         flexDirection:'column',
         justifyContent: 'center',
-        alignItems: 'center',
-        // padding:' 0.1rem 1rem',
+        padding:' 0.75rem',
+        width: '18rem',
     }}>
-        <Typography sx={{color:'white', 
-          // padding:'1rem', 
-          // paddingBottom:'0rem', 
-          fontSize:'16px' }}>
-            Added Rs.{amount} for {item} 
+        <Typography sx={{ 
+          paddingBottom:'0rem', 
+          fontSize:'14px', fontWeight: 'bold',}}>
+            {teamName} Group has a new entry by {adderName}.
         </Typography >
         <Typography sx={{
-          // paddingLeft:'1rem', 
-          color:'black', fontSize:'14px'}}>
-            In team {teamName} by {adderName}. {time}
+          fontSize:'12px'}}
+          >
+            ₹ {amount} added for {item} just {time} ago.
         </Typography>
     </Box>
   );

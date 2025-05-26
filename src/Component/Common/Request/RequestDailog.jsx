@@ -88,7 +88,7 @@ const RequestDailog = ({open, onClose}) => {
         alignItems: 'flex-start',
       },
       '& .MuiPaper-root': {
-        margin: '20px',
+        margin: '150px',
         marginTop: '60px',
         maxHeight: '70vh',
         backgroundColor: 'rgba(255, 100, 103, 1)',

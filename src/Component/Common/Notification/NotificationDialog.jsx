@@ -1,6 +1,6 @@
 
 //#region imports
-import { List, ListItem, Popover, Typography, Box } from '@mui/material';
+import { List, ListItem, Dialog, Typography, DialogTitle } from '@mui/material';
 import React from 'react';
 import NotificationTile from './NotificationTile';
 import CloseIcon from '@mui/icons-material/Close';
@@ -11,7 +11,7 @@ import CloseIcon from '@mui/icons-material/Close';
 //#endregion
 
 //#region Function Component
-const NotificationPopup = ({open , onClose }) => {
+const NotificationDialog = ({open , onClose }) => {
   //#region Component states
   //#endregion
 
@@ -45,14 +45,14 @@ const NotificationPopup = ({open , onClose }) => {
     {
         amount: 20,
         item: 'Ball',
-        teamName: 'A',
+        teamName: 'Thailand Trip',
         time: '2H',
-        adderName: 'Harsh'
+        adderName: 'Harsh Raj'
     },
     {
         amount: 20,
         item: 'Ball',
-        teamName: 'A',
+        teamName: 'Room Expense',
         time: '2H',
         adderName: 'Harsh'
     },
@@ -90,54 +90,51 @@ const NotificationPopup = ({open , onClose }) => {
 
   //#region Component renders
   return(
-    <Popover
+    <Dialog
         open={open}
         onClose={onClose}
-        anchorReference="anchorPosition"
-        anchorPosition={{ 
-            top: 50, 
-            left: 950 
-        }}
-        PaperProps={{
-            sx :
-            {
-                backgroundColor:'#D1D5DB',
-                height: '16rem',
-                padding:0,
-                '&::-webkit-scrollbar': {
-                display: 'none',
-                },
-            }
-        }}
+       sx={{
+        
+        '& .MuiDialog-container': {
+            justifyContent: 'flex-end',
+            alignItems: 'flex-start',
+            
+        },
+        '& .MuiPaper-root': {
+            margin: '100px',
+            marginTop: '60px',
+            maxHeight: '70vh',
+            backgroundColor: 'rgba(255, 100, 103, 1)',
+            scrollbarWidth: 'none',
+            scrollbarColor: '#fff rgba(0, 0, 0, 0.1)',
+        }, 
+    }}
       >
-        <Box sx={{
-            display : 'flex',
+       <DialogTitle sx={{
+            display:'flex',
             justifyContent:'space-between',
+            fontWeight: 700,
+            fontSize: '1.8rem',
             alignItems:'center',
-            padding: '0.5rem',
-            paddingBottom:'0'
-        }}>
-            <Typography sx={{
-                display:'flex',
-                justifyContent:'center',
-                fontWeight: 700,
-                fontSize: '1.5rem',
-                }}>
-                    Notifications 
-            </Typography>
-            <CloseIcon 
-             onClick = {onClose} sx={{cursor:'pointer' , }}/>
-        </Box>
-
-
-
+            color: '#fff'
+            }}>
+            Notifications
+            <CloseIcon
+                onClick = {onClose} 
+                sx={{cursor:'pointer'}}
+            />
+        </DialogTitle>
         <List sx={{
-            padding:0,
+           display: 'flex',
+           flexDirection: 'column',
+           alignItems: 'center',
+           justifyContent: 'center',
+            pt: 0
 
         }}>
             {Notifications.length > 0 ?
                 Notifications.map((notification,index) => (
-                    <ListItem key={index}>
+                    <ListItem key={index} sx={{padding:'0.2rem 0.75rem'}}>
                         <NotificationTile 
                             amount={notification.amount} 
                             teamName={notification.teamName}
@@ -148,7 +145,6 @@ const NotificationPopup = ({open , onClose }) => {
                     </ListItem>
                 )):
                     <Typography sx={{
-                        // padding: '1rem 3rem', 
                         display:'flex',
                         fontSize: 22
                         }}>
@@ -156,12 +152,12 @@ const NotificationPopup = ({open , onClose }) => {
                     </Typography>
             }
         </List>
-      </Popover>
+      </Dialog>
   );
   //#endregion
 }
 //#endregion
 
 //#region Component export
-export default NotificationPopup;
+export default NotificationDialog;
 //#endregion
