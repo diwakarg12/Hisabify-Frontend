@@ -12,6 +12,7 @@ import ProfileImg from '../../../assets/profile.jpg'
 import RequestDailog from '../Request/RequestDailog';
 import NotificationDialog from '../Notification/NotificationDialog';
 import CalenderDialog from '../Calender/calenderDialog';
+import { Link } from 'react-router-dom';
 //#endregion
 
 //#region Component make Styles
@@ -144,13 +145,13 @@ const Header = () => {
        />
        <CalenderDialog open={openCalender} onClose={handleCalenderClose} />
       </div>
-      <div className='w-8 h-8 rounded flex items-center justify-center cursor-pointer'>
+      <Link className='w-8 h-8 rounded flex items-center justify-center cursor-pointer' to="/profile">
         <Avatar alt="R" src={ProfileImg} sx={{ bgcolor: red[400], width: 36, height:36}} 
         onClick = {() =>{
-          console.log('Avatar cicked')
+          
         }}
         />
-      </div>
+      </Link>
     </div>
    
      

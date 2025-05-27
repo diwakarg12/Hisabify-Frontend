@@ -78,7 +78,7 @@ const CalenderDialog = ({open , onClose}) => {
             alignItems:'center',
             color: '#fff',
             padding: '0.5rem 1rem',
-        }}>Date statics
+        }}>Expense statics
         <CloseIcon
              onClick = {onClose} sx={{cursor:'pointer'}}/>
         </DialogTitle>
