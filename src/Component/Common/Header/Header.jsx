@@ -9,6 +9,10 @@ import GroupAddOutlinedIcon from '@mui/icons-material/GroupAddOutlined';
 import Avatar from '@mui/material/Avatar';
 import { red } from '@mui/material/colors';
 import ProfileImg from '../../../assets/profile.jpg'
+import RequestDailog from '../Request/RequestDailog';
+import NotificationDialog from '../Notification/NotificationDialog';
+import CalenderDialog from '../Calender/calenderDialog';
+import { Link } from 'react-router-dom';
 //#endregion
 
 //#region Component make Styles
@@ -19,6 +23,10 @@ import ProfileImg from '../../../assets/profile.jpg'
 const Header = () => {
   //#region Component states
   const [currentDate , setCurrentDate] = React.useState("");
+  const [openDialog, setOpenDialog] = React.useState(false);
+  const [openNotfication, setOpenNotification] = React.useState(false)
+  const [openCalender , setOpenCalender] = React.useState(false);
+
   //#endregion
 
   //#region Component hooks
@@ -54,7 +62,28 @@ const Header = () => {
   //#endregion
 
   //#region Component feature methods
+   const handleDialogClose = () => {
+    setOpenDialog(!openDialog);
+  };
 
+   const handleNotificationClick = () => {
+    setOpenNotification(true);
+  };
+
+  const handleNotificationClose = () => {
+    setOpenNotification(false);
+  };
+
+  const handleCalenderClick = () => {
+    setOpenCalender(true);
+  };
+
+  const handleCalenderClose = () => {
+    setOpenCalender(false);
+  };
+
+  const open = Boolean(openNotfication);
+  const id = open ? 'simple-popover' : undefined;
   //#endregion
 
   //#region Component JSX.members
@@ -100,27 +129,29 @@ const Header = () => {
       <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center'>
         <GroupAddOutlinedIcon className=' text-white' fontSize="medium" cursor="pointer" onClick = {() =>{
           console.log('Avatar cicked')
+          setOpenDialog(!openDialog)
         }}/>
+        <RequestDailog 
+          open={openDialog}
+          onClose={handleDialogClose}/>
       </div>
       <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center' >
-        <NotificationsOutlinedIcon className='text-white' fontSize="medium" cursor="pointer" onClick = {() =>{
-          console.log('Avatar cicked')
-        }}/>
+        <NotificationsOutlinedIcon className='text-white' fontSize="medium" cursor="pointer" onClick = {handleNotificationClick}/>
+        <NotificationDialog open={open} onClose={handleNotificationClose} />
       </div>
       <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center'>
         <CalendarMonthOutlinedIcon className='text-white' fontSize="medium" cursor="pointer" 
-        onClick = {() =>{
-          console.log('Avatar cicked')
-        }}
+        onClick = {handleCalenderClick}
        />
+       <CalenderDialog open={openCalender} onClose={handleCalenderClose} />
       </div>
-      <div className='w-8 h-8 rounded flex items-center justify-center cursor-pointer'>
+      <Link className='w-8 h-8 rounded flex items-center justify-center cursor-pointer' to="/profile">
         <Avatar alt="R" src={ProfileImg} sx={{ bgcolor: red[400], width: 36, height:36}} 
         onClick = {() =>{
-          console.log('Avatar cicked')
+          
         }}
         />
-      </div>
+      </Link>
     </div>
    
      

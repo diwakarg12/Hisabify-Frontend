@@ -1,17 +1,14 @@
 
 //#region imports
+import { Box, Typography } from '@mui/material';
 import React from 'react';
-import Loginsignup from '../Component/Pages/LoginSignup/Loginsignup';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import LandingPage from '../Component/Pages/LandingPage/LandingPage';
-import ProfilePage from '../Component/Pages/ProfilePage/ProfilePage';
 //#endregion
 
 //#region Component make Styles
 //#endregion
 
 //#region Function Component
-const RoutesConfig = () => {
+const NotificationTile = ({amount, item, teamName , adderName, time}) => {
   //#region Component states
   //#endregion
 
@@ -41,37 +38,35 @@ const RoutesConfig = () => {
   //#endregion
 
   //#region Component JSX.members
-  const routes = [
-    {
-        path : "/",
-        element : <Loginsignup />,
-    },
-    {
-        path : "/home",
-        element : <LandingPage />,
-    },
-     {
-        path : "/profile",
-        element : <ProfilePage />,
-    },
-    
-  ]
   //#endregion
 
   //#region Component renders
   return(
-    <BrowserRouter>
-        <Routes>
-            {routes.map((props) => (
-                <Route key={props.path} path={props.path} element={props.element}/>
-            ))}
-        </Routes>
-    </BrowserRouter>
+    <Box sx={{
+        backgroundColor: 'white',
+        borderRadius: 1,
+        display: 'flex',
+        flexDirection:'column',
+        justifyContent: 'center',
+        padding:' 0.75rem',
+        width: '18rem',
+    }}>
+        <Typography sx={{ 
+          paddingBottom:'0rem', 
+          fontSize:'14px', fontWeight: 'bold',}}>
+            {teamName} Group has a new entry by {adderName}.
+        </Typography >
+        <Typography sx={{
+          fontSize:'12px'}}
+          >
+            ₹ {amount} added for {item} just {time} ago.
+        </Typography>
+    </Box>
   );
   //#endregion
 }
 //#endregion
 
 //#region Component export
-export default RoutesConfig;
+export default NotificationTile;
 //#endregion

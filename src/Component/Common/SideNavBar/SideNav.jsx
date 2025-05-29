@@ -69,10 +69,6 @@ const SideNav = () => {
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}>
 
-    
-
-    
-
     {/* Menu items */}
      
       <div className="flex-grow py-4">
@@ -80,16 +76,26 @@ const SideNav = () => {
           <div
             key={item.name}
             onClick={() => handleMenuClick(item.name)}
-            className={`flex items-center px-3 py-3 mx-2 my-1 rounded cursor-pointer ${
-              activeItem === item.name ? 'bg-white bg-opacity-20' : ''
-            } hover:bg-white hover:text-red-400 hover: hover:bg-opacity-20 group`}
+            className={`flex items-center px-3 py-3 mx-2 my-1 rounded cursor-pointer group ${
+              activeItem === item.name 
+                ? 'bg-white bg-opacity-20' 
+                : 'hover:bg-white hover:bg-opacity-20'
+            }`}
           >
-            <div className={`${activeItem=== item.name ? 'text-red-400' : 'text-white'} hover:text-red-400  flex justify-center items-center"`}>
+            <div className={`flex justify-center items-center ${
+              activeItem === item.name 
+                ? 'text-red-400' 
+                : 'text-white group-hover:text-red-400'
+            }`}>
               {item.icon}
             </div>
-            <span className={`ml-3 whitespace-nowrap ${activeItem === item.name ? 'text-red-400' : ''}  ${
+            <span className={`ml-3 whitespace-nowrap transition-opacity duration-200 ${
+              activeItem === item.name 
+                ? 'text-red-400' 
+                : 'text-white group-hover:text-red-400'
+            } ${
               isExpanded ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'
-            } transition-opacity duration-200`}>
+            }`}>
               {item.name}
             </span>
           </div>
@@ -99,11 +105,11 @@ const SideNav = () => {
       {/* Logout Section */}
       <div className="mt-auto mb-6">
         <div className="border-t border-red-300 my-2 mx-2"></div>
-        <div className="flex items-center px-3 py-3 mx-2 rounded cursor-pointer hover:bg-white hover:bg-opacity-20 hover:text-red-400 group">
-          <div className="text-white flex justify-center items-center hover:text-red-400">
+        <div className="flex items-center px-3 py-3 mx-2 rounded cursor-pointer group hover:bg-white hover:bg-opacity-20">
+          <div className="text-white flex justify-center items-center group-hover:text-red-400">
             <LogoutIcon size={20} />
           </div>
-          <span className={`ml-3 whitespace-nowrap ${
+          <span className={`ml-3 whitespace-nowrap text-white group-hover:text-red-400 ${
             isExpanded ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'
           } transition-opacity duration-200`}>
             Logout

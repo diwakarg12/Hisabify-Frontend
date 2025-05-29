@@ -45,12 +45,11 @@ const LandingPage = ({ children, navkey }) => {
 
   //#region Component renders
   return(
-    <Box >
-      
+    <Box sx={{overflow:'hidden', height:'100vh'}}>
       <Header />
       <Box sx={{display:'flex', flexDirection:'row', flex:1 }}>
         <SideNav  />
-        <Box sx={{flex:1 ,padding:2}}>
+        <Box sx={{flex:1 ,padding:2 , overflowY:'auto', height:'100vh', }}>
           {children}
         </Box>
       </Box>
