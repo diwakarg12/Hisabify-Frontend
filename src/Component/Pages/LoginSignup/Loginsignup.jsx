@@ -82,7 +82,6 @@ const Loginsignup = () => {
       
     >
       <Container 
-      className="scrollbar-hide"
       sx={{
         display: 'flex',
         alignItems: 'center',
@@ -90,13 +89,13 @@ const Loginsignup = () => {
         height: '90vh',
         overflow: 'auto',
         '&::-webkit-scrollbar': {
-      display: 'none',
-    },
+          display: 'none',
+        },
       }}>
         {!isLogin ? (
-        <Signup />
+        <Signup isLogin={isLogin}  setIsLogin={setIsLogin}/>
         ) : (
-         <Login />
+         <Login isLogin={isLogin}  setIsLogin={setIsLogin}/>
         )}
         
       </Container>

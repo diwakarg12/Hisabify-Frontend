@@ -5,6 +5,10 @@ import Loginsignup from '../Component/Pages/LoginSignup/Loginsignup';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LandingPage from '../Component/Pages/LandingPage/LandingPage';
 import ProfilePage from '../Component/Pages/ProfilePage/ProfilePage';
+import Test from '../Component/Test'
+import Dashboard from '../Component/Pages/Dashboard/Dashboard';
+
+
 //#endregion
 
 //#region Component make Styles
@@ -50,10 +54,22 @@ const RoutesConfig = () => {
         path : "/home",
         element : <LandingPage />,
     },
-     {
+    {
         path : "/profile",
         element : <ProfilePage />,
     },
+    {
+        path : "/dashboard",
+        element : <LandingPage> <Dashboard /> </LandingPage>
+    },
+
+
+    {
+        path : "/test",
+        element : <Test />,
+    },
+
+    
     
   ]
   //#endregion

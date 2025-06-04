@@ -10,14 +10,15 @@ import HelpIcon from '@mui/icons-material/Help';
 import LogoutIcon from '@mui/icons-material/Logout';
 
 import profileImage from '../../../assets/profile.jpg';
+import { Link, useNavigate } from 'react-router-dom';
 //#endregion
 
 //#region Component objects
   const menuItems = [
-    { name: 'Dashboard', icon: <DashboardIcon size={20} /> },
-    { name: 'My Expense', icon: <ReceiptIcon size={20} /> },
-    { name: 'Team Expense', icon: <GroupsIcon size={20} /> },
-    { name: 'Settings', icon: <SettingsIcon size={20} /> },
+    { name: 'Dashboard', icon: <DashboardIcon size={20} />, link: '/dashboard' },
+    { name: 'My Expense', icon: <ReceiptIcon size={20} />, link: '/dashboard' },
+    { name: 'Team Expense', icon: <GroupsIcon size={20} />, link: '/dashboard' },
+    { name: 'Settings', icon: <SettingsIcon size={20} />, link: '/' },
     { name: 'Help', icon: <HelpIcon size={20} /> }
   ];
 //#endregion
@@ -58,6 +59,7 @@ const SideNav = () => {
   //#region Component JSX.members
     const handleMenuClick = (itemName) => {
     setActiveItem(itemName);
+    
   };
   //#endregion
 
@@ -73,9 +75,8 @@ const SideNav = () => {
      
       <div className="flex-grow py-4">
         {menuItems.map((item) => (
-          <div
+          <Link to={item.link}
             key={item.name}
-            onClick={() => handleMenuClick(item.name)}
             className={`flex items-center px-3 py-3 mx-2 my-1 rounded cursor-pointer group ${
               activeItem === item.name 
                 ? 'bg-white bg-opacity-20' 
@@ -98,7 +99,7 @@ const SideNav = () => {
             }`}>
               {item.name}
             </span>
-          </div>
+          </Link>
         ))}
       </div>
 
