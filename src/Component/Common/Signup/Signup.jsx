@@ -46,7 +46,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 //#endregion
 
 //#region Function Component
-const Signup = () => {
+const Signup = ({isLogin , setIsLogin}) => {
   //#region Component states
   //#endregion
 
@@ -321,7 +321,7 @@ const Signup = () => {
                     color: '#3f51b5',
                     ml: 1,
                     }}
-                //  onClick={toggleForm}
+                 onClick={()=> setIsLogin(!isLogin)}
                 >
                     Sign In 
                 </Typography>

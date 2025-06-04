@@ -24,6 +24,7 @@ import {
  import EmailIcon from '@mui/icons-material/Email';
  import loginImage from '../../../assets/Login/login.svg';
  import { FaGithub, FaApple  } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
 
 
  
@@ -33,7 +34,7 @@ import {
 //#endregion
 
 //#region Function Component
-const Login = () => {
+const Login = ({isLogin , setIsLogin}) => {
   //#region Component states
   //#endregion
 
@@ -60,6 +61,7 @@ const Login = () => {
   //#endregion
 
   //#region Component feature methods
+  const navigate = useNavigate()
   //#endregion
 
   //#region Component JSX.members
@@ -133,6 +135,7 @@ const Login = () => {
                 bgcolor: '#ff7171',
                 '&:hover': { bgcolor: '#ff5252' },
               }}
+              onClick={()=> navigate('/dashboard')}
             >
               Login
             </Button>
@@ -182,7 +185,7 @@ const Login = () => {
                     textDecoration: 'underline',
                     color: '#3f51b5'
                     }}
-                //  onClick={toggleForm}
+                 onClick={()=> setIsLogin(!isLogin)}
                 >
                     Create One 
                 </Typography>

@@ -1,0 +1,118 @@
+
+//#region imports
+import { Avatar, Box, Button, Card, CardContent, Stack, Typography } from '@mui/material';
+import React from 'react';
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import img from '../../../assets/profile.jpg';
+import { red } from '@mui/material/colors';
+//#endregion
+
+//#region Component make Styles
+//#endregion
+
+//#region Function Component
+const TeamCart = ({teamDetails}) => {
+    const {teamName ,totAmount ,topCategory ,yourContribution ,lastTransaction} = teamDetails
+  //#region Component states
+  //#endregion
+
+  //#region Component hooks
+   React.useEffect(() => {
+      // Anything in here is fired on component mount.
+      return () => {
+          // Anything in here is fired on component unmount.
+      }
+    }, [])
+
+   React.useEffect(() => {
+      // Anything in here is fired on component update.
+   });
+  //#endregion
+
+  //#region Component use Styles
+  //#endregion
+
+  //#region Component validation methods
+  //#endregion
+
+  //#region Component Api methods
+  //#endregion
+
+  //#region Component feature methods
+  //#endregion
+
+  //#region Component JSX.members
+  const avatars = [
+   
+    img,
+    img,
+    img,
+    img,
+  ];
+  //#endregion
+
+  //#region Component renders
+  return(
+     
+    <Card variant="outlined" sx={{ borderRadius: 3, padding: 2 , bgcolor: '#F5F8FF', marginY: 2, boxShadow: 3}}>
+      <CardContent>
+        <Box display="flex" alignItems="center" gap={1} mb={1}>
+          <Typography variant="h6" fontWeight="bold">
+            {teamName}
+          </Typography>
+        </Box>
+
+        <Typography variant="body2" mb={0.5}>
+          <strong>Total Spend :</strong> {totAmount}
+        </Typography>
+
+        <Typography variant="body2" mb={0.5}>
+          <strong>Top Category :</strong>{' '}
+          <Box component="span" sx={{ color: 'error.main', fontWeight: 600 }}>
+            {topCategory}
+          </Box>
+        </Typography>
+
+        <Typography variant="body2" mb={0.5}>
+          <strong>Your Contribution :</strong> {yourContribution}
+        </Typography>
+
+        <Typography variant="body2" mb={2}>
+          <strong>Last Transaction :</strong> {lastTransaction}
+        </Typography>
+
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Stack direction="row" spacing={-1}>
+            {avatars.map((src, index) => (
+              <Avatar
+                key={index}
+                src={src}
+                sx={{
+                  border: '2px solid white',
+                  width: 32,
+                  height: 32,
+                  zIndex: avatars.length - index,
+                }}
+              />
+            ))}
+          </Stack>
+
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<GroupAddIcon />}
+            sx={{ borderRadius: 3, textTransform: 'none' ,color: red[400]}}
+          >
+            Invite
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+  //#endregion
+}
+//#endregion
+
+//#region Component export
+export default TeamCart;
+//#endregion
