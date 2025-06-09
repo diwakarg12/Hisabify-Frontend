@@ -6,14 +6,16 @@ import { red } from '@mui/material/colors';
 import React from 'react';
 // import { Link } from 'react-router-dom';
 import Chart from '../Chart/Chart';
+import AddExpense from '../AddExpense/AddExpense';
 //#endregion
 
 //#region Component make Styles
 //#endregion
 
 //#region Function Component
-const PersonalTracker = ({totTransaction ,category, totSpent, lastUpdated}) => {
+const PersonalTracker = ({totTransaction ,category, totSpent, lastUpdated, setOpenAddExpense}) => {
   //#region Component states
+  
   //#endregion
 
   //#region Component hooks
@@ -42,6 +44,8 @@ const PersonalTracker = ({totTransaction ,category, totSpent, lastUpdated}) => {
   //#endregion
 
   //#region Component JSX.members
+  
+  
   //#endregion
 
   //#region Component renders
@@ -71,13 +75,17 @@ const PersonalTracker = ({totTransaction ,category, totSpent, lastUpdated}) => {
                 gap:1,
             }}>
                 <PendingActionsOutlined sx={{ color: '#A1A3AB'}} />
-                <Typography sx={{
+                <Typography 
+                    onClick ={() => setOpenAddExpense(true)}
+                    sx={{
                     color: red[300],
                     // paddingLeft:1,
-                    textDecoration: 'none'
+                    textDecoration: 'none',
+                    cursor: 'pointer'
                 }}>
                     Add Expense
                 </Typography>
+                
             </Link>
 
             <Card sx={{width: '90%'  , border: 'solid #A1A3AB 2px', borderRadius: 2 , margin: '1rem auto'}}>
