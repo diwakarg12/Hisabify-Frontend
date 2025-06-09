@@ -5,6 +5,8 @@ import React from 'react';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import img from '../../../assets/profile.jpg';
 import { red } from '@mui/material/colors';
+import { useNavigate } from 'react-router-dom';
+
 //#endregion
 
 //#region Component make Styles
@@ -14,6 +16,7 @@ import { red } from '@mui/material/colors';
 const TeamCart = ({teamDetails}) => {
     const {teamName ,totAmount ,topCategory ,yourContribution ,lastTransaction} = teamDetails
   //#region Component states
+  const navigate = useNavigate()
   //#endregion
 
   //#region Component hooks
@@ -39,6 +42,10 @@ const TeamCart = ({teamDetails}) => {
   //#endregion
 
   //#region Component feature methods
+  const handleCartCick = () => {
+    console.log('card clicked');
+    navigate("/expenselist")
+  }
   //#endregion
 
   //#region Component JSX.members
@@ -48,13 +55,14 @@ const TeamCart = ({teamDetails}) => {
     img,
     img,
     img,
+
   ];
   //#endregion
 
   //#region Component renders
   return(
      
-    <Card variant="outlined" sx={{ borderRadius: 3, padding: 2 , bgcolor: '#F5F8FF', marginY: 2, boxShadow: 3}}>
+    <Card variant="outlined" onClick={handleCartCick} sx={{ borderRadius: 3, padding: 2 , bgcolor: '#F5F8FF', marginY: 2, boxShadow: 3}}>
       <CardContent>
         <Box display="flex" alignItems="center" gap={1} mb={1}>
           <Typography variant="h6" fontWeight="bold">

@@ -52,7 +52,7 @@ const TeamTracker = ({teamDetails}) => {
             boxShadow: 3,
             overflow:'auto',
             '&::-webkit-scrollbar': {
-          display: 'none',
+            display: 'none',
         },
         }}>
             <Typography sx={{
