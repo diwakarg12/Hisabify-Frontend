@@ -68,6 +68,7 @@ const TeamCart = ({teamDetails}) => {
           <Typography variant="h6" fontWeight="bold">
             {teamName}
           </Typography>
+          
         </Box>
 
         <Typography variant="body2" mb={0.5}>
@@ -105,7 +106,8 @@ const TeamCart = ({teamDetails}) => {
             ))}
           </Stack>
 
-          <Button
+         <Box sx={{ display: "flex" , gap: 2}}>
+           <Button
             variant="outlined"
             size="small"
             startIcon={<GroupAddIcon />}
@@ -113,6 +115,15 @@ const TeamCart = ({teamDetails}) => {
           >
             Invite
           </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<GroupAddIcon />}
+            sx={{ borderRadius: 3, textTransform: 'none' ,color: red[400]}}
+          >
+            Add Expense
+          </Button>
+         </Box>
         </Box>
       </CardContent>
     </Card>

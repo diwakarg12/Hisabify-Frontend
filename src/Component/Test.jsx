@@ -10,6 +10,7 @@ import { Gauge, gaugeClasses } from '@mui/x-charts'
 import { Dashboard, Height } from '@mui/icons-material';
 import TeamCart from './Common/TeamCart/TeamCart';
 import { Card } from '@mui/material';
+import AddExpense from './Common/AddExpense/AddExpense';
 //#endregion
 
 //#region Component make Styles
@@ -56,7 +57,7 @@ const Test = () => {
           {/* <Chart  name= 'A' value={300} totValue={1000} size={ 200 }/> */}
          </content>
          
-         <TeamCart  teamDetails={{teamName: 'Thailand Trip', totAmount:4000 ,topCategory: 'shoping' ,yourContribution: 2100 ,lastTransaction: 300}}/>
+         <AddExpense />
         
     </LandingPage>
   );

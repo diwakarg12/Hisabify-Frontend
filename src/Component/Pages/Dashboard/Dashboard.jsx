@@ -1,20 +1,22 @@
 
 //#region imports
 import { Box, Typography } from '@mui/material';
-import React from 'react';
+import React, { useState } from 'react';
 import WavingHandIcon from '@mui/icons-material/WavingHand';
 import {  yellow } from '@mui/material/colors';
 import TeamTracker from '../../Common/TeamTracker/TeamTracker';
 import PersonalTracker from '../../Common/PersonalTracker/PersonalTracker';
+import AddExpense from '../../Common/AddExpense/AddExpense';
 
 //#endregion
 
 //#region Component make Styles
-//#endregion
+//#endregion 
 
 //#region Function Component
 const Dashboard = () => {
   //#region Component states
+  const [openAddExpense, setOpenAddExpense] = useState(false);
   //#endregion
 
   //#region Component hooks
@@ -77,13 +79,15 @@ const Dashboard = () => {
 
   //#region Component renders
   return(
+    <Box sx={{position:'relative'}}>
     <Box sx={{backgroundColor: '#FFF',
        
         height: '110vh',
         display: 'flex',
         flexDirection:'column',
         borderRadius:2,
-        
+        transition: 'filter 0.3s ease',
+        filter: openAddExpense ? 'blur(2px)' : 'none',
        
         }}>
         
@@ -115,12 +119,18 @@ const Dashboard = () => {
         }}>
 
             {/* Left BOX */}
-        <PersonalTracker />
+        <PersonalTracker setOpenAddExpense={setOpenAddExpense}/>
 
+        
         {/* Right Box */}
         <TeamTracker teamDetails={teamDetails}/>
         </Box>
     </Box>
+    {openAddExpense && (
+        <AddExpense openAddExpense={openAddExpense} setOpenAddExpense={setOpenAddExpense}/>
+    )}
+ 
+ </Box>
   );
   //#endregion
 }
