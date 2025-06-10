@@ -53,7 +53,7 @@ const Test = () => {
   return(
     <LandingPage navkey={"test"}>
          <content>
-          <div> this is test </div>
+          <div> Page not Found </div>
           {/* <Chart  name= 'A' value={300} totValue={1000} size={ 200 }/> */}
          </content>
          

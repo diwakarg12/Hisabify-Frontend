@@ -52,25 +52,31 @@ const RoutesConfig = () => {
         element : <Loginsignup />,
     },
     {
-        path : "/home",
-        element : <LandingPage />,
-    },
-    {
         path : "/profile",
-        element : <ProfilePage />,
+        element : <LandingPage><ProfilePage /></LandingPage>
     },
     {
         path : "/dashboard",
         element : <LandingPage> <Dashboard /> </LandingPage>
     },
-      {
-        path : "/expenselist",
+    {
+        path : "/myexpense",
         element : <LandingPage> <ExpenseListPage /> </LandingPage>
     },
-
-
     {
-        path : "/test",
+        path : "/expenselist/:groupId?",
+        element : <LandingPage> <ExpenseListPage /> </LandingPage>
+    },
+    {
+        path : "/setting",
+        element : <LandingPage> <ExpenseListPage /> </LandingPage>
+    },
+    {
+        path : "/help",
+        element : <LandingPage> <ExpenseListPage /> </LandingPage>
+    },
+    {
+        path : "*",
         element : <Test />,
     },
 

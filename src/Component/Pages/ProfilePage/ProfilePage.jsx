@@ -2,7 +2,6 @@
 //#region imports
 import { Avatar, Box, Card, CardContent, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import React from 'react';
-import LandingPage from '../LandingPage/LandingPage';
 import { Link } from 'react-router-dom';
 import { blue } from '@mui/material/colors';
 import ProfileImg from '../../../assets/profile.jpg';
@@ -50,7 +49,6 @@ const ProfilePage = () => {
 
   //#region Component renders
   return(
-   <LandingPage>
      <Box sx={{ padding: 2,
                 // height: '100%',
                 width: '100%',
@@ -224,7 +222,6 @@ const ProfilePage = () => {
         </Card>
        </Box>
     </Box>
-   </LandingPage>
   );
   //#endregion
 }

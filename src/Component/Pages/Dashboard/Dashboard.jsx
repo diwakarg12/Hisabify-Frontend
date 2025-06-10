@@ -124,7 +124,6 @@ const Dashboard = () => {
       {createTeam && (
         <AddTeam onClose={() => setCreateTeam(false)} />
       )}
-    </Box>
     {openAddExpense && (
         <AddExpense openAddExpense={openAddExpense} setOpenAddExpense={setOpenAddExpense}/>
     )}

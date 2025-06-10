@@ -103,19 +103,19 @@ const Header = () => {
   //#region Component renders
   return(
   <div className='flex flex-row justify-between items-center bg-zinc-50 h-16 shadow-sm px-4'> 
-     <div className='flex items-center space-x-2'>
-        <div className='w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center'>
+     <Link to={'/dashboard'} className='flex items-center space-x-2'>
+        <div  className='w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center'>
           <img 
             src={Logo} 
             alt="logo" 
-            className='w-8 h-8 object-contain'
+            className='w-8 h-8 object-contain cursor-pointer'
           />
         </div>
         <div className='font-medium text-xl'>
           <span className='text-red-400'>Expense-</span>
           <span className='text-black'>Tracker</span>
         </div>
-      </div>
+      </Link>
 
 
 <div className='flex items-center space-x-6'>

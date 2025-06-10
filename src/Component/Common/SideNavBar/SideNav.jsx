@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 //#region imports
 import React from 'react';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -8,18 +6,16 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import SettingsIcon from '@mui/icons-material/Settings';
 import HelpIcon from '@mui/icons-material/Help';
 import LogoutIcon from '@mui/icons-material/Logout';
-
-import profileImage from '../../../assets/profile.jpg';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 //#endregion
 
 //#region Component objects
   const menuItems = [
     { name: 'Dashboard', icon: <DashboardIcon size={20} />, link: '/dashboard' },
-    { name: 'My Expense', icon: <ReceiptIcon size={20} />, link: '/dashboard' },
-    { name: 'Team Expense', icon: <GroupsIcon size={20} />, link: '/dashboard' },
-    { name: 'Settings', icon: <SettingsIcon size={20} />, link: '/' },
-    { name: 'Help', icon: <HelpIcon size={20} /> }
+    { name: 'My Expense', icon: <ReceiptIcon size={20} />, link: '/myexpense' },
+    { name: 'Team Expense', icon: <GroupsIcon size={20} />, link: '/expenselist' },
+    { name: 'Settings', icon: <SettingsIcon size={20} />, link: '/setting' },
+    { name: 'Help', icon: <HelpIcon size={20} />, link: '/help' }
   ];
 //#endregion
 
@@ -27,8 +23,8 @@ import { Link, useNavigate } from 'react-router-dom';
 //#region Function Component
 const SideNav = () => {
   //#region Component states
+  const location = useLocation();
   const [isExpanded, setIsExpanded] = React.useState(false);
-  const [activeItem, setActiveItem] = React.useState('Dashboard');
   //#endregion
 
   //#region Component hooks
@@ -57,10 +53,6 @@ const SideNav = () => {
   //#endregion
 
   //#region Component JSX.members
-    const handleMenuClick = (itemName) => {
-    setActiveItem(itemName);
-    
-  };
   //#endregion
 
   //#region Component renders
@@ -76,22 +68,22 @@ const SideNav = () => {
       <div className="flex-grow py-4">
         {menuItems.map((item) => (
           <Link to={item.link}
-            key={item.name}
+            key={item.link}
             className={`flex items-center px-3 py-3 mx-2 my-1 rounded cursor-pointer group ${
-              activeItem === item.name 
+              location.pathname === item.link
                 ? 'bg-white bg-opacity-20' 
                 : 'hover:bg-white hover:bg-opacity-20'
             }`}
           >
             <div className={`flex justify-center items-center ${
-              activeItem === item.name 
+              location.pathname === item.link 
                 ? 'text-red-400' 
                 : 'text-white group-hover:text-red-400'
             }`}>
               {item.icon}
             </div>
             <span className={`ml-3 whitespace-nowrap transition-opacity duration-200 ${
-              activeItem === item.name 
+              location.pathname === item.link 
                 ? 'text-red-400' 
                 : 'text-white group-hover:text-red-400'
             } ${
