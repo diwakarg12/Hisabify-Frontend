@@ -82,7 +82,7 @@ const PersonalTracker = ({totTransaction ,category, totSpent, lastUpdated}) => {
 
             <Card sx={{width: '90%'  , border: 'solid #A1A3AB 2px', borderRadius: 2 , margin: '1rem auto'}}>
                 <Typography sx={{display: 'flex', alignItems: 'center' , padding: 1, gap: 1}}>
-                    <Box sx={{
+                    <Box component="span" sx={{
                         height: '1rem',
                         width:'1rem',
                         borderRadius: '50%',
@@ -132,7 +132,7 @@ const PersonalTracker = ({totTransaction ,category, totSpent, lastUpdated}) => {
 
             <Card sx={{width: '90%'  , border: 'solid #A1A3AB 2px', borderRadius: 2 , margin: '1rem auto'}}>
                 <Typography sx={{display: 'flex', alignItems: 'center' , padding: 1, gap: 1}}>
-                    <Box sx={{
+                    <Box component="span" sx={{
                         height: '1rem',
                         width:'1rem',
                         borderRadius: '50%',
