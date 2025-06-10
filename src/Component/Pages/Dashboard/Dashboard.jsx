@@ -6,17 +6,20 @@ import WavingHandIcon from '@mui/icons-material/WavingHand';
 import {  yellow } from '@mui/material/colors';
 import TeamTracker from '../../Common/TeamTracker/TeamTracker';
 import PersonalTracker from '../../Common/PersonalTracker/PersonalTracker';
-import AddTeam from '../../Common/AddTeam/AddTeam';
+import AddTeam from '../../Common/AddTeam/AddTeam'
+import AddExpense from '../../Common/AddExpense/AddExpense';
+
 
 //#endregion
 
 //#region Component make Styles
-//#endregion
+//#endregion 
 
 //#region Function Component
 const Dashboard = () => {
   //#region Component states
   const [createTeam, setCreateTeam] = useState(false)
+  const [openAddExpense, setOpenAddExpense] = useState(false);
   //#endregion
 
   //#region Component hooks
@@ -91,13 +94,13 @@ const Dashboard = () => {
           borderRadius: 2,
           pointerEvents: createTeam ? 'none' : 'auto',
           transition: 'filter 0.3s ease',
-          filter: createTeam ? 'blur(2px)' : 'none',
+          filter: createTeam || openAddExpense ? 'blur(2px)' : 'none',
         }}
       >
         <Typography sx={{ padding: 2, fontSize: 20 }}>
           Welcome Back {'userName'}
           <WavingHandIcon sx={{ color: yellow[600], marginLeft: 2 }} />
-        </Typography>
+          </Typography>
 
         <Box
           sx={{
@@ -112,7 +115,7 @@ const Dashboard = () => {
             borderRadius: 2,
           }}
         >
-          <PersonalTracker />
+          <PersonalTracker setOpenAddExpense={setOpenAddExpense}/>
           <TeamTracker teamDetails={teamDetails} setCreateTeam={setCreateTeam} />
         </Box>
       </Box>
@@ -122,6 +125,11 @@ const Dashboard = () => {
         <AddTeam onClose={() => setCreateTeam(false)} />
       )}
     </Box>
+    {openAddExpense && (
+        <AddExpense openAddExpense={openAddExpense} setOpenAddExpense={setOpenAddExpense}/>
+    )}
+ 
+ </Box>
   );
   //#endregion
 }
