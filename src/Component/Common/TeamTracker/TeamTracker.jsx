@@ -12,8 +12,9 @@ import { Groups  } from '@mui/icons-material';
 //#endregion
 
 //#region Function Component
-const TeamTracker = ({teamDetails}) => {
+const TeamTracker = ({teamDetails, setCreateTeam}) => {
   //#region Component states
+  
   //#endregion
 
   //#region Component hooks
@@ -76,15 +77,18 @@ const TeamTracker = ({teamDetails}) => {
                 <Typography sx={{
                     color: red[300],
                     // paddingLeft:1,
-                    textDecoration: 'none'
-                }}>
+                    textDecoration: 'none',
+                    cursor: 'pointer'
+                }}
+                onClick={()=>setCreateTeam(true)}
+                >
                     Add Team
                 </Typography>
             </Link>
             
             <Box sx={{padding: 2}}>
                 {teamDetails.map((teamDetail)=>(
-                 <TeamCart 
+                 <TeamCart
                     teamDetails={teamDetail}
             />
             ))}

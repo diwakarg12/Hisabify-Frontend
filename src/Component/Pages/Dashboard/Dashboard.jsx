@@ -6,7 +6,9 @@ import WavingHandIcon from '@mui/icons-material/WavingHand';
 import {  yellow } from '@mui/material/colors';
 import TeamTracker from '../../Common/TeamTracker/TeamTracker';
 import PersonalTracker from '../../Common/PersonalTracker/PersonalTracker';
+import AddTeam from '../../Common/AddTeam/AddTeam'
 import AddExpense from '../../Common/AddExpense/AddExpense';
+
 
 //#endregion
 
@@ -16,6 +18,7 @@ import AddExpense from '../../Common/AddExpense/AddExpense';
 //#region Function Component
 const Dashboard = () => {
   //#region Component states
+  const [createTeam, setCreateTeam] = useState(false)
   const [openAddExpense, setOpenAddExpense] = useState(false);
   //#endregion
 
@@ -79,32 +82,28 @@ const Dashboard = () => {
 
   //#region Component renders
   return(
-    <Box sx={{position:'relative'}}>
-    <Box sx={{backgroundColor: '#FFF',
-       
-        height: '110vh',
-        display: 'flex',
-        flexDirection:'column',
-        borderRadius:2,
-        transition: 'filter 0.3s ease',
-        filter: openAddExpense ? 'blur(2px)' : 'none',
-       
-        }}>
-        
-        {/* Welcome Text */}
-        <Typography sx={{
-            padding: 2,
-            fontSize: 20
-        }}>
-            Welcome Back {'userName'}
-            <WavingHandIcon  sx={{
-                color: yellow[600],
-                marginLeft: 2
-            }}/>
-        </Typography>
+    <Box sx={{ position: 'relative' }}>
+      
+      {/* Dashboard Content */}
+      <Box
+        sx={{
+          backgroundColor: '#FFF',
+          height: '110vh',
+          display: 'flex',
+          flexDirection: 'column',
+          borderRadius: 2,
+          pointerEvents: createTeam ? 'none' : 'auto',
+          transition: 'filter 0.3s ease',
+          filter: createTeam || openAddExpense ? 'blur(2px)' : 'none',
+        }}
+      >
+        <Typography sx={{ padding: 2, fontSize: 20 }}>
+          Welcome Back {'userName'}
+          <WavingHandIcon sx={{ color: yellow[600], marginLeft: 2 }} />
+          </Typography>
 
-
-        <Box sx={{
+        <Box
+          sx={{
             display: 'flex',
             justifyContent: 'center',
             padding: 2,
@@ -112,19 +111,19 @@ const Dashboard = () => {
             marginTop: 0,
             gap: 2,
             border: 'solid 2px #A1A3AB',
-            overflow:'auto',
-            borderRadius:2,
-
-           
-        }}>
-
-            {/* Left BOX */}
-        <PersonalTracker setOpenAddExpense={setOpenAddExpense}/>
-
-        
-        {/* Right Box */}
-        <TeamTracker teamDetails={teamDetails}/>
+            overflow: 'auto',
+            borderRadius: 2,
+          }}
+        >
+          <PersonalTracker setOpenAddExpense={setOpenAddExpense}/>
+          <TeamTracker teamDetails={teamDetails} setCreateTeam={setCreateTeam} />
         </Box>
+      </Box>
+
+      {/* Overlay */}
+      {createTeam && (
+        <AddTeam onClose={() => setCreateTeam(false)} />
+      )}
     </Box>
     {openAddExpense && (
         <AddExpense openAddExpense={openAddExpense} setOpenAddExpense={setOpenAddExpense}/>
