@@ -60,11 +60,11 @@ const RoutesConfig = () => {
         element : <LandingPage> <Dashboard /> </LandingPage>
     },
     {
-        path : "/myexpense",
+        path : "/expenselist/:groupId?",
         element : <LandingPage> <ExpenseListPage /> </LandingPage>
     },
-    {
-        path : "/expenselist/:groupId?",
+     {
+        path : "/teamexpense",
         element : <LandingPage> <ExpenseListPage /> </LandingPage>
     },
     {

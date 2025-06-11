@@ -5,7 +5,7 @@ import React from 'react';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import img from '../../../assets/profile.jpg';
 import { red } from '@mui/material/colors';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 //#endregion
 
@@ -13,8 +13,9 @@ import { Link } from 'react-router-dom';
 //#endregion
 
 //#region Function Component
-const TeamCart = ({teamDetails}) => {
+const TeamCart = ({teamDetails ,setOpenInvite }) => {
     const {teamName ,totAmount ,topCategory ,yourContribution ,lastTransaction} = teamDetails
+    const navigate = useNavigate();
   //#region Component states
   // const navigate = useNavigate()
   //#endregion
@@ -36,6 +37,9 @@ const TeamCart = ({teamDetails}) => {
   //#endregion
 
   //#region Component validation methods
+  const handleTeamExpenseNavigation = () => {
+    navigate('/expenselist')
+  }
   //#endregion
 
   //#region Component Api methods
@@ -61,8 +65,7 @@ const TeamCart = ({teamDetails}) => {
 
   //#region Component renders
   return(
-     <Link to={'/expenselist'}>
-    <Card  variant="outlined"  sx={{ borderRadius: 3, padding: 2 , bgcolor: '#F5F8FF', marginY: 2, boxShadow: 3}}>
+    <Card  variant="outlined" onClick={handleTeamExpenseNavigation}  sx={{ borderRadius: 3, padding: 2 , bgcolor: '#F5F8FF', marginY: 2, boxShadow: 3}}>
       <CardContent>
         <Box display="flex" alignItems="center" gap={1} mb={1}>
           <Typography variant="h6" fontWeight="bold">
@@ -111,6 +114,7 @@ const TeamCart = ({teamDetails}) => {
             variant="outlined"
             size="small"
             startIcon={<GroupAddIcon />}
+            onClick={ setOpenInvite }
             sx={{ borderRadius: 3, textTransform: 'none' ,color: red[400]}}
           >
             Invite
@@ -127,7 +131,6 @@ const TeamCart = ({teamDetails}) => {
         </Box>
       </CardContent>
     </Card>
-    </Link>
   );
   //#endregion
 }

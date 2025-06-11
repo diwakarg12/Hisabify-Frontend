@@ -12,8 +12,8 @@ import { Link, useLocation } from 'react-router-dom';
 //#region Component objects
   const menuItems = [
     { name: 'Dashboard', icon: <DashboardIcon size={20} />, link: '/dashboard' },
-    { name: 'My Expense', icon: <ReceiptIcon size={20} />, link: '/myexpense' },
-    { name: 'Team Expense', icon: <GroupsIcon size={20} />, link: '/expenselist' },
+    { name: 'My Expense', icon: <ReceiptIcon size={20} />, link: '/expenselist' },
+    { name: 'Team Expense', icon: <GroupsIcon size={20} />, link: '/teamexpense' },
     { name: 'Settings', icon: <SettingsIcon size={20} />, link: '/setting' },
     { name: 'Help', icon: <HelpIcon size={20} />, link: '/help' }
   ];
