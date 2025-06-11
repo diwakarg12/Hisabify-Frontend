@@ -1,8 +1,8 @@
 
 //#region imports
 import { RadioButtonCheckedOutlined, RadioButtonUncheckedOutlined } from '@mui/icons-material';
-import { Backdrop, Box, Button, Checkbox, FormControlLabel, InputLabel, Modal, Radio, RadioGroup, TextField, Typography } from '@mui/material';
-import React from 'react';
+import { Backdrop, Box, Button, Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Modal, Radio, RadioGroup, Select, TextField, Typography } from '@mui/material';
+import React, { useState } from 'react';
 import upload_files from '../../../assets/upload_files.jpg'
 import { red } from '@mui/material/colors';
 //#endregion
@@ -13,7 +13,8 @@ import { red } from '@mui/material/colors';
 //#region Function Component
 const AddExpense = ({openAddExpense , setOpenAddExpense}) => {
   //#region Component states
- 
+ const [category ,setCategory] = useState('')
+ const [creation ,setCreation] = useState('')
 
   //#endregion
 
@@ -40,6 +41,15 @@ const AddExpense = ({openAddExpense , setOpenAddExpense}) => {
   //#endregion
 
   //#region Component feature methods
+  const users = [
+    {
+      _id : 1,
+      firstName: 'Harsh',
+      lastName: 'Raj',
+      email: 'harsh@Gmail.com',
+
+    }
+  ]
   //#endregion
 
   //#region Component JSX.members
@@ -47,6 +57,14 @@ const AddExpense = ({openAddExpense , setOpenAddExpense}) => {
     setOpenAddExpense(false);
   }
   
+  const handleCategoryChange = (event) => {
+    setCategory(event.target.value);
+  };
+
+  const handleChange = (event) => {
+    setCreation(event.target.value);
+    console.log('addinf for ' , creation)
+  };
   
 
   //#endregion
@@ -84,17 +102,49 @@ const AddExpense = ({openAddExpense , setOpenAddExpense}) => {
                 <TextField label="Amount" type='number' fullWidth sx={{ mt: 2 }} />
                 <TextField label="Date" type="date" fullWidth sx={{ mt: 2 }} InputLabelProps={{ shrink: true }} />  
             </Box>
-            <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle1">Category</Typography>
-            <RadioGroup 
-                row
-                // value={value}
-                >
-            {["shopping", "Food & Dining", "Groceries", "Restaurants", "Education", "Travel", "Entertainment", "Health & Wellness", "Gifts & Donations", "Miscellaneous"].map((category) => (
-                 <FormControlLabel value={category} control={<Radio/>} label={category} />
+            <Box sx={{ mt: 2 , display:'flex' , gap: 2 }}>
+
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Category</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={category}
+                label="Category"
+                onChange={handleCategoryChange}
+              >
+                 {["shopping", "Food & Dining", "Groceries", "Restaurants", "Education", "Travel", "Entertainment", "Health & Wellness", "Gifts & Donations", "Miscellaneous"].map((category) => (
+                 <MenuItem value={category}>{ category }</MenuItem>
                  
             ))}
-            </RadioGroup>
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Adding For</InputLabel>
+              {users.map((user) => (
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={creation}
+                label="Category"
+                onChange={handleChange}
+              >
+                 
+                 <MenuItem value={user.email} sx={{display: 'flex', justifyContent:'center'}}>
+                    <Typography>
+                      {user.firstName} {user.lastName} 
+                    </Typography>
+                    <Typography>
+                          {user.email}
+                    </Typography> 
+                  
+                </MenuItem>
+                  </Select>
+            ))}
+              
+            </FormControl>
+
             </Box>
            
             <Box sx={{ mt: 2 , display: 'flex', gap: 2}}>
