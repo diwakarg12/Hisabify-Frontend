@@ -8,6 +8,7 @@ import TeamTracker from '../../Common/TeamTracker/TeamTracker';
 import PersonalTracker from '../../Common/PersonalTracker/PersonalTracker';
 import AddTeam from '../../Common/AddTeam/AddTeam'
 import AddExpense from '../../Common/AddExpense/AddExpense';
+import Invite from '../../Common/Invite/Invite';
 
 
 //#endregion
@@ -20,6 +21,7 @@ const Dashboard = () => {
   //#region Component states
   const [createTeam, setCreateTeam] = useState(false)
   const [openAddExpense, setOpenAddExpense] = useState(false);
+  const [openInvite , setOpenInvite] = useState(false );
   //#endregion
 
   //#region Component hooks
@@ -39,6 +41,10 @@ const Dashboard = () => {
   //#endregion
 
   //#region Component validation methods
+  const handleInviteButtonClick = (e) => {
+    e.stopPropagation();
+    setOpenInvite(true)
+  }
   //#endregion
 
   //#region Component Api methods
@@ -116,7 +122,7 @@ const Dashboard = () => {
           }}
         >
           <PersonalTracker setOpenAddExpense={setOpenAddExpense}/>
-          <TeamTracker teamDetails={teamDetails} setCreateTeam={setCreateTeam} />
+          <TeamTracker teamDetails={teamDetails} setCreateTeam={setCreateTeam} openInvite={openInvite} setOpenInvite={handleInviteButtonClick} handleClose={() => setOpenInvite(false)} />
         </Box>
       </Box>
 
@@ -127,7 +133,9 @@ const Dashboard = () => {
     {openAddExpense && (
         <AddExpense openAddExpense={openAddExpense} setOpenAddExpense={setOpenAddExpense}/>
     )}
- 
+  {openInvite && (
+    <Invite openInvite={openInvite} handleClose={() => setOpenInvite(false)}/>
+  )}
  </Box>
   );
   //#endregion
