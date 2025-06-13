@@ -8,6 +8,8 @@ import ProfilePage from '../Component/Pages/ProfilePage/ProfilePage';
 import Test from '../Component/Test'
 import Dashboard from '../Component/Pages/Dashboard/Dashboard';
 import ExpenseListPage from '../Component/Pages/ExpenseListPage/ExpenseListPage';
+import TeamList from '../Component/Pages/ExpenseListPage/TeamList';
+import MyExpense from '../Component/Pages/ExpenseListPage/MyExpense';
 
 
 //#endregion
@@ -64,8 +66,12 @@ const RoutesConfig = () => {
         element : <LandingPage> <ExpenseListPage /> </LandingPage>
     },
      {
-        path : "/teamexpense",
-        element : <LandingPage> <ExpenseListPage /> </LandingPage>
+        path : "/teamlist",
+        element : <LandingPage> <TeamList /> </LandingPage>
+    },
+    {
+        path : "/myexpense",
+        element : <LandingPage> <MyExpense /> </LandingPage>
     },
     {
         path : "/setting",

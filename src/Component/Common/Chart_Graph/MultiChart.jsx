@@ -1,22 +1,14 @@
-/* eslint-disable no-unused-vars */
 
 //#region imports
+import { PieChart, pieArcLabelClasses } from '@mui/x-charts/PieChart';
 import React from 'react';
-import LandingPage from '../Component/Pages/LandingPage/LandingPage';
-import RequestTile from './Common/Request/RequestTile';
-import NotificationTile from './Common/Notification/NotificationTile';
-import { Gauge, gaugeClasses } from '@mui/x-charts'
-import { Dashboard, Height } from '@mui/icons-material';
-import TeamCart from './Common/TeamCart/TeamCart';
-import { Card } from '@mui/material';
-import AddExpense from './Common/AddExpense/AddExpense';
 //#endregion
 
 //#region Component make Styles
 //#endregion
 
 //#region Function Component
-const Test = () => {
+const MultiChart = ({data , outerRadius}) => {
   //#region Component states
   //#endregion
 
@@ -34,6 +26,12 @@ const Test = () => {
   //#endregion
 
   //#region Component use Styles
+  const sizing = {
+  margin: { right: 5 },
+  width: 200,
+  height: 200,
+  // hideLegend: true,
+};
   //#endregion
 
   //#region Component validation methods
@@ -43,27 +41,40 @@ const Test = () => {
   //#endregion
 
   //#region Component feature methods
+  const getArcLabel = (params) => {
+  const value = Number(params.value);
+  const percent = value / TOTAL;
+  return `${(percent * 100).toFixed(0)}%`;
+};
   //#endregion
 
   //#region Component JSX.members
+const TOTAL = data.map((item) => item.value).reduce((a, b) => a + b, 0);
   //#endregion
 
   //#region Component renders
   return(
-    <LandingPage navkey={"test"}>
-         <content>
-          <div> Page not Found </div>
-          {/* <Chart  name= 'A' value={300} totValue={1000} size={ 200 }/> */}
-         </content>
-         
-         <AddExpense />
-        
-    </LandingPage>
-  );
+  <PieChart
+      series={[
+        {
+          outerRadius: outerRadius,
+          data,
+          arcLabel: getArcLabel,
+        },
+      ]}
+      sx={{
+        [`& .${pieArcLabelClasses.root}`]: {
+          fill: 'white',
+          fontSize: 14,
+        },
+      }}
+      {...sizing}
+    />
+);
   //#endregion
 }
 //#endregion
 
 //#region Component export
-export default Test;
+export default MultiChart;
 //#endregion
