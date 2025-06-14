@@ -16,17 +16,7 @@ const expenseSlice = createSlice({
         },
         updateExpense: (state, action) => {
             state.expenses = state.expenses.map(expense => (
-                expense._id.toString() === action.payload._id.toString() ? (
-                    {
-                        ...expense,
-                        amount: action.payload.amount,
-                        description: action.payload.description,
-                        category: action.payload.category,
-                        createdFor: action.payload.createdFor,
-                        receiptImage: action.payload.receiptImage,
-                        date: action.payload.date
-                    }
-                ) : expense
+                expense._id.toString() === action.payload._id.toString() && action.payload
             ))
         },
         setExpenses: (state, action) => {
