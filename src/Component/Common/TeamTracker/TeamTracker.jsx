@@ -65,7 +65,7 @@ const TeamTracker = ({teamDetails, setCreateTeam , openInvite , setOpenInvite, h
                 Team Tracker
             </Typography>
 
-             <Link sx={{
+             <Link to={'/'} sx={{
                 display: 'flex',
                 textDecoration:'underline',
                 width: '90%',

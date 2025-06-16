@@ -88,7 +88,7 @@ const Dashboard = () => {
 
   //#region Component renders
   return(
-    <Box sx={{ position: 'relative' }}>
+    <Box sx={{ position: 'relative' , paddingBottom:'4rem' }}>
       
       {/* Dashboard Content */}
       <Box

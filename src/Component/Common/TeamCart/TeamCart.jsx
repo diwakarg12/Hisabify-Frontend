@@ -70,8 +70,7 @@ const TeamCart = ({teamDetails ,setOpenInvite }) => {
         <Box display="flex" alignItems="center" gap={1} mb={1}>
           <Typography variant="h6" fontWeight="bold">
             {teamName}
-          </Typography>
-          
+          </Typography>       
         </Box>
 
         <Typography variant="body2" mb={0.5}>
