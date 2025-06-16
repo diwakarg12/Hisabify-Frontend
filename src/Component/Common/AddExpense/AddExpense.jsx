@@ -1,8 +1,8 @@
 
 //#region imports
 import { RadioButtonCheckedOutlined, RadioButtonUncheckedOutlined } from '@mui/icons-material';
-import { Backdrop, Box, Button, Checkbox, FormControlLabel, InputLabel, Modal, Radio, RadioGroup, TextField, Typography } from '@mui/material';
-import React from 'react';
+import { Backdrop, Box, Button, Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Modal, Radio, RadioGroup, Select, TextField, Typography } from '@mui/material';
+import React, { useState } from 'react';
 import upload_files from '../../../assets/upload_files.jpg'
 import { red } from '@mui/material/colors';
 //#endregion
@@ -13,7 +13,9 @@ import { red } from '@mui/material/colors';
 //#region Function Component
 const AddExpense = ({openAddExpense , setOpenAddExpense}) => {
   //#region Component states
- 
+ const [category ,setCategory] = useState('')
+ const [creation ,setCreation] = useState('')
+ const [splitWith ,setsplitWith] = useState([])
 
   //#endregion
 
@@ -40,13 +42,61 @@ const AddExpense = ({openAddExpense , setOpenAddExpense}) => {
   //#endregion
 
   //#region Component feature methods
-  //#endregion
 
-  //#region Component JSX.members
   const handleAddClick = () => {
     setOpenAddExpense(false);
   }
   
+  const handleCategoryChange = (event) => {
+    setCategory(event.target.value);
+  };
+
+  const handleChange = (event) => {
+    setCreation(event.target.value);
+    console.log('addinf for ' , creation)
+  };
+  const handleSplitWithChange = (event) => {
+   const {
+    target : { value },
+   } = event;
+  
+    setsplitWith(
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
+  //#endregion
+
+  //#region Component JSX.members
+   const users = [
+    {
+      _id : 1,
+      firstName: 'Harsh',
+      lastName: 'Raj',
+      email: 'harsh@Gmail.com',
+
+    },
+    {
+      _id : 2,
+      firstName: 'Rahul',
+      lastName: 'Raj',
+      email: 'rahul@Gmail.com',
+
+    },
+    {
+      _id : 3,
+      firstName: 'Sumit',
+      lastName: 'Raj',
+      email: 'Sumith@Gmail.com',
+
+    },
+    {
+      _id : 4,
+      firstName: 'Rohit',
+      lastName: 'Raj',
+      email: 'Rohit@Gmail.com',
+
+    },
+  ]
   
 
   //#endregion
@@ -75,7 +125,14 @@ const AddExpense = ({openAddExpense , setOpenAddExpense}) => {
              }}
          >
             <Typography variant="h6" component="h2">
-                 Add Expense
+              <Box component="span" sx={{ 
+                  textDecoration: 'underline', 
+                  textDecorationColor: '#F24E1E', 
+                  textUnderlineOffset: '4px'
+              }}>
+                Add Expen
+              </Box>
+                 se
             </Typography>
             <Button onClick={() => setOpenAddExpense(false)} sx={{ position: 'absolute', top: 8, right: 8 , textDecoration: 'underline'}}>
                  Go Back
@@ -84,17 +141,69 @@ const AddExpense = ({openAddExpense , setOpenAddExpense}) => {
                 <TextField label="Amount" type='number' fullWidth sx={{ mt: 2 }} />
                 <TextField label="Date" type="date" fullWidth sx={{ mt: 2 }} InputLabelProps={{ shrink: true }} />  
             </Box>
-            <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle1">Category</Typography>
-            <RadioGroup 
-                row
-                // value={value}
-                >
-            {["shopping", "Food & Dining", "Groceries", "Restaurants", "Education", "Travel", "Entertainment", "Health & Wellness", "Gifts & Donations", "Miscellaneous"].map((category) => (
-                 <FormControlLabel value={category} control={<Radio/>} label={category} />
+            <Box sx={{ mt: 2 , display:'flex' , gap: 2 }}>
+
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Category</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={category}
+                label="Category"
+                onChange={handleCategoryChange}
+              >
+                 {["shopping", "Food & Dining", "Groceries", "Restaurants", "Education", "Travel", "Entertainment", "Health & Wellness", "Gifts & Donations", "Miscellaneous"].map((category) => (
+                 <MenuItem value={category}>{ category }</MenuItem>
                  
             ))}
-            </RadioGroup>
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Adding For</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={creation}
+                label="Category"
+                onChange={handleChange}
+                sx={{display: 'flex',justifyContent:'space-between'}}
+              >
+                 {users.map((user) => (
+                  <MenuItem value={user.email} sx={{display: 'flex',justifyContent:'space-between' }}>
+  
+                     <Box component={'span'}>
+                      {user.firstName} {user.lastName} 
+                    </Box>
+                   </MenuItem>
+                   ))}
+              </Select>
+            
+              
+            </FormControl>
+
+             <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Split With</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                multiple
+                value={splitWith}
+                label="Split With"
+                onChange={handleSplitWithChange}
+                sx={{display: 'flex',justifyContent:'space-between'}}
+              >
+                 {users.map((user) => (
+                  <MenuItem value={user.email} sx={{display: 'flex',justifyContent:'space-between' }}>
+  
+                     <Box component={'span'}>
+                      {user.firstName} {user.lastName} 
+                    </Box>
+                   </MenuItem>
+                   ))}
+              </Select>
+              
+            </FormControl>
             </Box>
            
             <Box sx={{ mt: 2 , display: 'flex', gap: 2}}>
