@@ -15,6 +15,7 @@ const AddExpense = ({openAddExpense , setOpenAddExpense}) => {
   //#region Component states
  const [category ,setCategory] = useState('')
  const [creation ,setCreation] = useState('')
+ const [splitWith ,setsplitWith] = useState([])
 
   //#endregion
 
@@ -41,18 +42,7 @@ const AddExpense = ({openAddExpense , setOpenAddExpense}) => {
   //#endregion
 
   //#region Component feature methods
-  const users = [
-    {
-      _id : 1,
-      firstName: 'Harsh',
-      lastName: 'Raj',
-      email: 'harsh@Gmail.com',
 
-    }
-  ]
-  //#endregion
-
-  //#region Component JSX.members
   const handleAddClick = () => {
     setOpenAddExpense(false);
   }
@@ -65,6 +55,48 @@ const AddExpense = ({openAddExpense , setOpenAddExpense}) => {
     setCreation(event.target.value);
     console.log('addinf for ' , creation)
   };
+  const handleSplitWithChange = (event) => {
+   const {
+    target : { value },
+   } = event;
+  
+    setsplitWith(
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
+  //#endregion
+
+  //#region Component JSX.members
+   const users = [
+    {
+      _id : 1,
+      firstName: 'Harsh',
+      lastName: 'Raj',
+      email: 'harsh@Gmail.com',
+
+    },
+    {
+      _id : 2,
+      firstName: 'Rahul',
+      lastName: 'Raj',
+      email: 'rahul@Gmail.com',
+
+    },
+    {
+      _id : 3,
+      firstName: 'Sumit',
+      lastName: 'Raj',
+      email: 'Sumith@Gmail.com',
+
+    },
+    {
+      _id : 4,
+      firstName: 'Rohit',
+      lastName: 'Raj',
+      email: 'Rohit@Gmail.com',
+
+    },
+  ]
   
 
   //#endregion
@@ -93,7 +125,14 @@ const AddExpense = ({openAddExpense , setOpenAddExpense}) => {
              }}
          >
             <Typography variant="h6" component="h2">
-                 Add Expense
+              <Box component="span" sx={{ 
+                  textDecoration: 'underline', 
+                  textDecorationColor: '#F24E1E', 
+                  textUnderlineOffset: '4px'
+              }}>
+                Add Expen
+              </Box>
+                 se
             </Typography>
             <Button onClick={() => setOpenAddExpense(false)} sx={{ position: 'absolute', top: 8, right: 8 , textDecoration: 'underline'}}>
                  Go Back
@@ -122,29 +161,49 @@ const AddExpense = ({openAddExpense , setOpenAddExpense}) => {
 
             <FormControl fullWidth>
               <InputLabel id="demo-simple-select-label">Adding For</InputLabel>
-              {users.map((user) => (
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 value={creation}
                 label="Category"
                 onChange={handleChange}
+                sx={{display: 'flex',justifyContent:'space-between'}}
               >
-                 
-                 <MenuItem value={user.email} sx={{display: 'flex', justifyContent:'center'}}>
-                    <Typography>
+                 {users.map((user) => (
+                  <MenuItem value={user.email} sx={{display: 'flex',justifyContent:'space-between' }}>
+  
+                     <Box component={'span'}>
                       {user.firstName} {user.lastName} 
-                    </Typography>
-                    <Typography>
-                          {user.email}
-                    </Typography> 
-                  
-                </MenuItem>
-                  </Select>
-            ))}
+                    </Box>
+                   </MenuItem>
+                   ))}
+              </Select>
+            
               
             </FormControl>
 
+             <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Split With</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                multiple
+                value={splitWith}
+                label="Split With"
+                onChange={handleSplitWithChange}
+                sx={{display: 'flex',justifyContent:'space-between'}}
+              >
+                 {users.map((user) => (
+                  <MenuItem value={user.email} sx={{display: 'flex',justifyContent:'space-between' }}>
+  
+                     <Box component={'span'}>
+                      {user.firstName} {user.lastName} 
+                    </Box>
+                   </MenuItem>
+                   ))}
+              </Select>
+              
+            </FormControl>
             </Box>
            
             <Box sx={{ mt: 2 , display: 'flex', gap: 2}}>
