@@ -45,7 +45,7 @@ const MyExpense = () => {
   //#endregion
 
   //#region Component JSX.members
-  const teamDetails = 
+const teamDetails = 
     {
         teamName: 'My Personal Expense',
         totAmount: 1000,

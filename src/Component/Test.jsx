@@ -1,15 +1,10 @@
-/* eslint-disable no-unused-vars */
-
 //#region imports
 import React from 'react';
 import LandingPage from '../Component/Pages/LandingPage/LandingPage';
-import RequestTile from './Common/Request/RequestTile';
-import NotificationTile from './Common/Notification/NotificationTile';
-import { Gauge, gaugeClasses } from '@mui/x-charts'
-import { Dashboard, Height } from '@mui/icons-material';
-import TeamCart from './Common/TeamCart/TeamCart';
-import { Card } from '@mui/material';
+import { Button, Box, Card } from '@mui/material';
 import AddExpense from './Common/AddExpense/AddExpense';
+import { useSelector , useDispatch } from 'react-redux';
+import { increment , decrement } from '../redux/counterSlice'; // Update the path as needed
 //#endregion
 
 //#region Component make Styles
@@ -18,6 +13,7 @@ import AddExpense from './Common/AddExpense/AddExpense';
 //#region Function Component
 const Test = () => {
   //#region Component states
+  const dispatch = useDispatch();
   //#endregion
 
   //#region Component hooks
@@ -37,6 +33,7 @@ const Test = () => {
   //#endregion
 
   //#region Component validation methods
+  const counter = useSelector((state) => state.count.counter);
   //#endregion
 
   //#region Component Api methods
@@ -52,12 +49,18 @@ const Test = () => {
   return(
     <LandingPage navkey={"test"}>
          <content>
-          <div> Page not Found </div>
-          {/* <Chart  name= 'A' value={300} totValue={1000} size={ 200 }/> */}
+          <div> Page not Found {counter} </div>
          </content>
          
-         <AddExpense />
-        
+         
+          <Box>
+            <Button variant="contained" color="primary" onClick={ () => dispatch(increment(1))}>
+              ++ 
+            </Button>
+            <Button variant="contained" color="secondary" onClick={ () => dispatch(decrement(1))}>
+              --
+            </Button>
+          </Box>
     </LandingPage>
   );
   //#endregion
@@ -67,3 +70,4 @@ const Test = () => {
 //#region Component export
 export default Test;
 //#endregion
+
