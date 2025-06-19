@@ -25,6 +25,10 @@ import {
  import loginImage from '../../../assets/Login/login.svg';
  import { FaGithub, FaApple  } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { login } from '../../../redux/authSlice';
+import { toast } from 'react-toastify';
+
 
 
  
@@ -36,6 +40,12 @@ import { useNavigate } from 'react-router-dom';
 //#region Function Component
 const Login = ({isLogin , setIsLogin}) => {
   //#region Component states
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [user , setUser] = React.useState({
+    email: '',
+    password: '',
+  });
   //#endregion
 
   //#region Component hooks
@@ -55,13 +65,35 @@ const Login = ({isLogin , setIsLogin}) => {
   //#endregion
 
   //#region Component validation methods
+  const handleFormChange = (e) =>{
+    const {name, value} = e.target;
+ 
+    setUser((prev)=>({
+        ...prev,
+        [name]: value
+    }));
+  };
   //#endregion
 
   //#region Component Api methods
+  const handleLoginClick = async () => {
+    const response = await dispatch(login(user)).unwrap();
+    console.log('Login Response', response);
+    if(!response.error){
+        toast.success(response.message, {
+            theme: 'dark'
+        })
+        navigate('/profile');
+ 
+    }else{
+        toast.error(response.error, {
+            theme: 'dark'
+        })
+    }
+  }
   //#endregion
 
   //#region Component feature methods
-  const navigate = useNavigate()
   //#endregion
 
   //#region Component JSX.members
@@ -96,6 +128,9 @@ const Login = ({isLogin , setIsLogin}) => {
              fullWidth
              placeholder="Enter Phone/Email"
              variant="outlined"
+             name="email"
+             value={user.email}
+             onChange={handleFormChange}
              InputProps={{
              startAdornment: (
                 <InputAdornment position="start">
@@ -109,6 +144,9 @@ const Login = ({isLogin , setIsLogin}) => {
              fullWidth
              placeholder="Enter Password"
              variant="outlined"
+             name='password'
+             value={user.password}
+             onChange={handleFormChange}
              InputProps={{
              startAdornment: (
                 <InputAdornment position="start">
@@ -135,7 +173,7 @@ const Login = ({isLogin , setIsLogin}) => {
                 bgcolor: '#ff7171',
                 '&:hover': { bgcolor: '#ff5252' },
               }}
-              onClick={()=> navigate('/dashboard')}
+              onClick={handleLoginClick}
             >
               Login
             </Button>

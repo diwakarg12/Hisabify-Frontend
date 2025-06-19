@@ -30,12 +30,17 @@ import {
     CalendarToday,
  } from '@mui/icons-material';
  import signupImage from '../../../assets/Login/signup.svg';
-  import { FaGithub, FaApple  } from "react-icons/fa";
-  import { Google, Facebook, Twitter } from '@mui/icons-material';
- import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+ import { FaGithub, FaApple  } from "react-icons/fa";
+ import { Google, Facebook, Twitter } from '@mui/icons-material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+
+import { useDispatch } from 'react-redux';
+import { register } from '../../../redux/authSlice';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+
  
 
  
@@ -48,6 +53,18 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 //#region Function Component
 const Signup = ({isLogin , setIsLogin}) => {
   //#region Component states
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [user, setUser] = React.useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    gender: '',
+    dob: null,
+    password: ''
+  })
   //#endregion
 
   //#region Component hooks
@@ -67,12 +84,41 @@ const Signup = ({isLogin , setIsLogin}) => {
   //#endregion
 
   //#region Component validation methods
+  const handleSignupFormChange = (e) =>{
+    const {name, value} = e.target;
+ 
+    setUser((prev)=>({
+      ...prev,
+      [name]: value
+    }))
+  }
   //#endregion
 
   //#region Component Api methods
   //#endregion
 
   //#region Component feature methods
+  const handleRegisterClick = async() =>{
+    const formattedUser = {
+      ...user,
+
+    };
+    const response = await dispatch(register(formattedUser)).unwrap();
+    console.log('response', response)
+      if(!response.error){
+        toast.success(response.message,{
+          position: 'top-center',
+          theme: 'dark'
+        });
+        navigate('/profile');
+      }else{
+        toast.error(response.error,{
+          position: 'top-center',
+          theme: 'dark'
+        });
+
+      }
+  }
   //#endregion
 
   //#region Component JSX.members
@@ -124,6 +170,9 @@ const Signup = ({isLogin , setIsLogin}) => {
             <TextField
              fullWidth
              placeholder="Enter First Name"
+             name='firstName'
+             value={user.firstName}
+             onChange={handleSignupFormChange}
              variant="outlined"
              InputProps={{
              startAdornment: (
@@ -138,6 +187,9 @@ const Signup = ({isLogin , setIsLogin}) => {
              fullWidth
              placeholder="Enter Last Name"
              variant="outlined"
+             name='lastName'
+             value={user.lastName}
+             onChange={handleSignupFormChange}
              InputProps={{
              startAdornment: (
                 <InputAdornment position="start">
@@ -150,6 +202,9 @@ const Signup = ({isLogin , setIsLogin}) => {
              fullWidth
              placeholder="Enter Phone"
              variant="outlined"
+             name='phone'
+             value={user.phone}
+             onChange={handleSignupFormChange}
              InputProps={{
              startAdornment: (
                 <InputAdornment position="start">
@@ -163,6 +218,9 @@ const Signup = ({isLogin , setIsLogin}) => {
              fullWidth
              placeholder="Enter Email"
              variant="outlined"
+             name='email'
+             value={user.email}
+             onChange={handleSignupFormChange}
              InputProps={{
              startAdornment: (
                 <InputAdornment position="start">
@@ -175,6 +233,9 @@ const Signup = ({isLogin , setIsLogin}) => {
              <Box sx={{ minWidth: 120 }}>
                <FormControl sx={{width: '100%'}} >
                 <Select
+                  name='gender'
+                  value={user.gender}
+                  onChange={handleSignupFormChange}
                   displayEmpty
                   input={<OutlinedInput 
                   startAdornment={
@@ -212,6 +273,14 @@ const Signup = ({isLogin , setIsLogin}) => {
               <LocalizationProvider dateAdapter={AdapterDayjs} >
                 <DatePicker  sx={{width: '100%'}}
                 enableAccessibleFieldDOMStructure={false}
+                name='dob'
+                value={user.dob}
+                onChange={(newValue) => {
+                  setUser((prev) => ({
+                    ...prev,
+                    dob: newValue
+                  }));
+                }}
                   slots={{
                     textField: (props) =>(
                       <TextField
@@ -229,9 +298,11 @@ const Signup = ({isLogin , setIsLogin}) => {
             <TextField
              fullWidth
              placeholder="Enter Password"
-             
              variant="outlined"
              id="outlined-basic"
+             name='password'
+             value={user.password}
+             onChange={handleSignupFormChange}
              InputProps={{
              startAdornment: (
                 <InputAdornment position="start">
@@ -245,6 +316,9 @@ const Signup = ({isLogin , setIsLogin}) => {
              fullWidth
              placeholder="Enter confirm Password"
              variant="outlined"
+             name='confirmPassword'
+             value={confirmPassword}
+             onChange={(e) => setConfirmPassword(e.target.value)}
              InputProps={{
              startAdornment: (
                 <InputAdornment position="start">
@@ -265,6 +339,7 @@ const Signup = ({isLogin , setIsLogin}) => {
               <Button
               variant="contained"
               fullWidth
+              onClick={handleRegisterClick}
               sx={{
                 mb: 2,
                 py: 1,

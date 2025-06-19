@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { createAsyncThunk } from '@reduxjs/toolkit';
+// import { createAsyncThunk } from '@reduxjs/toolkit';
 
 const initialState = {
     expenses: [],
@@ -14,23 +14,23 @@ const expenseSlice = createSlice({
         builder
 
         //
-        addCase()
+        // addCase()
 
-        addExpense: (state, action) => {
+        // addExpense: (state, action) => {
 
-            state.expenses = [...state.expenses, action.payload]
-        },
-            removeExpense: (state, action) => {
-                state.expenses = state.expenses.filter(expense => expense._id !== action.payload)
-            },
-                updateExpense: (state, action) => {
-                    state.expenses = state.expenses.map(expense => (
-                        expense._id.toString() === action.payload._id.toString() && action.payload
-                    ))
-                },
-                    setExpenses: (state, action) => {
-                        state.expenses = action.payload;
-                    }
+        //     state.expenses = [...state.expenses, action.payload]
+        // },
+        //     removeExpense: (state, action) => {
+        //         state.expenses = state.expenses.filter(expense => expense._id !== action.payload)
+        //     },
+        //         updateExpense: (state, action) => {
+        //             state.expenses = state.expenses.map(expense => (
+        //                 expense._id.toString() === action.payload._id.toString() && action.payload
+        //             ))
+        //         },
+        //             setExpenses: (state, action) => {
+        //                 state.expenses = action.payload;
+        //             }
     },
 });
 
