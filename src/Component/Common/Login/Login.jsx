@@ -28,10 +28,6 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { login } from '../../../redux/authSlice';
 import { toast } from 'react-toastify';
-
-
-
- 
 //#endregion
 
 //#region Component make Styles
@@ -46,11 +42,36 @@ const Login = ({isLogin , setIsLogin}) => {
     email: '',
     password: '',
   });
+  const [rememberMe, setRememberMe] = React.useState(false);
   //#endregion
 
   //#region Component hooks
-   React.useEffect(() => {
+   React.useEffect(  () => {
       // Anything in here is fired on component mount.
+      async function checkSession() {
+        try {
+        const res = await fetch('http://localhost:3000/auth/check', {
+            method: 'GET',
+            credentials: 'include' 
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            if (data.authenticated) {
+                setUser(data.user);  
+                navigate('/dashboard');
+            } else {
+                navigate('/login');
+            }
+        } else {
+            navigate('/login');
+        }
+    } catch (err) {
+        console.error('Error during auth check:', err.message);
+        navigate('/login');
+    }
+    }
+        checkSession();
       return () => {
           // Anything in here is fired on component unmount.
       }
@@ -72,6 +93,7 @@ const Login = ({isLogin , setIsLogin}) => {
         ...prev,
         [name]: value
     }));
+
   };
   //#endregion
 
@@ -83,13 +105,19 @@ const Login = ({isLogin , setIsLogin}) => {
         toast.success(response.message, {
             theme: 'dark'
         })
-        navigate('/profile');
+        navigate('/dashboard');
  
     }else{
         toast.error(response.error, {
             theme: 'dark'
         })
     }
+
+    // if(rememberMe){
+    //     sessionStorage.setItem('user', JSON.stringify(response.user));
+    // }
+   
+    
   }
   //#endregion
 
@@ -161,6 +189,8 @@ const Login = ({isLogin , setIsLogin}) => {
                 control={<Checkbox />}
                 label= "Remember Me"
                 sx={{ mb: 2 }}
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
             />
 
            <Box>
