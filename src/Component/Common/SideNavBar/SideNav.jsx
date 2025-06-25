@@ -6,7 +6,10 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import SettingsIcon from '@mui/icons-material/Settings';
 import HelpIcon from '@mui/icons-material/Help';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout, checkAuth } from '../../../redux/authSlice';
+import { toast } from 'react-toastify';
 //#endregion
 
 //#region Component objects
@@ -23,6 +26,9 @@ import { Link, useLocation } from 'react-router-dom';
 //#region Function Component
 const SideNav = () => {
   //#region Component states
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const {isAuthenticated } = useSelector((state) => state.auth);
   const location = useLocation();
   const [isExpanded, setIsExpanded] = React.useState(false);
   //#endregion
@@ -30,10 +36,11 @@ const SideNav = () => {
   //#region Component hooks
    React.useEffect(() => {
       // Anything in here is fired on component mount.
+      dispatch(checkAuth());
       return () => {
           // Anything in here is fired on component unmount.
       }
-    }, [])
+    }, [dispatch])
 
    React.useEffect(() => {
       // Anything in here is fired on component update.
@@ -47,6 +54,13 @@ const SideNav = () => {
   //#endregion
 
   //#region Component Api methods
+  const handleLogoutClick = async() =>{
+    const response = await dispatch(logout()).unwrap();
+    navigate('/login');
+    console.log(response);
+    toast.success(response.message, {theme: 'dark'});
+    sessionStorage.removeItem('user');
+  }
   //#endregion
 
   //#region Component feature methods
@@ -96,9 +110,10 @@ const SideNav = () => {
       </div>
 
       {/* Logout Section */}
+      { isAuthenticated  &&
       <div className="mt-auto mb-6">
         <div className="border-t border-red-300 my-2 mx-2"></div>
-        <div className="flex items-center px-3 py-3 mx-2 rounded cursor-pointer group hover:bg-white hover:bg-opacity-20">
+        <div onClick={handleLogoutClick} className="flex items-center px-3 py-3 mx-2 rounded cursor-pointer group hover:bg-white hover:bg-opacity-20">
           <div className="text-white flex justify-center items-center group-hover:text-red-400">
             <LogoutIcon size={20} />
           </div>
@@ -108,7 +123,9 @@ const SideNav = () => {
             Logout
           </span>
         </div>
-      </div>
+      </div> 
+      }
+      
       
 
    </div>
