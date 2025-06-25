@@ -7,8 +7,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import HelpIcon from '@mui/icons-material/Help';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { logout } from '../../../redux/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout, checkAuth } from '../../../redux/authSlice';
 import { toast } from 'react-toastify';
 //#endregion
 
@@ -28,6 +28,7 @@ const SideNav = () => {
   //#region Component states
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const {isAuthenticated } = useSelector((state) => state.auth);
   const location = useLocation();
   const [isExpanded, setIsExpanded] = React.useState(false);
   //#endregion
@@ -35,10 +36,11 @@ const SideNav = () => {
   //#region Component hooks
    React.useEffect(() => {
       // Anything in here is fired on component mount.
+      dispatch(checkAuth());
       return () => {
           // Anything in here is fired on component unmount.
       }
-    }, [])
+    }, [dispatch])
 
    React.useEffect(() => {
       // Anything in here is fired on component update.
@@ -108,6 +110,7 @@ const SideNav = () => {
       </div>
 
       {/* Logout Section */}
+      { isAuthenticated  &&
       <div className="mt-auto mb-6">
         <div className="border-t border-red-300 my-2 mx-2"></div>
         <div onClick={handleLogoutClick} className="flex items-center px-3 py-3 mx-2 rounded cursor-pointer group hover:bg-white hover:bg-opacity-20">
@@ -120,7 +123,9 @@ const SideNav = () => {
             Logout
           </span>
         </div>
-      </div>
+      </div> 
+      }
+      
       
 
    </div>

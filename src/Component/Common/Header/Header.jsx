@@ -12,7 +12,10 @@ import ProfileImg from '../../../assets/profile.jpg'
 import RequestDailog from '../Request/RequestDailog';
 import NotificationDialog from '../Notification/NotificationDialog';
 import CalenderDialog from '../Calender/calenderDialog';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { checkAuth } from '../../../redux/authSlice';
+import { Button } from '@mui/material';
 //#endregion
 
 //#region Component make Styles
@@ -26,12 +29,16 @@ const Header = () => {
   const [openDialog, setOpenDialog] = React.useState(false);
   const [openNotfication, setOpenNotification] = React.useState(false)
   const [openCalender , setOpenCalender] = React.useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const {isAuthenticated } = useSelector((state) => state.auth);
 
   //#endregion
 
   //#region Component hooks
    React.useEffect(() => {
       // Anything in here is fired on component mount.
+      dispatch(checkAuth());
       return () => {
           // Anything in here is fired on component unmount.
       }
@@ -82,6 +89,10 @@ const Header = () => {
     setOpenCalender(false);
   };
 
+  const handleLoginClick = () => {
+    navigate('/login');
+  }
+
   const open = Boolean(openNotfication);
   const id = open ? 'simple-popover' : undefined;
   //#endregion
@@ -125,6 +136,8 @@ const Header = () => {
           <div className='text-xs text-blue-400'>{formattedDate} </div>
      </div>
    
+    { isAuthenticated  ? 
+    
     <div className='flex space-x-2'>
       <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center'>
         <GroupAddOutlinedIcon className=' text-white' fontSize="medium" cursor="pointer" onClick = {() =>{
@@ -152,7 +165,25 @@ const Header = () => {
         }}
         />
       </Link>
-    </div>
+      </div>
+      :
+      <div>
+        <Button
+              variant="contained"
+              fullWidth
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                bgcolor: '#ff7171',
+                '&:hover': { bgcolor: '#ff5252' },
+              }}
+              onClick={handleLoginClick}
+            >
+              Login
+        </Button>
+      </div>
+
+      }
    
      
 </div>
