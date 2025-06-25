@@ -12,15 +12,16 @@ export const register = createAsyncThunk('create', async (user, { rejectWithValu
         const response = await fetch('http://localhost:3000/auth/signup', {
             method: 'POST',
             headers: {
-                "Content-type": "Application/json"
+                "Content-type": "application/json"
             },
-            body: JSON.stringify(user)
+            body: JSON.stringify(user),
+            credentials: 'include'
         });
         const result = await response.json();
         return result;
 
     } catch (error) {
-        rejectWithValue(error);
+        return rejectWithValue(error);
     }
 })
 
@@ -30,17 +31,17 @@ export const login = createAsyncThunk('login', async (user, { rejectWithValue })
             {
                 method: 'POST',
                 headers: {
-                    "Content-type": "Application/json"
+                    "Content-type": "application/json"
                 },
-                body: JSON.stringify(user)
-
+                body: JSON.stringify(user),
+                credentials: 'include'
             },
         );
         const result = await response.json();
         return result;
 
     } catch (error) {
-        rejectWithValue(error);
+        return rejectWithValue(error);
     }
 })
 
@@ -49,13 +50,14 @@ export const logout = createAsyncThunk('logout', async ({ rejectWithValue }) => 
         const response = await fetch('http://localhost:3000/auth/logout', {
             method: 'POST',
             headers: {
-                "Content-type": "Application/json"
+                "Content-type": "application/json"
             },
+            credentials: 'include'
         });
         const result = await response.json();
         return result
     } catch (error) {
-        rejectWithValue(error);
+        return rejectWithValue(error);
     }
 })
 

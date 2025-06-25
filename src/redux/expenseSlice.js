@@ -15,14 +15,14 @@ export const getGroupExpense = createAsyncThunk('getGroupExpense', async (groupI
         const response = await fetch(`http://localhost:3000/expense/getAllExpense/${groupId}`, {
             method: 'GET',
             headers: {
-                "Content-type": "Application/json",
+                "Content-type": "application/json",
             },
         });
         const result = await response.json();
         return result;
 
     } catch (error) {
-        rejectWithValue(error)
+        return rejectWithValue(error)
     }
 })
 
@@ -32,14 +32,14 @@ export const getPersonalExpense = createAsyncThunk('getPersonalExpense', async (
         const response = await fetch(`http://localhost:3000/expense/getAllExpense`, {
             method: 'GET',
             headers: {
-                "Content-type": "Application/json",
+                "Content-type": "application/json",
             },
         });
         const result = await response.json();
         return result;
 
     } catch (error) {
-        rejectWithValue(error)
+        return rejectWithValue(error)
     }
 })
 
@@ -49,7 +49,7 @@ export const addPersonalExpense = createAsyncThunk('addPersonalExpense', async (
         const response = await fetch(`http://localhost:3000/expense/add`, {
             method: 'POST',
             headers: {
-                "Content-type": "Application/json",
+                "Content-type": "application/json",
             },
             body: JSON.stringify(data),
         });
@@ -57,7 +57,7 @@ export const addPersonalExpense = createAsyncThunk('addPersonalExpense', async (
         return result;
 
     } catch (error) {
-        rejectWithValue(error);
+        return rejectWithValue(error);
     }
 });
 
@@ -67,7 +67,7 @@ export const addGroupExpense = createAsyncThunk('addGroupExpense', async ({ data
         const response = await fetch(`http://localhost:3000/expense/add/${groupId}`, {
             method: 'POST',
             headers: {
-                "Content-type": "Application/json",
+                "Content-type": "application/json",
             },
             body: JSON.stringify(data)
         });
@@ -75,7 +75,7 @@ export const addGroupExpense = createAsyncThunk('addGroupExpense', async ({ data
         return result;
 
     } catch (error) {
-        rejectWithValue(error)
+        return rejectWithValue(error)
     }
 });
 
@@ -85,7 +85,7 @@ export const editExpense = createAsyncThunk('editExpense', async ({ data, expens
         const response = await fetch(`http://localhost:3000/expense/edit/${expenseId}`, {
             method: 'PATCH',
             headers: {
-                "Content-type": "Application/json",
+                "Content-type": "application/json",
             },
             body: JSON.stringify(data)
         });
@@ -93,7 +93,7 @@ export const editExpense = createAsyncThunk('editExpense', async ({ data, expens
         return result;
 
     } catch (error) {
-        rejectWithValue(error)
+        return rejectWithValue(error)
     }
 });
 
@@ -103,14 +103,14 @@ export const deleteExpense = createAsyncThunk('deleteExpense', async (expenseId,
         const response = await fetch(`http://localhost:3000/expense/delete/${expenseId}`, {
             method: 'DELETE',
             headers: {
-                "Content-type": "Application/json",
+                "Content-type": "application/json",
             },
         });
         const result = await response.json();
         return result;
 
     } catch (error) {
-        rejectWithValue(error)
+        return rejectWithValue(error)
     }
 })
 

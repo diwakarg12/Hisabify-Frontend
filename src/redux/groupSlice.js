@@ -11,10 +11,10 @@ const initialState = {
 export const createGroup = createAsyncThunk('createGroup', async (data, { rejectWithValue }) => {
     try {
 
-        const response = await fetch('/api', {
+        const response = await fetch('http://localhost:3000/group/create', {
             method: 'POST',
             headers: {
-                "Content-type": "Application/json"
+                "Content-type": "application/json"
             },
             body: JSON.stringify(data)
         });
@@ -22,17 +22,17 @@ export const createGroup = createAsyncThunk('createGroup', async (data, { reject
         return result;
 
     } catch (error) {
-        rejectWithValue(error);
+        return rejectWithValue(error);
     }
 });
 
 export const updateGroup = createAsyncThunk('updateGroup', async ({ data, groupId }, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`/api/${groupId}`, {
+        const response = await fetch(`http://localhost:3000/group/update/${groupId}`, {
             method: 'PORT',
             headers: {
-                "Content-type": "Application/json"
+                "Content-type": "application/json"
             },
             body: JSON.stringify(data)
         });
@@ -40,17 +40,17 @@ export const updateGroup = createAsyncThunk('updateGroup', async ({ data, groupI
         return result;
 
     } catch (error) {
-        rejectWithValue(error)
+        return rejectWithValue(error)
     }
 });
 
 export const removeUser = createAsyncThunk('removeUser', async ({ groupId, userId }, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`/api/${groupId}/${userId}`, {
+        const response = await fetch(`http://localhost:3000/group/remove-user/${groupId}/${userId}`, {
             method: 'POST',
             headers: {
-                "Content-type": "Application/json"
+                "Content-type": "application/json"
             },
         });
 
@@ -58,34 +58,34 @@ export const removeUser = createAsyncThunk('removeUser', async ({ groupId, userI
         return result;
 
     } catch (error) {
-        rejectWithValue(error)
+        return rejectWithValue(error)
     }
 });
 
 export const deleteGroup = createAsyncThunk('deleteGroup', async (groupId, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`/api/${groupId}`, {
+        const response = await fetch(`http://localhost:3000/group/delete/${groupId}`, {
             method: 'POST',
             headers: {
-                "Content-type": "Application/json"
+                "Content-type": "application/json"
             },
         });
         const result = await response.json();
         return result;
 
     } catch (error) {
-        rejectWithValue(error)
+        return rejectWithValue(error)
     }
 });
 
 export const getAllGroup = createAsyncThunk('getAllGroup', async (_, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`/api`, {
+        const response = await fetch(`http://localhost:3000/group/view`, {
             method: 'GET',
             headers: {
-                "Content-type": "Application/json",
+                "Content-type": "application/json",
             },
         });
 
@@ -93,7 +93,7 @@ export const getAllGroup = createAsyncThunk('getAllGroup', async (_, { rejectWit
         return result;
 
     } catch (error) {
-        rejectWithValue(error);
+        return rejectWithValue(error);
     }
 })
 
