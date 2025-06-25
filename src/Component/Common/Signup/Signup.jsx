@@ -13,11 +13,9 @@ import {
   FormControlLabel,
   InputAdornment,
   TextField,
-  InputLabel,
   MenuItem,
   FormControl,
   Select,
-  Menu,
   OutlinedInput,
  
  } from '@mui/material';
@@ -27,7 +25,6 @@ import {
     Phone,
     Email,
     HttpsOutlined,
-    CalendarToday,
  } from '@mui/icons-material';
  import signupImage from '../../../assets/Login/signup.svg';
  import { FaGithub, FaApple  } from "react-icons/fa";
@@ -101,7 +98,6 @@ const Signup = ({isLogin , setIsLogin}) => {
   const handleRegisterClick = async() =>{
     const formattedUser = {
       ...user,
-
     };
     const response = await dispatch(register(formattedUser)).unwrap();
     console.log('response', response)

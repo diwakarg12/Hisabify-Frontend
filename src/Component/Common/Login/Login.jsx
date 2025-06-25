@@ -112,11 +112,6 @@ const Login = ({isLogin , setIsLogin}) => {
             theme: 'dark'
         })
     }
-
-    // if(rememberMe){
-    //     sessionStorage.setItem('user', JSON.stringify(response.user));
-    // }
-   
     
   }
   //#endregion

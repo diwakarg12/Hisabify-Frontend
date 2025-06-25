@@ -2,7 +2,8 @@
 //#region imports
 import React, { useRef, useState } from 'react';
 import { Box, Typography, TextField, Button, Stack, TextareaAutosize } from '@mui/material';
-import { Bolt, Groups } from '@mui/icons-material';
+import {  useSelector } from 'react-redux';
+
 //#endregion
 
 //#region Component make Styles
@@ -18,6 +19,10 @@ const AddTeam = ({onClose}) => {
      createdBy: '',
      description: ''
   })
+
+  // const dispatch = useDiapatch();
+  const user = useSelector(state => state.auth.user);
+  console.log('Created By: ', user)
   //#endregion
 
   //#region Component hooks
@@ -106,6 +111,8 @@ const AddTeam = ({onClose}) => {
         boxShadow: 3,
       }}
     >
+
+
       <Box 
       sx={{
         display: 'flex',
@@ -151,8 +158,8 @@ const AddTeam = ({onClose}) => {
         <TextField
           label="CreatedBy"
           name="createdBy"
-          value={teamDetails.createdBy}
-          onChange={handleTeamInputChange}
+          disabled
+          value={user.firstName + ' ' + user.lastName}
           variant="outlined"
           size="small"
           type="email"
