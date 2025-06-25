@@ -5,7 +5,7 @@ import { Box, Card, Typography, Link } from '@mui/material';
 import { red } from '@mui/material/colors';
 import React from 'react';
 // import { Link } from 'react-router-dom';
-import Chart from '../Chart/Chart';
+import Chart from '../Chart_Graph/Chart';
 import AddExpense from '../AddExpense/AddExpense';
 //#endregion
 

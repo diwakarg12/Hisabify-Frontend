@@ -19,7 +19,7 @@ import Signup from '../../Common/Signup/Signup';
 //#region Function Component
 const Loginsignup = () => {
   //#region Component states
-  const [isLogin, setIsLogin] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   //#endregion

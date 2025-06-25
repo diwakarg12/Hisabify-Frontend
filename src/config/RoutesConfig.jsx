@@ -8,6 +8,10 @@ import ProfilePage from '../Component/Pages/ProfilePage/ProfilePage';
 import Test from '../Component/Test'
 import Dashboard from '../Component/Pages/Dashboard/Dashboard';
 import ExpenseListPage from '../Component/Pages/ExpenseListPage/ExpenseListPage';
+import TeamList from '../Component/Pages/ExpenseListPage/TeamList';
+import MyExpense from '../Component/Pages/ExpenseListPage/MyExpense';
+import WithAuthRoutes  from '../helpers/withAuthRoutes';
+
 
 
 //#endregion
@@ -49,7 +53,11 @@ const RoutesConfig = () => {
   const routes = [
     {
         path : "/",
-        element : <Loginsignup />,
+        element :  <Test />,
+    },
+    {
+        path : "/login",
+        element :  sessionStorage.getItem("user") === "true" ? <Navigate to={"/dashboard"} /> : <Loginsignup />,
     },
     {
         path : "/profile",
@@ -57,23 +65,27 @@ const RoutesConfig = () => {
     },
     {
         path : "/dashboard",
-        element : <LandingPage> <Dashboard /> </LandingPage>
+        element : <WithAuthRoutes> <LandingPage> <Dashboard /> </LandingPage> </WithAuthRoutes>
     },
     {
         path : "/expenselist/:groupId?",
-        element : <LandingPage> <ExpenseListPage /> </LandingPage>
+        element : <WithAuthRoutes> <LandingPage> <ExpenseListPage /> </LandingPage> </WithAuthRoutes>
     },
      {
-        path : "/teamexpense",
-        element : <LandingPage> <ExpenseListPage /> </LandingPage>
+        path : "/teamlist",
+        element : <WithAuthRoutes> <LandingPage> <TeamList /> </LandingPage> </WithAuthRoutes>
+    },
+    {
+        path : "/myexpense",
+        element : <WithAuthRoutes> <LandingPage> <MyExpense /> </LandingPage> </WithAuthRoutes>
     },
     {
         path : "/setting",
-        element : <LandingPage> <ExpenseListPage /> </LandingPage>
+        element : <WithAuthRoutes> <LandingPage> <ExpenseListPage /> </LandingPage> </WithAuthRoutes>
     },
     {
         path : "/help",
-        element : <LandingPage> <ExpenseListPage /> </LandingPage>
+        element : <WithAuthRoutes> <LandingPage> <ExpenseListPage /> </LandingPage> </WithAuthRoutes>
     },
     {
         path : "*",

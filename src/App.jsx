@@ -8,8 +8,6 @@ function App() {
 
   return (
     <div className="flex flex-col bg-gray-300" >
-      {/* <Header />
-      <SideNav /> */}
       <RoutesConfig />
     </div>
   )
