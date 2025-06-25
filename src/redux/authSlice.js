@@ -13,7 +13,7 @@ export const register = createAsyncThunk('create', async (user, { rejectWithValu
         const response = await fetch('http://localhost:3000/auth/signup', {
             method: 'POST',
             headers: {
-                "Content-type": "Application/json"
+                "Content-type": "application/json"
             },
             body: JSON.stringify(user),
             credentials: 'include'
@@ -22,7 +22,7 @@ export const register = createAsyncThunk('create', async (user, { rejectWithValu
         return result;
 
     } catch (error) {
-        rejectWithValue(error);
+        return rejectWithValue(error);
     }
 })
 
@@ -32,7 +32,7 @@ export const login = createAsyncThunk('login', async (user, { rejectWithValue })
             {
                 method: 'POST',
                 headers: {
-                    "Content-type": "Application/json"
+                    "Content-type": "application/json"
                 },
                 body: JSON.stringify(user),
                 credentials: 'include'
@@ -41,37 +41,40 @@ export const login = createAsyncThunk('login', async (user, { rejectWithValue })
         const result = await response.json();
         return result;
 
-        
+
 
     } catch (error) {
-        rejectWithValue(error);
+        return rejectWithValue(error);
     }
 })
 
-export const logout = createAsyncThunk('logout', async (_,{ rejectWithValue }) => {
+export const logout = createAsyncThunk('logout', async (_, { rejectWithValue }) => {
     try {
         const response = await fetch('http://localhost:3000/auth/logout', {
             method: 'POST',
             headers: {
-                "Content-type": "Application/json"
+                "Content-type": "application/json"
             },
             credentials: 'include'
         });
         const result = await response.json();
         return result
     } catch (error) {
-        rejectWithValue(error);
+        return rejectWithValue(error);
     }
 })
 
 export const checkAuth = createAsyncThunk('checkAuth', async (_, { rejectWithValue }) => {
-      try {
+    try {
         const response = await fetch('http://localhost:3000/auth/check', {
             method: 'GET',
+            headers: {
+                "Content-type": "application/json"
+            },
             credentials: 'include'  // important to send cookies
         });
         const result = await response.json();
-        
+
         if (!response.ok) {
             return rejectWithValue(result);
         }
@@ -81,6 +84,81 @@ export const checkAuth = createAsyncThunk('checkAuth', async (_, { rejectWithVal
         return rejectWithValue(error.message || "Network error");
     }
 });
+
+export const updateProfile = ('updateProfile', async (data, { rejectWithValue }) => {
+    try {
+
+        const response = await fetch('http://localhost:3000/profile/update', {
+            method: 'PATCH',
+            headers: {
+                "Content-type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        return result;
+
+    } catch (error) {
+        return rejectWithValue(error);
+    }
+});
+
+export const updatePhone = createAsyncThunk('updatePhone', async (phone, { rejectWithValue }) => {
+    try {
+
+        const response = await fetch('http://localhost:3000/profile/update-phone', {
+            method: 'PATCH',
+            headers: {
+                "Content-type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify(phone)
+        });
+        const result = await response.json();
+        return result;
+
+    } catch (error) {
+        return rejectWithValue(error);
+    }
+});
+
+export const updateEmail = createAsyncThunk('updateEmail', async (email, { rejectWithValue }) => {
+    try {
+
+        const response = await fetch('http://localhost:3000/profile/update-email', {
+            method: 'PATCH',
+            headers: {
+                "Content-type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify(email)
+        });
+        const result = await response.json();
+        return result;
+
+    } catch (error) {
+        return rejectWithValue(error);
+    }
+});
+
+export const deleteProfile = createAsyncThunk('deleteProfile', async (_, { rejectWithValue }) => {
+    try {
+
+        const response = await fetch(`http://localhost:3000/profile/delete`, {
+            method: 'DELETE',
+            headers: {
+                "Content-type": "application/json"
+            },
+            credentials: 'include'
+        });
+        const result = await response.json();
+        return result;
+
+    } catch (error) {
+        return rejectWithValue(error);
+    }
+})
 
 
 const authSlice = createSlice({
@@ -94,7 +172,7 @@ const authSlice = createSlice({
             })
             .addCase(register.fulfilled, (state, action) => {
                 state.loading = false;
-                state.user = action.payload;
+                state.user = action.payload.user;
                 state.error = null;
                 state.isAuthenticated = true;
             })
@@ -109,7 +187,7 @@ const authSlice = createSlice({
             })
             .addCase(login.fulfilled, (state, action) => {
                 state.loading = false;
-                state.user = action.payload;
+                state.user = action.payload.user;
                 state.error = null;
                 state.isAuthenticated = true;
             })
@@ -124,7 +202,7 @@ const authSlice = createSlice({
             })
             .addCase(logout.fulfilled, (state, action) => {
                 state.loading = false;
-                state.user = action.payload;
+                state.user = action.payload.user;
                 state.error = null;
                 state.isAuthenticated = false;
             })
@@ -132,6 +210,7 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+
             //check auth 
             .addCase(checkAuth.pending, (state) => {
                 state.loading = true;
@@ -139,7 +218,7 @@ const authSlice = createSlice({
             .addCase(checkAuth.fulfilled, (state, action) => {
                 state.loading = false;
                 state.user = action.payload.user;
-                state.isAuthenticated = action.payload.authenticated;
+                state.isAuthenticated = true;
                 state.error = null;
             })
             .addCase(checkAuth.rejected, (state, action) => {
@@ -147,6 +226,62 @@ const authSlice = createSlice({
                 state.user = null;
                 state.error = action.payload;
                 state.isAuthenticated = false;
+            })
+
+            //update-profile
+            .addCase(updateProfile.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload.user;
+                state.error = null;
+            })
+            .addCase(updateProfile.rejected, (state, action) => {
+                state.loading = true;
+                state.error = action.payload;
+            })
+
+            //update-email
+            .addCase(updateEmail.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateEmail.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload.user;
+                state.error = null;
+            })
+            .addCase(updateEmail.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            //update-phone
+            .addCase(updatePhone.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updatePhone.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload.user;
+                state.error = null;
+            })
+            .addCase(updatePhone.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            //delete-profile
+            .addCase(deleteProfile.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(deleteProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload.user;
+                state.error = null;
+            })
+            .addCase(deleteProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             })
     }
 });
