@@ -85,7 +85,7 @@ export const checkAuth = createAsyncThunk('checkAuth', async (_, { rejectWithVal
     }
 });
 
-export const updateProfile = ('updateProfile', async (data, { rejectWithValue }) => {
+export const updateProfile = createAsyncThunk('updateProfile', async (data, { rejectWithValue }) => {
     try {
 
         const response = await fetch('http://localhost:3000/profile/update', {
@@ -132,7 +132,7 @@ export const updateEmail = createAsyncThunk('updateEmail', async (email, { rejec
                 "Content-type": "application/json"
             },
             credentials: 'include',
-            body: JSON.stringify(email)
+            body: JSON.stringify({email})
         });
         const result = await response.json();
         return result;
