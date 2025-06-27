@@ -3,13 +3,6 @@
 //#region imports
 import React from 'react';
 import LandingPage from '../Component/Pages/LandingPage/LandingPage';
-import RequestTile from './Common/Request/RequestTile';
-import NotificationTile from './Common/Notification/NotificationTile';
-import { Gauge, gaugeClasses } from '@mui/x-charts'
-import { Dashboard, Height } from '@mui/icons-material';
-import TeamCart from './Common/TeamCart/TeamCart';
-import { Card } from '@mui/material';
-import AddExpense from './Common/AddExpense/AddExpense';
 //#endregion
 
 //#region Component make Styles
@@ -51,13 +44,11 @@ const Test = () => {
   //#region Component renders
   return(
     <LandingPage navkey={"test"}>
-         <content>
-          <div> Page not Found </div>
-          {/* <Chart  name= 'A' value={300} totValue={1000} size={ 200 }/> */}
-         </content>
-         
-         <AddExpense />
-        
+      <div className='bg-white p-8 h-[90vh] flex items-center flex-col'>
+      <h1 className='font-bold text-4xl underline uppercase'>Welcome to Hisabify!!</h1>
+      <p className='my-8'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ea ipsa mollitia suscipit, voluptatem, ex fugiat distinctio cum reiciendis tenetur tempora voluptas! Deleniti tenetur nihil, eos dolores sint magnam vel quidem non recusandae, necessitatibus molestias, aliquam asperiores modi fugiat consequatur quas corporis veniam quis eum at molestiae! Minima reprehenderit porro exercitationem! Modi dolorum obcaecati aut illo error aliquid fuga, id maxime eveniet. Accusantium ullam commodi aspernatur aut deleniti quam quas culpa a dignissimos eveniet, magni alias nostrum iusto! Veniam architecto, temporibus tempore aliquam ut quo corporis? Laudantium voluptas, doloribus dolore aspernatur accusantium dicta recusandae illo quos est. Amet possimus ab nihil?</p>
+      </div>
+
     </LandingPage>
   );
   //#endregion

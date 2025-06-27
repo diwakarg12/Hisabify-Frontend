@@ -114,7 +114,7 @@ const Header = () => {
   //#region Component renders
   return(
   <div className='flex flex-row justify-between items-center bg-zinc-50 h-16 shadow-sm px-4'> 
-     <Link to={'/dashboard'} className='flex items-center space-x-2'>
+     <Link to={'/'} className='flex items-center space-x-2'>
         <div  className='w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center'>
           <img 
             src={Logo} 

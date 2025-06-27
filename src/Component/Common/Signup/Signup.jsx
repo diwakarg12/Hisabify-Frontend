@@ -278,7 +278,7 @@ const Signup = ({isLogin , setIsLogin}) => {
                 onChange={(newValue) => {
                   setUser((prev) => ({
                     ...prev,
-                    dob: newValue
+                    dob: newValue.toDate()
                   }));
                 }}
                   slots={{
