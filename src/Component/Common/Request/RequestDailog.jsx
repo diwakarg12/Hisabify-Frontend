@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 import RequestTile from './RequestTile';
 import CloseIcon from '@mui/icons-material/Close';
+import { useSelector } from 'react-redux';
 //#endregion
 
 //#region Component make Styles
@@ -17,6 +18,8 @@ import CloseIcon from '@mui/icons-material/Close';
 //#region Function Component
 const RequestDailog = ({open, onClose}) => {
   //#region Component states
+  const requests = useSelector(store=>store.request.receivedRequest)
+  console.log('requests', requests)
   //#endregion
   
   // #region Component hooks
@@ -58,7 +61,7 @@ const RequestDailog = ({open, onClose}) => {
         requester: 'Harsh',
         time: '2h'
     },
-     {
+     {                
         id: 5,
         teamName: 'Team B',
         requester: 'Harsh',
@@ -112,16 +115,18 @@ const RequestDailog = ({open, onClose}) => {
       </DialogTitle>
       <List sx={{ pt: 0 }} >
        
-        {Requests && Requests.length !== 0 ?
+        {requests && requests.length !== 0 ?
         Requests.map((request, index) => (
           (<ListItem disablePadding key={`${request.id}-${index}`} sx={{padding:'0.1rem 0.5rem'}}>
             <RequestTile teamName={request.teamName} time={request.time} requester={request.requester}/>
           </ListItem>)
         ))
         :
-        <Typography sx={{padding: '1rem 3rem', fontSize: 22}}>
-          No Request Found
+        <ListItem disablePadding sx={{padding:'0.1rem 0.5rem'}}>
+          <Typography sx={{padding: '1rem 3rem', fontSize: 22, backgroundColor: '#fff', borderRadius: 1 ,}}>
+            No Request Found
         </Typography>
+        </ListItem>
         }
       </List>
     </Dialog>);

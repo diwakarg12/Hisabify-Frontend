@@ -42,12 +42,9 @@ const RequestTile = ({time , requester , teamName}) => {
 
   //#region Component renders
   return(
-    <Box sx={{
-        // backgroundColor: '#FBDADA', 
+    <Box sx={{ 
         backgroundColor: '#fff', 
-
         borderRadius: 1 ,
-        
     }}>
         <Typography sx={{color:'black', padding:'1rem', paddingBottom:'0rem', fontSize:'16px' }}>
             Requesting You to add in {teamName}.
