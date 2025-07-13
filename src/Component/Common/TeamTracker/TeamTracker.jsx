@@ -12,7 +12,7 @@ import { Groups  } from '@mui/icons-material';
 //#endregion
 
 //#region Function Component
-const TeamTracker = ({teamDetails, setCreateTeam , openInvite , setOpenInvite, handleClose}) => {
+const TeamTracker = ({teamDetail, setCreateTeam , openInvite , setOpenInvite, handleClose}) => {
   //#region Component states
   
   //#endregion
@@ -87,9 +87,9 @@ const TeamTracker = ({teamDetails, setCreateTeam , openInvite , setOpenInvite, h
             </Link>
             
             <Box sx={{padding: 2}}>
-                {teamDetails.map((teamDetail)=>(
-                 <TeamCart
-                    teamDetails={teamDetail}
+                {Array.isArray(teamDetail.groups) &&teamDetail.groups.map((teamDetail , index)=>(
+                 <TeamCart key={index}
+                    teamDetail={teamDetail}
                     openInvite ={openInvite}
                     handleClose ={handleClose}
                     setOpenInvite ={setOpenInvite}

@@ -13,7 +13,7 @@ import AddExpense from '../AddExpense/AddExpense';
 //#endregion
 
 //#region Function Component
-const PersonalTracker = ({totTransaction ,category, totSpent, lastUpdated, setOpenAddExpense}) => {
+const PersonalTracker = ({totTransaction ,category, totSpent, lastUpdated, setOpenAddExpense, teamName}) => {
   //#region Component states
   
   //#endregion
@@ -38,14 +38,19 @@ const PersonalTracker = ({totTransaction ,category, totSpent, lastUpdated, setOp
   //#endregion
 
   //#region Component Api methods
+  
   //#endregion
 
   //#region Component feature methods
+   const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const currentMonth = monthNames[new Date().getMonth()]
   //#endregion
 
   //#region Component JSX.members
-  
-  
+     
   //#endregion
 
   //#region Component renders
@@ -98,7 +103,7 @@ const PersonalTracker = ({totTransaction ,category, totSpent, lastUpdated, setOp
 
                     }}>
                     </Box>
-                    May Personal Expense
+                    {currentMonth} Personal Expense
                 </Typography>
                 <Box sx={{
                     display: 'flex',
@@ -148,52 +153,40 @@ const PersonalTracker = ({totTransaction ,category, totSpent, lastUpdated, setOp
 
                     }}>
                     </Box>
-                    May Group Expense
+                    {currentMonth} Group Expense
                 </Typography>
                 <Box sx={{display: 'flex',
                     justifyContent:'space-evenly'
                 }}>
-                    <Box sx={{
-                    display: 'flex',
-                    flexDirection:'column',
-                    justifyContent: 'start',
-                    alignItems: 'center',
-                    
-                    paddingLeft: 2
-                }}>
-                    <Chart value = {800} totValue= {1000} name={'Team A'} size = {120} font={15} />
-                    <Typography fontSize={10}>
-                        Your Contribution : {} /-
-                    </Typography>
-                </Box>
 
-                <Box sx={{
-                    display: 'flex',
-                    flexDirection:'column',
-                    justifyContent: 'start',
-                    alignItems: 'center',
-                    
-                    paddingLeft: 2
-                }}>
-                    <Chart value = {200} totValue= {1000} name={'Team B'} size = {120} font={15} />
-                    <Typography fontSize={10}>
-                        Your Contribution : {} /-
-                    </Typography>
-                </Box>
 
-                <Box sx={{
+                
+               <Box sx={{
+                    display: 'flex',
+                    overflow: 'auto',
+                    '&::-webkit-scrollbar': {
+                        display: 'none',
+                    },
+               }}>
+                     {teamName && teamName.map((name, index)=> (
+                    <Box key={index}
+                    sx={{
                     display: 'flex',
                     flexDirection:'column',
                     justifyContent: 'start',
                     alignItems: 'center',
-                    
-                    paddingLeft: 2
-                }}>
-                    <Chart value = {600} totValue= {1000} name={'Team C'} size = {120} font={15} />
-                    <Typography fontSize={10}>
-                        Your Contribution : {} /-
-                    </Typography>
-                </Box>
+                    paddingLeft: 2.5,
+                    }}>
+                        <Chart value = {600} totValue= {1000} name={name} size = {130} font={15} />
+                        <Typography fontSize={10}>
+                            Your Contribution : {} /-
+                        </Typography>
+                    </Box>
+
+                ))}
+               </Box>
+                
+
                 </Box>
 
 

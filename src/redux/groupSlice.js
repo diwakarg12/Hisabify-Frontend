@@ -16,9 +16,13 @@ export const createGroup = createAsyncThunk('createGroup', async (data, { reject
             headers: {
                 "Content-type": "application/json"
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(data),
+            credentials: 'include'
         });
         const result = await response.json();
+         if (!response.ok) {
+            return rejectWithValue(result.message);
+        }
         return result;
 
     } catch (error) {
@@ -34,9 +38,13 @@ export const updateGroup = createAsyncThunk('updateGroup', async ({ data, groupI
             headers: {
                 "Content-type": "application/json"
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(data),
+            credentials: 'include'
         });
         const result = await response.json();
+        if (!response.ok) {
+            return rejectWithValue(result.message);
+        }
         return result;
 
     } catch (error) {
@@ -52,9 +60,13 @@ export const removeUser = createAsyncThunk('removeUser', async ({ groupId, userI
             headers: {
                 "Content-type": "application/json"
             },
+            credentials: 'include'
         });
 
         const result = await response.json();
+        if (!response.ok) {
+            return rejectWithValue(result.message);
+        }
         return result;
 
     } catch (error) {
@@ -70,8 +82,12 @@ export const deleteGroup = createAsyncThunk('deleteGroup', async (groupId, { rej
             headers: {
                 "Content-type": "application/json"
             },
+            credentials: 'include'
         });
         const result = await response.json();
+        if (!response.ok) {
+            return rejectWithValue(result.message);
+        }
         return result;
 
     } catch (error) {
@@ -87,9 +103,13 @@ export const getAllGroup = createAsyncThunk('getAllGroup', async (_, { rejectWit
             headers: {
                 "Content-type": "application/json",
             },
+            credentials: 'include'
         });
 
         const result = await response.json();
+        if (!response.ok) {
+            return rejectWithValue(result.message);
+        }
         return result;
 
     } catch (error) {
@@ -128,8 +148,8 @@ const groupSlice = createSlice({
                 state.loading = true;
             })
             .addCase(createGroup.fulfilled, (state, action) => {
-                state.loading = true;
-                state.groups.push(action.payload);
+                state.loading = false;
+                state.groups.push(action.payload.group);
                 state.error = null;
             })
             .addCase(createGroup.rejected, (state, action) => {

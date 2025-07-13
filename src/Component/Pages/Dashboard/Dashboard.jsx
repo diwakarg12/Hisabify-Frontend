@@ -10,7 +10,8 @@ import AddTeam from '../../Common/AddTeam/AddTeam'
 import AddExpense from '../../Common/AddExpense/AddExpense';
 import Invite from '../../Common/Invite/Invite';
 
-
+import { useSelector , useDispatch } from 'react-redux';
+import { getAllGroup } from '../../../redux/groupSlice'
 //#endregion
 
 //#region Component make Styles
@@ -22,6 +23,8 @@ const Dashboard = () => {
   const [createTeam, setCreateTeam] = useState(false)
   const [openAddExpense, setOpenAddExpense] = useState(false);
   const [openInvite , setOpenInvite] = useState(false );
+  const dispatch = useDispatch();
+  const user = useSelector(state => state.auth.user);
   //#endregion
 
   //#region Component hooks
@@ -34,7 +37,8 @@ const Dashboard = () => {
 
    React.useEffect(() => {
       // Anything in here is fired on component update.
-   });
+      dispatch(getAllGroup());
+   },[dispatch]);
   //#endregion
 
   //#region Component use Styles
@@ -48,42 +52,29 @@ const Dashboard = () => {
   //#endregion
 
   //#region Component Api methods
+  const teamDetails = useSelector(state => state.group.groups)
+  // const myExpenses = useSelector(state => state.expense.groupExpenses);
+  console.log("Team List ", teamDetails.groups);
+  console.log("Expense List ", teamDetails.groups);
+
   //#endregion
 
   //#region Component feature methods
-  const teamDetails =[
-    {
-        teamName: 'Team A',
-        totAmount: 1000,
-        topCategory: 'shoping',
-        yourContribution: 200,
-        lastTransaction: 400           
-    },
-    {
-        teamName: 'Team B',
-        totAmount: 1000,
-        topCategory: 'shoping',
-        yourContribution: 200,
-        lastTransaction: 400 
-    },
-     {
-        teamName: 'Team A',
-        totAmount: 1000,
-        topCategory: 'shoping',
-        yourContribution: 200,
-        lastTransaction: 400           
-    },
-    {
-        teamName: 'Team B',
-        totAmount: 1000,
-        topCategory: 'shoping',
-        yourContribution: 200,
-        lastTransaction: 400 
-    },
-  ]
+    const teamName = teamDetails?.groups?.map(team => team.groupName);
+
+    // const myGroupsWithExpense =   teamDetails.groups.map(team => {
+    //   const totalExpense = myExpenses.expense.filter(expense => expense.groupId === team._id)
+    //     .reduce((acc, curr) => acc + curr.amount, 0); 
+    //   return {
+    //     teamName: team.groupName,
+    //     mtTotalExpense: totalExpense
+    //   };
+    // });
+
   //#endregion
 
   //#region Component JSX.members
+
   //#endregion
 
   //#region Component renders
@@ -104,7 +95,7 @@ const Dashboard = () => {
         }}
       >
         <Typography sx={{ padding: 2, fontSize: 20 }}>
-          Welcome Back {'userName'}
+          Welcome Back {user?.firstName} {user?.lastName}!
           <WavingHandIcon sx={{ color: yellow[600], marginLeft: 2 }} />
           </Typography>
 
@@ -121,8 +112,8 @@ const Dashboard = () => {
             borderRadius: 2,
           }}
         >
-          <PersonalTracker setOpenAddExpense={setOpenAddExpense}/>
-          <TeamTracker teamDetails={teamDetails} setCreateTeam={setCreateTeam} openInvite={openInvite} setOpenInvite={handleInviteButtonClick} handleClose={() => setOpenInvite(false)} />
+          <PersonalTracker setOpenAddExpense={setOpenAddExpense} teamName={teamName}/>
+          <TeamTracker teamDetail={teamDetails} setCreateTeam={setCreateTeam} openInvite={openInvite} setOpenInvite={handleInviteButtonClick} handleClose={() => setOpenInvite(false)} />
         </Box>
       </Box>
 

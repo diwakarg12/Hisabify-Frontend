@@ -409,3 +409,20 @@ const Signup = ({isLogin , setIsLogin}) => {
 //#region Component export
 export default Signup;
 //#endregion
+
+
+
+
+
+
+
+
+
+
+
+
+<Box sx={{display: 'flex', flexDirection: 'row', gap: 2, position: 'relative'}}>
+          
+          
+          
+        </Box>

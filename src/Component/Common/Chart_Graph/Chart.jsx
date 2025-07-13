@@ -55,7 +55,7 @@ const Chart = ({value, totValue, name, size, font}) => {
     <Gauge 
         width={size} 
         height={size} 
-        text={name}
+        text={name.length > 8 ? name.slice(0, 8) + "..." : name}
         value={value} 
         valueMax={totValue} 
         innerRadius="70%"

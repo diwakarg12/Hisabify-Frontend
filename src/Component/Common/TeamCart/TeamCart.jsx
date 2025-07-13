@@ -13,8 +13,8 @@ import { Link, useNavigate } from 'react-router-dom';
 //#endregion
 
 //#region Function Component
-const TeamCart = ({teamDetails ,setOpenInvite }) => {
-    const {teamName ,totAmount ,topCategory ,yourContribution ,lastTransaction} = teamDetails
+const TeamCart = ({teamDetail ,setOpenInvite }) => {
+    const {groupName ,createdBy,totAmount ,topCategory ,yourContribution ,lastTransaction} = teamDetail
     const navigate = useNavigate();
   //#region Component states
   // const navigate = useNavigate()
@@ -69,7 +69,7 @@ const TeamCart = ({teamDetails ,setOpenInvite }) => {
       <CardContent>
         <Box display="flex" alignItems="center" gap={1} mb={1}>
           <Typography variant="h6" fontWeight="bold">
-            {teamName}
+            {groupName}
           </Typography>       
         </Box>
 
@@ -88,8 +88,12 @@ const TeamCart = ({teamDetails ,setOpenInvite }) => {
           <strong>Your Contribution :</strong> {yourContribution}
         </Typography>
 
-        <Typography variant="body2" mb={2}>
+        <Typography variant="body2" mb={0.5}>
           <strong>Last Transaction :</strong> {lastTransaction}
+        </Typography>
+
+        <Typography variant="body2" mb={2}>
+          <strong>Admin :</strong> {createdBy.firstName+''+createdBy.lastName}
         </Typography>
 
         <Box display="flex" alignItems="center" justifyContent="space-between">

@@ -2,8 +2,8 @@
 //#region imports
 import React, { useRef, useState } from 'react';
 import { Box, Typography, TextField, Button, Stack, TextareaAutosize } from '@mui/material';
-import {  useSelector } from 'react-redux';
-
+import {  useSelector , useDispatch } from 'react-redux';
+import { createGroup } from '../../../redux/groupSlice';
 //#endregion
 
 //#region Component make Styles
@@ -13,16 +13,24 @@ import {  useSelector } from 'react-redux';
 const AddTeam = ({onClose}) => {
   //#region Component states
   const contentRef = useRef(null);
-  const [groupMembers, setGroupMembers] = useState([{firstName:'Diwakar Giri'}, {firstName:'Harsh Raj'},]);
+  const [groupMembers, setGroupMembers] = useState([]);
+  const user = useSelector(state => state.auth.user);
+  const group = useSelector(store=>store.group);
+  console.log('Groups',group.groups);
+  console.log('Error',group.error);
+  console.log('Loading',group.loading);
   const [teamDetails, setTeamDetails] = useState({
      groupName: '',
-     createdBy: '',
+     createdBy: user._id,
      description: ''
   })
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const dispatch = useDispatch();
 
-  // const dispatch = useDiapatch();
-  const user = useSelector(state => state.auth.user);
-  console.log('Created By: ', user)
+  
+  // const createGroup = useSelector(state => state.group.createGroup);
   //#endregion
 
   //#region Component hooks
@@ -54,16 +62,27 @@ const AddTeam = ({onClose}) => {
   //#endregion
 
   //#region Component Api methods
+
   const handleUserSearch = async () => {
     try {
-      const response = await fetch('api');
+      console.log(searchQuery)
+      const response = await fetch(`http://localhost:3000/profile/user/${searchQuery}`,{
+        method: 'GET',
+        headers: {
+          "Content-type": "application/json"
+        },
+        credentials: 'include',
+      })
       const data = await response.json();
-      console.log('Data: ', data)
-      setGroupMembers(prevMembers => [...prevMembers, data])
+      
+      // setGroupMembers(prevMembers => [...prevMembers, data])
+      setSearchResults(data.users);
+      console.log('Search Results: ',searchResults)
     } catch (error) {
       console.log('Error: ', error)
     }
   }
+
   //#endregion
 
   //#region Component feature methods
@@ -79,13 +98,30 @@ const AddTeam = ({onClose}) => {
     }
   };
 
-  const handleCreateGroup = () => {
+  
+
+  const handleCreateGroup = async () => {
+    if (!teamDetails.groupName.trim() || !teamDetails.description.trim()) {
+    alert('Please fill in all required fields (Group Name and Description)');
+    return;
+  }
     const finalGroupDetails = {
       ...teamDetails,
-      member: teamDetails.createdBy
+      members: groupMembers.map(member => member._id),
     };
-    console.log('Group Created:', finalGroupDetails)
+    // console.log('Group Created:', finalGroupDetails)
+
+    
+  try {
+    await dispatch(createGroup(finalGroupDetails)).unwrap();
+    console.log('Group created successfully!');
+     
+  } catch (error) {
+    console.error('Error creating group:', error);
+  } finally {
+    onClose();
   }
+  };
   //#endregion
 
   //#region Component JSX.members
@@ -111,8 +147,6 @@ const AddTeam = ({onClose}) => {
         boxShadow: 3,
       }}
     >
-
-
       <Box 
       sx={{
         display: 'flex',
@@ -176,22 +210,75 @@ const AddTeam = ({onClose}) => {
             ))}
           </Stack>
         }
-        <Box sx={{display: 'flex', gap: 2}}>
-          <TextField 
-            label="Add members" 
-            size='small' 
-            variant='outlined' 
-            type='text' 
-            fullWidth 
-          />
-          <Button 
+        <Box sx={{display: 'flex',  width: '100%', alignItems: 'center', justifyContent: 'space-between'}}>
+          <Box sx={{width:'85%', display: 'flex', position: 'relative'}}>
+            <TextField 
+              label="Add members" 
+              size='small' 
+              variant='outlined' 
+              name='searchQuery'
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+              }}
+              type='text' 
+              fullWidth 
+              sx={{mt: 2}}
+            />
+            {searchResults.length > 0 && (
+              <Box  sx={{ 
+                background: '#fff', 
+                borderRadius: 1, 
+                boxShadow: 3, 
+                maxHeight: 200, 
+                overflowY: 'auto',
+                position: 'absolute',
+                top: '40px',
+                zIndex: 10,
+                width: '100%',
+                '&::-webkit-scrollbar': {
+                    display: 'none',
+                },
+                }}>
+                {searchResults.map((user , index) => (
+                  <Box 
+                    key={index}
+                    onClick={() =>{
+                      setSearchResults([]);
+                      setGroupMembers(prevMembers => [...prevMembers, user]);
+                      setSelectedUsers(prev=> [...prev, user._id]);
+                      console.log('Selected Users: ', selectedUsers);
+                    }}
+                    sx={{ 
+                      px: 2, 
+                      py: 1, 
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      borderBottom: '1px solid #ddd',
+                      cursor: 'pointer', 
+                      '&:hover': { background: '#f4f4f4' } 
+                    }}
+                  > 
+                  <Typography>
+                      {user.firstName} { user.lastName}
+                  </Typography>
+                  <Typography>{user.email} </Typography>
+                     
+                  </Box>
+                ))}
+              </Box>
+            )
+          }
+          </Box>
+        <Button 
             variant="contained" 
-            sx={{backgroundColor: '#F24E1E'}} 
+            sx={{backgroundColor: '#F24E1E' , mt: 2, }} 
+
             onClick={handleUserSearch}
           >
             Search
-          </Button>
-        </Box>
+        </Button>
+          </Box>
 
         <TextField
           label="Group Description"
