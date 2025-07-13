@@ -132,7 +132,7 @@ export const updateEmail = createAsyncThunk('updateEmail', async (email, { rejec
                 "Content-type": "application/json"
             },
             credentials: 'include',
-            body: JSON.stringify(email)
+            body: JSON.stringify({email})
         });
         const result = await response.json();
         return result;

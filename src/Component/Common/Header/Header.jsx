@@ -16,6 +16,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkAuth } from '../../../redux/authSlice';
 import { Button } from '@mui/material';
+import { getReceivedRequests } from '../../../redux/requestSlice';
 //#endregion
 
 //#region Component make Styles
@@ -66,6 +67,10 @@ const Header = () => {
   //#endregion
 
   //#region Component Api methods
+  const handleRequestDialog = async()=>{
+    setOpenDialog(!openDialog)
+    const response = await dispatch(getReceivedRequests()).unwrap();
+  }
   //#endregion
 
   //#region Component feature methods
@@ -114,7 +119,7 @@ const Header = () => {
   //#region Component renders
   return(
   <div className='flex flex-row justify-between items-center bg-zinc-50 h-16 shadow-sm px-4'> 
-     <Link to={'/dashboard'} className='flex items-center space-x-2'>
+     <Link to={'/'} className='flex items-center space-x-2'>
         <div  className='w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center'>
           <img 
             src={Logo} 
@@ -140,11 +145,8 @@ const Header = () => {
     
     <div className='flex space-x-2'>
       <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center'>
-        <GroupAddOutlinedIcon className=' text-white' fontSize="medium" cursor="pointer" onClick = {() =>{
-          console.log('Avatar cicked')
-          setOpenDialog(!openDialog)
-        }}/>
-        <RequestDailog 
+        <GroupAddOutlinedIcon className=' text-white' fontSize="medium" cursor="pointer" onClick = {handleRequestDialog}/>
+        <RequestDailog
           open={openDialog}
           onClose={handleDialogClose}/>
       </div>

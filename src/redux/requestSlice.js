@@ -15,7 +15,8 @@ export const getReceivedRequests = createAsyncThunk('getReceivedRequests', async
             method: 'GET',
             headers: {
                 "Content-type": "application/json",
-            }
+            },
+            credentials: 'include'
         });
         const result = await response.json();
         return result;
