@@ -1,6 +1,6 @@
 
 //#region imports
-import { Box, Container } from '@mui/material';
+import { Box } from '@mui/material';
 import React from 'react';
 import { 
     TextField,
@@ -21,7 +21,6 @@ import {
     Twitter,
     Lock
  } from '@mui/icons-material';
- import EmailIcon from '@mui/icons-material/Email';
  import loginImage from '../../../assets/Login/login.svg';
  import { FaGithub, FaApple  } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
@@ -129,61 +128,65 @@ const Login = ({isLogin , setIsLogin}) => {
 
   //#region Component renders
   return(
-  <Paper
+    <Paper
         elevation={3}
         sx={{
             display: 'flex',
-            overflow: 'hidden',
+            flexDirection: {
+                xs: "column",
+                md: "row"
+            },
             borderRadius: 3,
             height: '90vh',
-            width: '100wh',
-            
-        }}>
-         <Box 
+            width: '100vw',
+        }}
+    >
+        <Box 
             sx={{
                 display:'flex',
                 flexDirection: 'column',
                 flex:1,
                 p: 6,
                 justifyContent: 'center',
-            }}>
+            }}
+        >
             <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom align="start">
                 Sign In
-           </Typography>
+            </Typography>
 
-           <Stack spacing={2} sx={{ mb: 2 }}>
-            <TextField
-             fullWidth
-             placeholder="Enter Phone/Email"
-             variant="outlined"
-             name="email"
-             value={user.email}
-             onChange={handleFormChange}
-             InputProps={{
-             startAdornment: (
-                <InputAdornment position="start">
-                    <Person sx={{color: '#000'}}/>
-                </InputAdornment>
-                ),
-            }}    
-            />
+            <Stack spacing={2} sx={{ mb: 2 }}>
+                <TextField
+                    fullWidth
+                    placeholder="Enter Phone/Email"
+                    variant="outlined"
+                    name="email"
+                    value={user.email}
+                    onChange={handleFormChange}
+                    InputProps={{
+                    startAdornment: (
+                       <InputAdornment position="start">
+                           <Person sx={{color: '#000'}}/>
+                       </InputAdornment>
+                       ),
+                    }}    
+                />
 
-            <TextField
-             fullWidth
-             placeholder="Enter Password"
-             variant="outlined"
-             name='password'
-             value={user.password}
-             onChange={handleFormChange}
-             InputProps={{
-             startAdornment: (
-                <InputAdornment position="start">
-                    <Lock sx={{color: '#000'}}/>
-                </InputAdornment>
-                ),
-            }}    
-            />
-           </Stack>
+                <TextField
+                    fullWidth
+                    placeholder="Enter Password"
+                    variant="outlined"
+                    name='password'
+                    value={user.password}
+                    onChange={handleFormChange}
+                    InputProps={{
+                    startAdornment: (
+                       <InputAdornment position="start">
+                           <Lock sx={{color: '#000'}}/>
+                       </InputAdornment>
+                       ),
+                    }}    
+                />
+            </Stack>
 
             <FormControlLabel
                 control={<Checkbox />}
@@ -193,57 +196,55 @@ const Login = ({isLogin , setIsLogin}) => {
                 onChange={(e) => setRememberMe(e.target.checked)}
             />
 
-           <Box>
-              <Button
-              variant="contained"
-              fullWidth
-              sx={{
-                mb: 2,
-                py: 1,
-                bgcolor: '#ff7171',
-                '&:hover': { bgcolor: '#ff5252' },
-              }}
-              onClick={handleLoginClick}
-            >
-              Login
-            </Button>
-           </Box>
+            <Box>
+                <Button
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                        mb: 2,
+                        py: 1,
+                        bgcolor: '#ff7171',
+                        '&:hover': { bgcolor: '#ff5252' },
+                    }}
+                    onClick={handleLoginClick}
+                >
+                    Login
+                </Button>
+            </Box>
         
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Divider sx={{ flex: 1 }} />
+                <Typography variant="body2" sx={{ px: 2 }}>Or</Typography>
+                <Divider sx={{ flex: 1 }} />
+            </Box>
+            <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    mb: 2
+                }}
+            >
 
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                          <Divider sx={{ flex: 1 }} />
-                          <Typography variant="body2" sx={{ px: 2 }}>Or</Typography>
-                          <Divider sx={{ flex: 1 }} />
-                        </Box>
-        <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            mb: 2 }}>
-
-            {/* <Typography variant="body1" sx={{}}>Login with</Typography> */}
-            <Stack direction="row" sx={{justifyContent: 'space-between',alignItems:'baseline', width: '70%', }}>
-                <IconButton sx={{ color: '#4285F4' }}>
-                    <Google sx={{fontSize: 32}}/>
-                </IconButton>
-                 <IconButton sx={{ color: '#000' }}>
-                    <FaApple size={35}/>
-                </IconButton>
-                <IconButton sx={{ color: '#1877F2',  }}>
-                    <Facebook sx={{fontSize: 32}}/>
-                </IconButton>
-                 <IconButton sx={{ color: '#000' }}>
-                    <FaGithub size={32}/>
-                </IconButton>
-                <IconButton sx={{ color: '#1DA1F2' }}>
-                    <Twitter sx={{fontSize: 32}}/>
-                </IconButton>
-               
-                
-            </Stack>
-         </Box>
-          <Typography variant="body2" align="center" sx={{ mb: 2}}>
-                 Don't have an account?
+                <Stack direction="row" sx={{justifyContent: 'space-between',alignItems:'baseline', width: '70%', }}>
+                    <IconButton sx={{ color: '#4285F4' }}>
+                        <Google sx={{fontSize: 32}}/>
+                    </IconButton>
+                     <IconButton sx={{ color: '#000' }}>
+                        <FaApple size={35}/>
+                    </IconButton>
+                    <IconButton sx={{ color: '#1877F2',  }}>
+                        <Facebook sx={{fontSize: 32}}/>
+                    </IconButton>
+                     <IconButton sx={{ color: '#000' }}>
+                        <FaGithub size={32}/>
+                    </IconButton>
+                    <IconButton sx={{ color: '#1DA1F2' }}>
+                        <Twitter sx={{fontSize: 32}}/>
+                    </IconButton>
+                </Stack>
+            </Box>
+            <Typography variant="body2" align="center" sx={{ mb: 2}}>
+                Don't have an account?
                 <Typography
                     component="span"
                     variant="body2"
@@ -263,7 +264,10 @@ const Login = ({isLogin , setIsLogin}) => {
         {/* Image thing  */}
         <Box
             sx={{
-                display: 'flex',
+                display: {
+                    xs: 'none',
+                    md: 'flex',
+                },
                 justifyContent: 'center',
                 alignItems: 'center',
                 flex: 1,
