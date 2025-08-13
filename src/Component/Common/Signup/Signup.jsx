@@ -17,7 +17,6 @@ import {
   MenuItem,
   FormControl,
   Select,
-  Menu,
   OutlinedInput,
  
  } from '@mui/material';
@@ -131,14 +130,16 @@ const Signup = ({isLogin , setIsLogin}) => {
         sx={{
             display: 'flex',
             borderRadius: 3,
-            // height: '90%',
-            width: '100wh',
-            m: 'auto',
+            width: '100vw',
+            m: 'auto'
         }}>
           {/* Image in Sign Up Component  */}
         <Box
             sx={{
-                display: 'flex',
+                display: {
+                  xs: 'none',
+                  md:'flex',
+                },
                 justifyContent: 'center',
                 alignItems: 'center',
                 flex: 1,
@@ -159,7 +160,10 @@ const Signup = ({isLogin , setIsLogin}) => {
                 display:'flex',
                 flexDirection: 'column',
                 flex:1,
-                p: 6,
+                p: {
+                  xs: 3,
+                  sm: 6,
+                },
                 justifyContent: 'center',
             }}>
             <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom align="start">

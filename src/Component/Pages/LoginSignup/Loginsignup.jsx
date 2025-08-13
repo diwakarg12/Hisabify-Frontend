@@ -79,7 +79,6 @@ const Loginsignup = () => {
         backgroundSize: 'cover',
         overflow: 'hidden',
       }} 
-      
     >
       <Container 
       sx={{
