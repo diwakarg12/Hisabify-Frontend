@@ -11,7 +11,7 @@ import { red } from '@mui/material/colors';
 import ProfileImg from '../../../assets/profile.jpg'
 import RequestDailog from '../Request/RequestDailog';
 import NotificationDialog from '../Notification/NotificationDialog';
-import CalenderDialog from '../Calender/calenderDialog';
+import CalenderDialog from '../Calender/CalenderDialog';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkAuth } from '../../../redux/authSlice';
@@ -43,7 +43,7 @@ const Header = () => {
       return () => {
           // Anything in here is fired on component unmount.
       }
-    }, [])
+    }, [dispatch])
 
    React.useEffect(() => {
       // Anything in here is fired on component update.
@@ -60,8 +60,8 @@ const Header = () => {
    },[]);
   //#endregion
 
-  //#region Component use Styles
-  ////#endregion
+  // #region Component use Styles
+  //#endregion
 
   //#region Component validation methods
   //#endregion
@@ -119,58 +119,53 @@ const Header = () => {
   //#region Component renders
   return(
   <div className='flex flex-row justify-between items-center bg-zinc-50 h-16 shadow-sm px-4'> 
-     <Link to={'/'} className='flex items-center space-x-2'>
-        <div  className='w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center'>
-          <img 
-            src={Logo} 
-            alt="logo" 
-            className='w-8 h-8 object-contain cursor-pointer'
-          />
-        </div>
-        <div className='font-medium text-xl'>
-          <span className='text-red-400'>Expense-</span>
-          <span className='text-black'>Tracker</span>
-        </div>
-      </Link>
-
-
-<div className='flex items-center space-x-6'>
-    
-     <div className='text-right hidden md:block'>
-          <div className='text-sm text-black'> {dayPart} </div>
-          <div className='text-xs text-blue-400'>{formattedDate} </div>
-     </div>
-   
-    { isAuthenticated  ? 
-    
-    <div className='flex space-x-2'>
-      <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center'>
-        <GroupAddOutlinedIcon className=' text-white' fontSize="medium" cursor="pointer" onClick = {handleRequestDialog}/>
-        <RequestDailog
-          open={openDialog}
-          onClose={handleDialogClose}/>
-      </div>
-      <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center' >
-        <NotificationsOutlinedIcon className='text-white' fontSize="medium" cursor="pointer" onClick = {handleNotificationClick}/>
-        <NotificationDialog open={open} onClose={handleNotificationClose} />
-      </div>
-      <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center'>
-        <CalendarMonthOutlinedIcon className='text-white' fontSize="medium" cursor="pointer" 
-        onClick = {handleCalenderClick}
-       />
-       <CalenderDialog open={openCalender} onClose={handleCalenderClose} />
-      </div>
-      <Link className='w-8 h-8 rounded flex items-center justify-center cursor-pointer' to="/profile">
-        <Avatar alt="R" src={ProfileImg} sx={{ bgcolor: red[400], width: 36, height:36}} 
-        onClick = {() =>{
-          
-        }}
+    <Link to={'/'} className='flex items-center space-x-2'>
+      <div  className='w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center'>
+        <img 
+          src={Logo} 
+          alt="logo" 
+          className='w-12 h-12 object-contain cursor-pointer'
         />
-      </Link>
       </div>
-      :
-      <div>
-        <Button
+      <div className='font-medium text-xl'>
+        <span className='text-red-400'>Hisabi-</span>
+        <span className='text-black'>FY</span>
+      </div>
+    </Link>
+
+    <div className='flex items-center space-x-6'>
+     <div className='text-right hidden md:block'>
+        <div className='text-sm text-black'> {dayPart} </div>
+        <div className='text-xs text-blue-400'>{formattedDate} </div>
+      </div>
+   
+      { 
+        isAuthenticated  
+        ? 
+          <div className='flex space-x-2'>
+            <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center'>
+              <GroupAddOutlinedIcon className=' text-white' fontSize="medium" cursor="pointer" onClick = {handleRequestDialog}/>
+              <RequestDailog
+                open={openDialog}
+                onClose={handleDialogClose}/>
+            </div>
+            <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center' >
+              <NotificationsOutlinedIcon className='text-white' fontSize="medium" cursor="pointer" onClick = {handleNotificationClick}/>
+              <NotificationDialog open={open} onClose={handleNotificationClose} />
+            </div>
+            <div className='w-8 h-8 rounded bg-red-400 flex items-center justify-center'>
+              <CalendarMonthOutlinedIcon className='text-white' fontSize="medium" cursor="pointer" 
+              onClick = {handleCalenderClick}
+             />
+             <CalenderDialog open={openCalender} onClose={handleCalenderClose} />
+            </div>
+            <Link className='w-8 h-8 rounded flex items-center justify-center cursor-pointer' to="/profile">
+              <Avatar alt="R" src={ProfileImg} sx={{ bgcolor: red[400], width: 36, height:36}} />
+            </Link>
+          </div>
+        :
+          <div>
+            <Button
               variant="contained"
               fullWidth
               sx={{
@@ -182,14 +177,10 @@ const Header = () => {
               onClick={handleLoginClick}
             >
               Login
-        </Button>
-      </div>
-
-      }
-   
-     
-</div>
-
+            </Button>
+          </div>
+      } 
+    </div>
   </div>);
   //#endregion
 }

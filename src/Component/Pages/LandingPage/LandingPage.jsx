@@ -1,66 +1,65 @@
-/* eslint-disable no-unused-vars */
-
-//#region imports
-import React, { Children } from 'react';
+import React from 'react';
 import Header from '../../Common/Header/Header.jsx';
 import SideNav from '../../Common/SideNavBar/SideNav.jsx';
-import { Box } from '@mui/material';
-//#endregion
+import { Box, useMediaQuery, useTheme } from '@mui/material';
 
-//#region Component make Styles
-//#endregion
+const LandingPage = ({ children }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-//#region Function Component
-const LandingPage = ({ children, navkey }) => {
-  //#region Component states
-  //#endregion
-
-  //#region Component hooks
-   React.useEffect(() => {
-      // Anything in here is fired on component mount.
-      return () => {
-          // Anything in here is fired on component unmount.
-      }
-    }, [])
-
-   React.useEffect(() => {
-      // Anything in here is fired on component update.
-   });
-  //#endregion
-
-  //#region Component use Styles
-  //#endregion
-
-  //#region Component validation methods
-  //#endregion
-
-  //#region Component Api methods
-  //#endregion
-
-  //#region Component feature methods
-  //#endregion
-
-  //#region Component JSX.members
-  //#endregion
-
-  //#region Component renders
-  return(
-    <Box sx={{overflow:'hidden', height:'100vh'}}>
+  return (
+    <Box sx={{ overflow: 'hidden', height: '100vh' }}>
       <Header />
-      <Box sx={{display:'flex', flexDirection:'row', flex:1 }}>
-        <SideNav  />
-        <Box sx={{flex:1 ,padding:2 , overflowY:'auto', height:'100vh', }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          flex: 1,
+        }}
+      >
+        {/* Desktop SideNav */}
+        {!isMobile && (
+          <Box sx={{ flexShrink: 0 }}>
+            <SideNav />
+          </Box>
+        )}
+
+        {/* Main Content */}
+        <Box
+          sx={{
+            flex: 1,
+            p: {
+              xs: 0.5,
+              sm: 2
+            },
+            overflowY: 'auto',
+            height: 'calc(100vh - 64px)',
+            paddingBottom: isMobile ? '56px' : 2,
+          }}
+        >
           {children}
         </Box>
+
+        {/* Mobile Bottom Nav */}
+        {isMobile && (
+          <Box
+            sx={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '56px',
+              backgroundColor: theme.palette.background.paper,
+              borderTop: `1px solid ${theme.palette.divider}`,
+              zIndex: theme.zIndex.appBar,
+            }}
+          >
+            <SideNav isMobile />
+          </Box>
+        )}
       </Box>
-
-
     </Box>
-);
-  //#endregion
-}
-//#endregion
+  );
+};
 
-//#region Component export
 export default LandingPage;
-//#endregion

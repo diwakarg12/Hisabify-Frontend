@@ -5,7 +5,7 @@ import React from 'react';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import img from '../../../assets/profile.jpg';
 import { red } from '@mui/material/colors';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 //#endregion
 
@@ -53,47 +53,89 @@ const TeamCart = ({teamDetails ,setOpenInvite }) => {
   //#endregion
 
   //#region Component JSX.members
-  const avatars = [
-   
-    img,
-    img,
-    img,
-    img,
-
-  ];
+  const avatars = [img, img, img, img];
   //#endregion
 
   //#region Component renders
   return(
-    <Card  variant="outlined" onClick={handleTeamExpenseNavigation}  sx={{ borderRadius: 3, padding: 2 , bgcolor: '#F5F8FF', marginY: 2, boxShadow: 3}}>
+    <Card  
+      variant="outlined" 
+      onClick={handleTeamExpenseNavigation}  
+      sx={{ 
+        borderRadius: 3, 
+        padding: {
+          xs: 0,
+          sm: 2,
+        },
+        bgcolor: '#F5F8FF',
+        border: 'solid #A1A3AB 2px',
+        marginY: 2, 
+        boxShadow: 3
+      }}
+    >
       <CardContent>
-        <Box display="flex" alignItems="center" gap={1} mb={1}>
-          <Typography variant="h6" fontWeight="bold">
-            {teamName}
-          </Typography>       
-        </Box>
+        <Typography variant="h6" fontWeight="bold" mb={1}>
+          {teamName}
+        </Typography>       
 
-        <Typography variant="body2" mb={0.5}>
-          <strong>Total Spend :</strong> {totAmount}
+        <Typography 
+          variant="body2"
+          sx={{
+            fontSize: 18,
+            mb: 0.5
+          }}
+        >
+          Total Spend : {totAmount}
         </Typography>
 
-        <Typography variant="body2" mb={0.5}>
-          <strong>Top Category :</strong>{' '}
+        <Typography 
+          variant="body2"
+          sx={{
+            fontSize: 18,
+            mb: 0.5
+          }}
+        >
+          Top Category :{' '}
           <Box component="span" sx={{ color: 'error.main', fontWeight: 600 }}>
             {topCategory}
           </Box>
         </Typography>
 
-        <Typography variant="body2" mb={0.5}>
-          <strong>Your Contribution :</strong> {yourContribution}
+        <Typography 
+          variant="body2" 
+          sx={{
+            fontSize: 18,
+            mb: 0.5
+          }}
+        >
+          Your Contribution : {yourContribution}
         </Typography>
 
-        <Typography variant="body2" mb={2}>
-          <strong>Last Transaction :</strong> {lastTransaction}
+        <Typography 
+          variant="body2"
+          sx={{
+            fontSize: 18,
+            mb: {
+              xs: 1,
+              sm: 2,
+            },
+          }}
+        >
+          Last Transaction : {lastTransaction}
         </Typography>
 
-        <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Stack direction="row" spacing={-1}>
+        <Box
+          sx={{
+            display: {
+              xs: 'block',
+              sm: 'flex'
+            },
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 1
+          }}
+        >
+          <Stack direction="row" spacing={-1} sx={{mb:{xs: 2, sm:0}}}>
             {avatars.map((src, index) => (
               <Avatar
                 key={index}
@@ -108,7 +150,16 @@ const TeamCart = ({teamDetails ,setOpenInvite }) => {
             ))}
           </Stack>
 
-         <Box sx={{ display: "flex" , gap: 2}}>
+         <Box 
+            sx={{ 
+              display: "flex", 
+              justifyContent: {
+                xs: 'end',
+                sm: 'start'
+              }, 
+              gap: 1
+            }}
+          >
            <Button
             variant="outlined"
             size="small"

@@ -94,26 +94,49 @@ const Dashboard = () => {
       <Box
         sx={{
           backgroundColor: '#FFF',
-          height: '110vh',
+          height: {
+            md: '110vh',
+          },
           display: 'flex',
           flexDirection: 'column',
-          borderRadius: 2,
+          borderRadius: {
+            xs: 0,
+            sm: 2
+          },
           pointerEvents: createTeam ? 'none' : 'auto',
           transition: 'filter 0.3s ease',
           filter: createTeam || openAddExpense ? 'blur(2px)' : 'none',
         }}
       >
-        <Typography sx={{ padding: 2, fontSize: 20 }}>
+        <Typography 
+          sx={{ 
+            padding: {
+              xs:1,
+              sm: 2
+            }, 
+            fontSize: 20 
+          }}
+        >
           Welcome Back {'userName'}
           <WavingHandIcon sx={{ color: yellow[600], marginLeft: 2 }} />
-          </Typography>
+        </Typography>
 
         <Box
           sx={{
             display: 'flex',
+            flexDirection: {
+              xs: 'column',
+              md: 'row'
+            },
             justifyContent: 'center',
-            padding: 2,
-            margin: 2,
+            padding: {
+              xs: 0.5,
+              sm: 2
+            },
+            margin: {
+              xs: 0.5,
+              sm: 2
+            },
             marginTop: 0,
             gap: 2,
             border: 'solid 2px #A1A3AB',

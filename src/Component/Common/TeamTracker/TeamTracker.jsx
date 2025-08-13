@@ -48,8 +48,12 @@ const TeamTracker = ({teamDetails, setCreateTeam , openInvite , setOpenInvite, h
   //#region Component renders
   return(
     <Box  sx={{
-            width: '50%',
-            padding: 1,
+            width: '100%',
+            padding: {
+                xs: 0.5,
+                sm: 1
+            },
+            borderRadius: 2,
             boxShadow: 3,
             overflow:'auto',
             '&::-webkit-scrollbar': {
@@ -61,18 +65,24 @@ const TeamTracker = ({teamDetails, setCreateTeam , openInvite , setOpenInvite, h
                 display: 'flex',
                 justifyContent:'center',
                 fontSize: 20 ,
+                fontWeight: 600
             }}>
                 Team Tracker
             </Typography>
 
-             <Link to={'/'} sx={{
-                display: 'flex',
-                textDecoration:'underline',
-                width: '90%',
-                margin: '0 auto',
-                gap:1,
-
-            }}>
+            <Link to={'/'} 
+                sx={{
+                    display: 'flex',
+                    textDecoration:'underline',
+                    width: {
+                        xs: '98%',
+                        sm: '95%',
+                        md: '90%',
+                    },
+                    margin: '0 auto',
+                    gap:1,
+                }}
+            >
                 <Groups sx={{ color: '#A1A3AB'}} />
                 <Typography sx={{
                     color: red[300],
@@ -86,7 +96,14 @@ const TeamTracker = ({teamDetails, setCreateTeam , openInvite , setOpenInvite, h
                 </Typography>
             </Link>
             
-            <Box sx={{padding: 2}}>
+            <Box 
+                sx={{
+                    padding: {
+                        xs: 0.25,
+                        sm: 2,
+                    },
+                }}
+            >
                 {teamDetails.map((teamDetail)=>(
                  <TeamCart
                     teamDetails={teamDetail}

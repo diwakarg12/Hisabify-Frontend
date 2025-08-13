@@ -87,12 +87,17 @@ const RequestDailog = ({open, onClose}) => {
     onClose={onClose}
     sx={{
       '& .MuiDialog-container': {
-        justifyContent: 'flex-end',
+        justifyContent: {
+          xs: 'center',
+          sm: 'flex-end',
+        },
         alignItems: 'flex-start',
       },
       '& .MuiPaper-root': {
-        margin: '150px',
-        marginTop: '60px',
+        margin: {
+          xs: '60px 0px',
+          sm: '60px 150px',
+        },
         maxHeight: '70vh',
         backgroundColor: 'rgba(255, 100, 103, 1)',
         scrollbarWidth: 'none',
@@ -115,7 +120,7 @@ const RequestDailog = ({open, onClose}) => {
       </DialogTitle>
       <List sx={{ pt: 0 }} >
        
-        {requests && requests.length !== 0 ?
+        {Requests && Requests.length !== 0 ?
         Requests.map((request, index) => (
           (<ListItem disablePadding key={`${request.id}-${index}`} sx={{padding:'0.1rem 0.5rem'}}>
             <RequestTile teamName={request.teamName} time={request.time} requester={request.requester}/>

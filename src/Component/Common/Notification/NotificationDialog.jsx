@@ -96,18 +96,23 @@ const NotificationDialog = ({open , onClose }) => {
        sx={{
         
         '& .MuiDialog-container': {
-            justifyContent: 'flex-end',
+            justifyContent: {
+                xs: 'center',
+                sm: 'flex-end',
+            },
             alignItems: 'flex-start',
             
         },
         '& .MuiPaper-root': {
-            margin: '100px',
-            marginTop: '60px',
+            margin: {
+                xs: '60px 0px',
+                sm: '60px 100px'
+            },
             maxHeight: '70vh',
             backgroundColor: 'rgba(255, 100, 103, 1)',
             scrollbarWidth: 'none',
             scrollbarColor: '#fff rgba(0, 0, 0, 0.1)',
-        }, 
+        },
     }}
       >
        <DialogTitle sx={{

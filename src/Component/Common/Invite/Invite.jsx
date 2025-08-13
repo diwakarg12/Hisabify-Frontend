@@ -69,40 +69,52 @@ const user =[{
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: '70vw',
+        width: {
+          xs: '92vw',
+          sm: '70vw',
+        },
         height:'80vh',
         backgroundColor: 'white' ,
-        borderRadius: 2,
+        borderRadius: {
+          xs: 1,
+          sm: 2,
+        },
         boxShadow: 24,
-        p: 3,
+        py: 3,
+        px:1.5,
         overflow: 'auto',
        '&::-webkit-scrollbar': {
             display: 'none',
         },
         }}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6" >
-            Send an invite to a new member
+          <Typography variant="h5" >
+            Invite new members
           </Typography>
           <Typography onClick={handleClose} color='primary' sx={{textDecoration: 'underline', cursor: 'pointer'}}> Go Back</Typography>
-          
         </Box>
 
-        <Box mt={2} sx={{display:'flex', gap:2}}>
+        <Box
+          sx={{
+            display:'flex', 
+            gap:2,
+            my: 2
+          }}
+        >
           <TextField
             fullWidth
             variant="outlined"
-            label="Email"          
+            label="Email"    
           />
           <Button
             variant="contained"
             sx={{ backgroundColor: '#f44336' ,width : '20%' }}
           >
-            Send Invite
+            Invite
           </Button>
         </Box>
 
-        <Box mt={4}>
+        <Box my={2}>
           <Box sx={{display: 'flex', gap: 2}}>
             <Typography variant="subtitle1" fontWeight="bold" onClick={() => setMemberDetail(true) } sx={{ cursor:'pointer' , opacity: !memberDetail ? 0.6 : 1}}>Members</Typography>
             <Typography variant="subtitle1" fontWeight="bold" onClick={() => setMemberDetail(false) } sx={{ cursor:'pointer' , opacity: memberDetail ? 0.6 : 1}}>Pending Requests</Typography>
@@ -112,15 +124,15 @@ const user =[{
           ))}
         </Box>
 
-        <Box mt={4}>
+        <Box>
           <Typography variant="subtitle1" fontWeight="bold">Team Invite Link</Typography>
           <Box display="flex" gap={1} >
             <TextField
               fullWidth
               variant="outlined"
-              placeholder='link'
+              placeholder='Link'
             />
-            <Button variant="contained" sx={{width: '20%' , backgroundColor: '#f44336'}}>Copy Link</Button>
+            <Button variant="contained" sx={{width: '20%' , backgroundColor: '#f44336'}}>Copy</Button>
           </Box>
         </Box>
       </Box>

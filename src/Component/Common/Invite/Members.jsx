@@ -1,6 +1,6 @@
 
 //#region imports
-import { Avatar, Box, MenuItem, Select, Typography } from '@mui/material';
+import { Avatar, Box, Typography } from '@mui/material';
 import React from 'react';
 //#endregion
 
@@ -48,24 +48,29 @@ const Members = ({user ,index,memberDetail}) => {
   //#region Component renders
   return(
     <Box key={index} display="flex" alignItems="center" justifyContent="space-between" mt={2}>
-        <Box display="flex" alignItems="center">
-            <Avatar src={user.avatar} sx={{ mr: 2 }} />
-            <Box>
-                <Typography>{user.firstName +' '+ user.lastName}</Typography>
-                <Typography variant="body2" color="text.secondary">{user.email}</Typography>
-            </Box>
+      <Box display="flex" alignItems="center">
+        <Avatar src={user.avatar} sx={{ mr: {xs: 1, sm: 2} }} />
+        <Box>
+          <Typography>{user.firstName +' '+ user.lastName}</Typography>
+          <Typography variant="body2" color="text.secondary">{user.email}</Typography>
         </Box>
+      </Box>
 
-    {memberDetail ? 
-     <Typography sx={{border: '2px solid #E57373' , padding:'0.5rem 2rem'}}>
-        {user._id === ownerId ? 'Owner' : 'Member'}
-    </Typography> 
-    :
-    <Typography sx={{border: '2px solid #E57373' , padding:'0.5rem 2rem'}} onClick={handleCancelClick}>
-        Cancel
-    </Typography>
-    }
-   
+      {
+        memberDetail 
+        ?
+          (
+            <Typography sx={{border: '1.5px solid #E57373' , padding:{xs:'0.5rem 1.25rem', sm: '0.5rem 2rem'}}}>
+              {user._id === ownerId ? 'Owner' : 'Member'}
+            </Typography> 
+          )
+        :
+          (
+            <Typography sx={{border: '1.5px solid #E57373' , padding:{xs:'0.5rem 1.25rem', sm: '0.5rem 2rem'}}} onClick={handleCancelClick}>
+              Cancel
+            </Typography>
+          )
+      }
        
     </Box>
   );
