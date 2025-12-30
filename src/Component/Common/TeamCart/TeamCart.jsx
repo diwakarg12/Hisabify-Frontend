@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 //#region Function Component
 const TeamCart = ({ teamDetails, setOpenInvite }) => {
   const {
+    id,
     teamName,
     totAmount,
     topCategory,
@@ -50,19 +51,13 @@ const TeamCart = ({ teamDetails, setOpenInvite }) => {
   //#endregion
 
   //#region Component validation methods
-  const handleTeamExpenseNavigation = () => {
-    navigate("/expenselist");
-  };
+
   //#endregion
 
   //#region Component Api methods
   //#endregion
 
   //#region Component feature methods
-  // const handleCartCick = () => {
-  //   console.log('card clicked');
-  //   navigate("/expenselist")
-  // }
   //#endregion
 
   //#region Component JSX.members
@@ -73,16 +68,16 @@ const TeamCart = ({ teamDetails, setOpenInvite }) => {
   return (
     <Card
       variant="outlined"
-      onClick={handleTeamExpenseNavigation}
+      onClick={() => navigate(`/expenselist/${id}`)}
       sx={{
-        borderRadius: 3,
+        borderRadius: 3,    
         padding: {
           xs: 0,
-          sm: 2,
+          sm: 1,
         },
         bgcolor: "#F5F8FF",
         border: "solid #A1A3AB 2px",
-        marginY: 2,
+        marginBottom: 2,
         boxShadow: 3,
       }}
     >

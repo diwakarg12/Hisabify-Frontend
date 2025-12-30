@@ -8,6 +8,7 @@ const initialState = {
     error: null
 }
 
+
 export const createGroup = createAsyncThunk('createGroup', async (data, { rejectWithValue }) => {
     try {
 
@@ -16,6 +17,7 @@ export const createGroup = createAsyncThunk('createGroup', async (data, { reject
             headers: {
                 "Content-type": "application/json"
             },
+            credentials: 'include',
             body: JSON.stringify(data)
         });
         const result = await response.json();
@@ -34,6 +36,7 @@ export const updateGroup = createAsyncThunk('updateGroup', async ({ data, groupI
             headers: {
                 "Content-type": "application/json"
             },
+            credentials: 'include',
             body: JSON.stringify(data)
         });
         const result = await response.json();
@@ -52,6 +55,7 @@ export const removeUser = createAsyncThunk('removeUser', async ({ groupId, userI
             headers: {
                 "Content-type": "application/json"
             },
+            credentials: 'include',
         });
 
         const result = await response.json();
@@ -70,6 +74,7 @@ export const deleteGroup = createAsyncThunk('deleteGroup', async (groupId, { rej
             headers: {
                 "Content-type": "application/json"
             },
+            credentials: 'include',
         });
         const result = await response.json();
         return result;
@@ -87,6 +92,7 @@ export const getAllGroup = createAsyncThunk('getAllGroup', async (_, { rejectWit
             headers: {
                 "Content-type": "application/json",
             },
+            credentials: 'include',
         });
 
         const result = await response.json();

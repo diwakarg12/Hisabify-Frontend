@@ -29,6 +29,7 @@ import {
   updateProfile,
 } from "../../../redux/authSlice";
 import { toast } from "react-toastify";
+import ProfilePhoto from "./ProfilePhoto";
 dayjs.extend(utc);
 //#endregion
 
@@ -44,6 +45,7 @@ const ProfilePage = () => {
   const [userData, setUserData] = useState(user);
   const [emailUpdate, setEmailUpdate] = useState(false);
   const [phoneUpdate, setPhoneUpdate] = useState(false);
+  const [uploading, setUploading] = useState(true);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   //#endregion
@@ -68,6 +70,7 @@ const ProfilePage = () => {
 
   //#region Component Api methods
   const handleProfileUpdate = async () => {
+    setUploading(true);
     console.log("userData", userData);
     const userProfile = {
       firstName: userData.firstName,
@@ -86,11 +89,13 @@ const ProfilePage = () => {
       });
       navigate("/dashboard");
     } else {
+      setUploading(false);
       toast.error(response.error, {
         position: "top-center",
         theme: "dark",
       });
     }
+    setUploading(false);
   };
   //#endregion
 
@@ -125,6 +130,7 @@ const ProfilePage = () => {
   };
 
   const handlePhoneUpdate = async () => {
+    console.log("userPhone", userData.phone);
     const response = await dispatch(updatePhone(userData.phone)).unwrap();
     if (!response.error) {
       toast.success(response.message, {
@@ -139,6 +145,7 @@ const ProfilePage = () => {
     }
     setPhoneUpdate((prev) => !prev);
   };
+
   //#endregion
 
   //#region Component JSX.members
@@ -201,23 +208,7 @@ const ProfilePage = () => {
           padding: 2,
         }}
       >
-        <Avatar
-          alt="R"
-          src={userData.profile}
-          sx={{
-            width: {
-              xs: 80,
-              sm: 100,
-            },
-            height: {
-              xs: 80,
-              sm: 100,
-            },
-          }}
-          onClick={() => {
-            console.log("Avatar clicked");
-          }}
-        />
+        <ProfilePhoto profile={userData.profile} setUserData={setUserData} uploading={uploading} />
         <Box>
           <Typography
             sx={{
@@ -527,13 +518,13 @@ const ProfilePage = () => {
             >
               <button
                 onClick={handleEdit}
-                className="bg-red-400 text-white font-semibold py-3 rounded hover:bg-red-600 w-1/2"
+                className="bg-red-400 text-white font-semibold py-3 rounded hover:bg-red-600 w-1/2 cursor-pointer"
               >
                 Edit
               </button>
               <button
                 onClick={handleProfileUpdate}
-                className="bg-green-600 text-white font-semibold py-3 rounded hover:bg-green-700 w-1/2"
+                className="bg-green-600 text-white font-semibold py-3 rounded hover:bg-green-700 w-1/2 cursor-pointer"
               >
                 Save
               </button>

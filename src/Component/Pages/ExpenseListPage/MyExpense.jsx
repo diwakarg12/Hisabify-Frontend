@@ -7,12 +7,14 @@ import {
   CardContent,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import TeamListCart from "../../Common/TeamListCart/TeamListCart";
 import MultiChart from "../../Common/Chart_Graph/MultiChart";
-import ProfileImg from "../../../assets/profile.jpg";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DropDownButton from "../../Common/DropDownButton/DropDownButton";
+import { useSelector } from "react-redux";
+import AddExpense from "../../Common/AddExpense/AddExpense";
+import ExpenseListPage from "./ExpenseListPage";
 
 //#endregion
 
@@ -22,7 +24,9 @@ import DropDownButton from "../../Common/DropDownButton/DropDownButton";
 //#region Function Component
 const MyExpense = () => {
   //#region Component states
-  const [toggleChart, settoggleChart] = React.useState(false);
+  const [toggleChart, settoggleChart] = useState(false);
+  const [addExpense, setAddExpense] = useState(false);
+  const user = useSelector((store) => store.auth.user);
   //#endregion
 
   //#region Component hooks
@@ -46,6 +50,67 @@ const MyExpense = () => {
 
   //#region Component Api methods
   //#endregion
+  const personalExpenses = [
+    {
+      id: 1,
+      title: "Burger Point",
+      description: "Paid 3 Burger Price nd 2 soft coke",
+      category: "Food",
+      categoryColor: "red",
+      date: "13/04/2025",
+      price: "210",
+    },
+    {
+      id: 2,
+      title: "Trends",
+      description: "Purchased a Shirt at reliance store",
+      category: "Clothing",
+      categoryColor: "blue",
+      date: "20/06/2023",
+      price: "210",
+      paid_by: "harsh",
+    },
+    {
+      id: 3,
+      title: "Burger Point",
+      description: "Paid 3 Burger Price nd 2 soft coke",
+      category: "Food",
+      categoryColor: "red",
+      date: "13/04/2025",
+      price: "210",
+      paid_by: "harsh",
+    },
+    {
+      id: 4,
+      title: "Trends",
+      description: "Purchased a Shirt at reliance store",
+      category: "Clothing",
+      categoryColor: "blue",
+      date: "20/06/2023",
+      price: "210",
+      paid_by: "harsh",
+    },
+    {
+      id: 5,
+      title: "Burger Point",
+      description: "Paid 3 Burger Price nd 2 soft coke",
+      category: "Food",
+      categoryColor: "red",
+      date: "13/04/2025",
+      price: "210",
+      paid_by: "harsh",
+    },
+    {
+      id: 6,
+      title: "Trends",
+      description: "Purchased a Shirt at reliance store",
+      category: "Clothing",
+      categoryColor: "blue",
+      date: "20/06/2023",
+      price: "210",
+      paid_by: "harsh",
+    },
+  ];
 
   //#region Component feature methods
   //#endregion
@@ -99,7 +164,7 @@ const MyExpense = () => {
       >
         <img
           alt="profile"
-          src={ProfileImg}
+          src={user.profile}
           style={{
             height: "3rem",
             width: "3rem",
@@ -116,13 +181,13 @@ const MyExpense = () => {
           }}
           sx={{}}
         >
-          Harsh's Expense
+          {`${user.firstName}'s Expense`}
         </Typography>
         <Button
           variant="outlined"
           size="medium"
           // startIcon={<GroupsIcon />}
-          onClick={() => {}}
+          onClick={() => setAddExpense(true)}
           sx={{
             textTransform: "none",
             backgroundColor: "#ff6467",
@@ -179,7 +244,6 @@ const MyExpense = () => {
 
           <Button
             variant="outlined"
-            onClick={() => {}}
             sx={{
               textTransform: "none",
               backgroundColor: "#ff6467",
@@ -241,6 +305,22 @@ const MyExpense = () => {
           />
         </Box>
       </Card>
+      <Card
+        sx={{
+          padding: 2,
+          boxShadow: 13,
+          borderRadius: 1.5,
+        }}
+      >
+        <ExpenseListPage title={"Personal"} expense={personalExpenses} />
+      </Card>
+
+      {addExpense && (
+        <AddExpense
+          openAddExpense={addExpense}
+          setOpenAddExpense={setAddExpense}
+        />
+      )}
     </Box>
   );
   //#endregion

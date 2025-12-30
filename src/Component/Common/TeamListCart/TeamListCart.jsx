@@ -2,6 +2,7 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import React from "react";
 import MultiChart from "../Chart_Graph/MultiChart";
+import { useNavigate } from "react-router-dom";
 //#endregion
 
 //#region Component make Styles
@@ -18,6 +19,7 @@ const TeamListCart = ({ teamDetails }) => {
   } = teamDetails;
   //#region Component states
   //#endregion
+  const navigate = useNavigate();
 
   //#region Component hooks
   React.useEffect(() => {
@@ -113,11 +115,9 @@ const TeamListCart = ({ teamDetails }) => {
           },
           gap: 10,
           overflow: "auto",
-          scrollbarWidth: "none", // Firefox
-          // "&::-webkit-scrollbar": {
-          //   display: "none", // Chrome, Safari, Edge
-          // },
+          scrollbarWidth: "none",
         }}
+        onClick={() => navigate("/expenselist/123")}
       >
         <CardContent sx={{}}>
           <Typography
