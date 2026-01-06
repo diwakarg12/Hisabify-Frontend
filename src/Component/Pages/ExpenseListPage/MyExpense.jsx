@@ -14,7 +14,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DropDownButton from "../../Common/DropDownButton/DropDownButton";
 import { useSelector } from "react-redux";
 import AddExpense from "../../Common/AddExpense/AddExpense";
-import ExpenseListPage from "./ExpenseListPage";
+import ExpenseListPage from "./GroupExpense";
 
 //#endregion
 

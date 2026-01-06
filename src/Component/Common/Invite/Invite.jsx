@@ -1,31 +1,45 @@
-
 //#region imports
-import { Avatar, Box, Button, IconButton, MenuItem, Modal, Select, TextField, Typography } from '@mui/material';
-import React, { useState } from 'react';
-import CloseIcon from '@mui/icons-material/Close';
-import Members from './Members';
+import { Box, Button, Modal, TextField, Typography } from "@mui/material";
+import React, { useState } from "react";
+import Members from "./Members";
+import { useDispatch } from "react-redux";
+import { getSentRequests, sendInvitation } from "../../../redux/requestSlice";
+import { searchUser } from "../../../redux/groupSlice";
 //#endregion
 
 //#region Component make Styles
 //#endregion
 
 //#region Function Component
-const Invite = ({ openInvite, handleClose }) => {
+const Invite = ({ openInvite, handleClose, group }) => {
   //#region Component states
- const [memberDetail , setMemberDetail] = useState(true)
+  const dispatch = useDispatch();
+  // const sentRequest = useSelector((store) => store.request.sentRequest);
+  const [pendingInvitation, setPendingInvitation] = useState([]);
+  const [owner, setOwner] = useState(null);
+  const [email, setEmail] = useState("");
+  const [memberTab, setMemberTab] = useState(true);
   //#endregion
 
   //#region Component hooks
-   React.useEffect(() => {
-      // Anything in here is fired on component mount.
-      return () => {
-          // Anything in here is fired on component unmount.
-      }
-    }, [])
+  React.useEffect(() => {
+    // Anything in here is fired on component mount.
 
-   React.useEffect(() => {
-      // Anything in here is fired on component update.
-   });
+    if (!openInvite || !group?._id) return;
+
+    const handlePendingRequest = async () => {
+      const res = await dispatch(getSentRequests(group._id)).unwrap();
+      const pendingRequest = res?.sentInvitations?.map(
+        (invitation) => invitation.invitedTo
+      );
+      setPendingInvitation(pendingRequest || []);
+      setOwner(group.createdBy._id);
+    };
+    handlePendingRequest();
+    return () => {
+      // Anything in here is fired on component unmount.
+    };
+  }, [dispatch, group?._id, openInvite, group.createdBy._id]);
   //#endregion
 
   //#region Component use Styles
@@ -35,111 +49,124 @@ const Invite = ({ openInvite, handleClose }) => {
   //#endregion
 
   //#region Component Api methods
- 
+
   //#endregion
 
   //#region Component feature methods
-  
+
+  const handleInvitation = async () => {
+    const res = await dispatch(searchUser(email)).unwrap();
+    await dispatch(
+      sendInvitation({ groupId: group._id, invitedTo: res.user._id })
+    ).unwrap();
+
+    setPendingInvitation((prev) => [...prev, res.user]);
+    setEmail("");
+  };
+
   //#endregion
 
   //#region Component JSX.members
-  const membersList = [
-  { firstName: 'Varsha Roy',lastName : 'Roy', email: 'varsharoy@gmail.com', avatar: 'https://i.pravatar.cc/150?img=1', role: 'Can edit' },
-  { firstName: 'Raj Aaran',lastName : 'Roy', email: 'rajayaran@gmail.com', avatar: 'https://i.pravatar.cc/150?img=2', role: 'Can edit' },
-  { firstName: 'Harsh Raj',lastName : 'Roy', email: 'rajharsh@gmail.com', avatar: 'https://i.pravatar.cc/150?img=3', role: 'Owner' },
-  { firstName: 'Riya Joe',lastName : 'Roy', email: 'joeriya@gmail.com', avatar: 'https://i.pravatar.cc/150?img=4', role: 'Can edit' },
-];
 
-const user =[{
-    _id : 1
-    ,firstName : 'Harsh',
-    lastName : 'Raj',
-    email: 'harhs@gmail.com',
-    profile: ''
-  }]
-
-  const formateData = memberDetail ? membersList : user
+  const formateData = memberTab ? group.members : pendingInvitation;
   //#endregion
 
   //#region Component renders
-  return(
+  return (
     <Modal open={openInvite} onClose={handleClose}>
-      <Box sx={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: {
-          xs: '92vw',
-          sm: '70vw',
-        },
-        height:'80vh',
-        backgroundColor: 'white' ,
-        borderRadius: {
-          xs: 1,
-          sm: 2,
-        },
-        boxShadow: 24,
-        py: 3,
-        px:1.5,
-        overflow: 'auto',
-       '&::-webkit-scrollbar': {
-            display: 'none',
-        },
-        }}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: {
+            xs: "92vw",
+            sm: "70vw",
+          },
+          height: "80vh",
+          backgroundColor: "white",
+          borderRadius: {
+            xs: 1,
+            sm: 2,
+          },
+          boxShadow: 24,
+          py: 3,
+          px: 1.5,
+          overflow: "auto",
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
+        }}
+      >
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h5" >
-            Invite new members
+          <Typography variant="h5">Invite new members</Typography>
+          <Typography
+            onClick={handleClose}
+            color="primary"
+            sx={{ textDecoration: "underline", cursor: "pointer" }}
+          >
+            {" "}
+            Go Back
           </Typography>
-          <Typography onClick={handleClose} color='primary' sx={{textDecoration: 'underline', cursor: 'pointer'}}> Go Back</Typography>
         </Box>
 
         <Box
           sx={{
-            display:'flex', 
-            gap:2,
-            my: 2
+            display: "flex",
+            gap: 2,
+            my: 2,
           }}
         >
           <TextField
             fullWidth
             variant="outlined"
-            label="Email"    
+            label="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <Button
             variant="contained"
-            sx={{ backgroundColor: '#f44336' ,width : '20%' }}
+            sx={{ backgroundColor: "#f44336", width: "20%" }}
+            onClick={handleInvitation}
           >
             Invite
           </Button>
         </Box>
 
         <Box my={2}>
-          <Box sx={{display: 'flex', gap: 2}}>
-            <Typography variant="subtitle1" fontWeight="bold" onClick={() => setMemberDetail(true) } sx={{ cursor:'pointer' , opacity: !memberDetail ? 0.6 : 1}}>Members</Typography>
-            <Typography variant="subtitle1" fontWeight="bold" onClick={() => setMemberDetail(false) } sx={{ cursor:'pointer' , opacity: memberDetail ? 0.6 : 1}}>Pending Requests</Typography>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Typography
+              variant="subtitle1"
+              fontWeight="bold"
+              onClick={() => setMemberTab(true)}
+              sx={{ cursor: "pointer", opacity: !memberTab ? 0.6 : 1 }}
+            >
+              Members
+            </Typography>
+            <Typography
+              variant="subtitle1"
+              fontWeight="bold"
+              onClick={() => setMemberTab(false)}
+              sx={{ cursor: "pointer", opacity: memberTab ? 0.6 : 1 }}
+            >
+              Pending Requests
+            </Typography>
           </Box>
           {formateData.map((user, index) => (
-            <Members user={user} index={index} memberDetail={memberDetail}/>
-          ))}
-        </Box>
-
-        <Box>
-          <Typography variant="subtitle1" fontWeight="bold">Team Invite Link</Typography>
-          <Box display="flex" gap={1} >
-            <TextField
-              fullWidth
-              variant="outlined"
-              placeholder='Link'
+            <Members
+              user={user}
+              owner={owner}
+              index={index}
+              memberTab={memberTab}
             />
-            <Button variant="contained" sx={{width: '20%' , backgroundColor: '#f44336'}}>Copy</Button>
-          </Box>
+          ))}
         </Box>
       </Box>
     </Modal>
   );
   //#endregion
-}
+};
 //#endregion
 
 //#region Component export

@@ -14,7 +14,7 @@ import { useParams } from "react-router-dom";
 //#endregion
 
 //#region Function Component
-const ExpenseListPage = ({ title, expense }) => {
+const GroupExpense = ({ title, expense }) => {
   //#region Component states
   // const [expenseDetails , setExpenseDetails] = useState(null);
   const [selectedExpenseId, setSelectedExpenseId] = useState(expense[0].id);
@@ -108,5 +108,5 @@ const ExpenseListPage = ({ title, expense }) => {
 //#endregion
 
 //#region Component export
-export default ExpenseListPage;
+export default GroupExpense;
 //#endregion

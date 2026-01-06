@@ -1,31 +1,27 @@
 //#region imports
 import React, { useRef, useState } from "react";
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Stack,
-  TextareaAutosize,
-} from "@mui/material";
-import { Bolt, Groups } from "@mui/icons-material";
+import { Box, Typography, TextField, Button, Stack } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { createGroup, searchUser } from "../../../redux/groupSlice";
+import { resetSearchUsers } from "../../../redux/groupSlice";
+import { sendInvitation } from "../../../redux/requestSlice";
+// import { sendInvitation } from "../../../redux/requestSlice";
 //#endregion
 
 //#region Component make Styles
 //#endregion
 
 //#region Function Component
-const AddTeam = ({ onClose }) => {
+const AddTeam = ({ onClose, user }) => {
   //#region Component states
   const contentRef = useRef(null);
-  const [groupMembers, setGroupMembers] = useState([
-    { firstName: "Diwakar Giri" },
-    { firstName: "Harsh Raj" },
-  ]);
+  const dispatch = useDispatch();
+  const [invitedMembers, setInvitedMembers] = useState([]);
+  const [email, setEmail] = useState("");
   const [teamDetails, setTeamDetails] = useState({
     groupName: "",
-    createdBy: "",
     description: "",
+    members: [],
   });
   //#endregion
 
@@ -59,15 +55,11 @@ const AddTeam = ({ onClose }) => {
 
   //#region Component Api methods
   const handleUserSearch = async () => {
-    try {
-      const response = await fetch("api");
-      const data = await response.json();
-      console.log("Data: ", data);
-      setGroupMembers((prevMembers) => [...prevMembers, data]);
-    } catch (error) {
-      console.log("Error: ", error);
-    }
+    const res = await dispatch(searchUser(email)).unwrap();
+    setInvitedMembers([...invitedMembers, res.user]);
+    setEmail("");
   };
+
   //#endregion
 
   //#region Component feature methods
@@ -83,12 +75,36 @@ const AddTeam = ({ onClose }) => {
     }
   };
 
-  const handleCreateGroup = () => {
+  const handleRemoveInvitedUser = (userId) => {
+    setInvitedMembers((prev) => prev.filter((member) => member._id !== userId));
+  };
+
+  const handleCreateGroup = async () => {
     const finalGroupDetails = {
       ...teamDetails,
-      member: teamDetails.createdBy,
+      createdBy: user._id,
+      members: [],
     };
-    console.log("Group Created:", finalGroupDetails);
+    const group = await dispatch(createGroup(finalGroupDetails)).unwrap();
+    console.log("Group", group.group._id);
+
+    invitedMembers.map(
+      async (member) =>
+        await dispatch(
+          sendInvitation({ groupId: group.group._id, invitedTo: member._id })
+        ).unwrap()
+    );
+
+    setInvitedMembers([]);
+    setTeamDetails({
+      groupName: "",
+      description: "",
+      members: [],
+    });
+
+    dispatch(resetSearchUsers());
+
+    onClose();
   };
   //#endregion
 
@@ -181,15 +197,14 @@ const AddTeam = ({ onClose }) => {
         <TextField
           label="CreatedBy"
           name="createdBy"
-          value={teamDetails.createdBy}
-          onChange={handleTeamInputChange}
+          value={user.email}
           variant="outlined"
           size="small"
           type="email"
           fullWidth
           sx={{ marginTop: 2 }}
         />
-        {groupMembers.length > 0 && (
+        {invitedMembers.length > 0 && (
           <Stack
             sx={{
               margin: "0.9rem 0 0.4rem 0",
@@ -199,43 +214,50 @@ const AddTeam = ({ onClose }) => {
             }}
             direction="row"
           >
-            {groupMembers.map((member) => (
-              <>
+            {invitedMembers.map((member) => (
+              <Box
+                component="span"
+                sx={{
+                  display: "flex",
+                  gap: 0.6,
+                  backgroundColor: "#F24E1E",
+                  borderRadius: 0.5,
+                  padding: "1px 2px",
+                  margin: "2px",
+                }}
+              >
+                {member && member.firstName}
                 <Box
                   component="span"
                   sx={{
-                    display: "flex",
-                    gap: 0.6,
-                    backgroundColor: "#F24E1E",
-                    borderRadius: 0.5,
+                    cursor: "pointer",
                     padding: "1px 2px",
-                    margin: "2px",
+                    fontWeight: "bold",
+                    color: "#000",
                   }}
+                  onClick={() => handleRemoveInvitedUser(member._id)}
                 >
-                  {member.firstName}
-                  <Box
-                    component="span"
-                    sx={{
-                      cursor: "pointer",
-                      padding: "1px 2px",
-                      fontWeight: "bold",
-                      color: "#000",
-                    }}
-                  >
-                    X
-                  </Box>
+                  X
                 </Box>
-              </>
+              </Box>
             ))}
           </Stack>
         )}
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            marginTop: invitedMembers.length > 0 ? 0 : 1.5,
+          }}
+        >
           <TextField
             label="Add members"
             size="small"
             variant="outlined"
-            type="text"
+            type="email"
             fullWidth
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <Button
             variant="contained"

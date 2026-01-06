@@ -10,7 +10,6 @@ import {
 } from "@mui/material";
 import React from "react";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
-import img from "../../../assets/profile.jpg";
 import { red } from "@mui/material/colors";
 import { useNavigate } from "react-router-dom";
 
@@ -20,15 +19,8 @@ import { useNavigate } from "react-router-dom";
 //#endregion
 
 //#region Function Component
-const TeamCart = ({ teamDetails, setOpenInvite }) => {
-  const {
-    id,
-    teamName,
-    totAmount,
-    topCategory,
-    yourContribution,
-    lastTransaction,
-  } = teamDetails;
+const TeamCart = ({ teamDetails, setOpenInvite, setOpenAddExpense }) => {
+  const { _id, groupName, members } = teamDetails;
   const navigate = useNavigate();
   //#region Component states
   // const navigate = useNavigate()
@@ -61,16 +53,15 @@ const TeamCart = ({ teamDetails, setOpenInvite }) => {
   //#endregion
 
   //#region Component JSX.members
-  const avatars = [img, img, img, img];
   //#endregion
 
   //#region Component renders
   return (
     <Card
       variant="outlined"
-      onClick={() => navigate(`/expenselist/${id}`)}
+      onClick={() => navigate(`/group-expense/${_id}`)}
       sx={{
-        borderRadius: 3,    
+        borderRadius: 3,
         padding: {
           xs: 0,
           sm: 1,
@@ -83,7 +74,7 @@ const TeamCart = ({ teamDetails, setOpenInvite }) => {
     >
       <CardContent>
         <Typography variant="h6" fontWeight="bold" mb={1}>
-          {teamName}
+          {groupName}
         </Typography>
 
         <Typography
@@ -93,7 +84,7 @@ const TeamCart = ({ teamDetails, setOpenInvite }) => {
             mb: 0.5,
           }}
         >
-          Total Spend : {totAmount}
+          Total Spend : {1000}
         </Typography>
 
         <Typography
@@ -105,7 +96,7 @@ const TeamCart = ({ teamDetails, setOpenInvite }) => {
         >
           Top Category :{" "}
           <Box component="span" sx={{ color: "error.main", fontWeight: 600 }}>
-            {topCategory}
+            {"Shopping"}
           </Box>
         </Typography>
 
@@ -116,7 +107,7 @@ const TeamCart = ({ teamDetails, setOpenInvite }) => {
             mb: 0.5,
           }}
         >
-          Your Contribution : {yourContribution}
+          Your Contribution : {500}
         </Typography>
 
         <Typography
@@ -129,7 +120,7 @@ const TeamCart = ({ teamDetails, setOpenInvite }) => {
             },
           }}
         >
-          Last Transaction : {lastTransaction}
+          Last Transaction : {"01-01-2026"}
         </Typography>
 
         <Box
@@ -144,15 +135,15 @@ const TeamCart = ({ teamDetails, setOpenInvite }) => {
           }}
         >
           <Stack direction="row" spacing={-1} sx={{ mb: { xs: 2, sm: 0 } }}>
-            {avatars.map((src, index) => (
+            {members?.map((member, index) => (
               <Avatar
                 key={index}
-                src={src}
+                src={member.profile}
                 sx={{
                   border: "2px solid white",
                   width: 32,
                   height: 32,
-                  zIndex: avatars.length - index,
+                  zIndex: members.length - index,
                 }}
               />
             ))}
@@ -172,7 +163,7 @@ const TeamCart = ({ teamDetails, setOpenInvite }) => {
               variant="outlined"
               size="small"
               startIcon={<GroupAddIcon />}
-              onClick={setOpenInvite}
+              onClick={(e) => setOpenInvite(e, _id)}
               sx={{ borderRadius: 3, textTransform: "none", color: red[400] }}
             >
               Invite
@@ -181,6 +172,7 @@ const TeamCart = ({ teamDetails, setOpenInvite }) => {
               variant="outlined"
               size="small"
               startIcon={<GroupAddIcon />}
+              onClick={(e) => setOpenAddExpense(e, _id)}
               sx={{ borderRadius: 3, textTransform: "none", color: red[400] }}
             >
               Add Expense

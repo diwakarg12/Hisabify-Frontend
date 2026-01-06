@@ -3,9 +3,7 @@ import { PendingActionsOutlined } from "@mui/icons-material";
 import { Box, Card, Typography, Link } from "@mui/material";
 import { red } from "@mui/material/colors";
 import React from "react";
-// import { Link } from 'react-router-dom';
 import Chart from "../Chart_Graph/Chart";
-import AddExpense from "../AddExpense/AddExpense";
 import { useNavigate } from "react-router-dom";
 //#endregion
 
@@ -18,6 +16,7 @@ const PersonalTracker = ({
   category,
   totSpent,
   lastUpdated,
+  user,
   setOpenAddExpense,
 }) => {
   //#region Component states
@@ -98,7 +97,7 @@ const PersonalTracker = ({
       >
         <PendingActionsOutlined sx={{ color: "#A1A3AB" }} />
         <Typography
-          onClick={() => setOpenAddExpense(true)}
+          onClick={() => setOpenAddExpense(user._id)}
           sx={{
             color: red[300],
             textDecoration: "none",

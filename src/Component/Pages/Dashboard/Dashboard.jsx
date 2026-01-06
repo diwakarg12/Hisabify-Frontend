@@ -22,20 +22,20 @@ const Dashboard = () => {
   const [createTeam, setCreateTeam] = useState(false);
   const [openAddExpense, setOpenAddExpense] = useState(false);
   const [openInvite, setOpenInvite] = useState(false);
+  const [selectedGroup, setselectedGroup] = useState(null);
+  const [selectedData, setselectedData] = useState(null);
   //#endregion
 
   const dispatch = useDispatch();
 
   const user = useSelector((state) => state.auth.user);
   const groups = useSelector((state) => state.group.groups);
-  console.log("Groups", groups);
   //#region Component hooks
   React.useEffect(() => {
     // Anything in here is fired on component mount.
     const fetchGroups = async () => {
       try {
-        const res = await dispatch(getAllGroup()).unwrap();
-        console.log("Groups:", res);
+        await dispatch(getAllGroup()).unwrap();
       } catch (error) {
         console.error("Error:", error);
       }
@@ -45,7 +45,7 @@ const Dashboard = () => {
     return () => {
       // Anything in here is fired on component unmount.
     };
-  }, []);
+  }, [dispatch]);
 
   React.useEffect(() => {
     // Anything in here is fired on component update.
@@ -56,9 +56,22 @@ const Dashboard = () => {
   //#endregion
 
   //#region Component validation methods
-  const handleInviteButtonClick = (e) => {
+  const handleInviteButtonClick = (e, groupId) => {
     e.stopPropagation();
     setOpenInvite(true);
+
+    const group = groups.find((group) => String(group._id) === String(groupId));
+    setselectedGroup(group);
+  };
+
+  const handleAddExpenseButtonButtonClick = (e, id) => {
+    e.stopPropagation();
+    setOpenAddExpense(true);
+    const data =
+      String(id) === String(user._id)
+        ? user
+        : groups.find((group) => String(group._id) === String(id));
+    setselectedData(data);
   };
   //#endregion
 
@@ -66,40 +79,6 @@ const Dashboard = () => {
   //#endregion
 
   //#region Component feature methods
-  const teamDetails = [
-    {
-      id: 0,
-      teamName: "Team A",
-      totAmount: 1000,
-      topCategory: "shoping",
-      yourContribution: 200,
-      lastTransaction: 400,
-    },
-    {
-      id: 1,
-      teamName: "Team B",
-      totAmount: 1000,
-      topCategory: "shoping",
-      yourContribution: 200,
-      lastTransaction: 400,
-    },
-    {
-      id: 2,
-      teamName: "Team A",
-      totAmount: 1000,
-      topCategory: "shoping",
-      yourContribution: 200,
-      lastTransaction: 400,
-    },
-    {
-      id: 3,
-      teamName: "Team B",
-      totAmount: 1000,
-      topCategory: "shoping",
-      yourContribution: 200,
-      lastTransaction: 400,
-    },
-  ];
 
   //#endregion
 
@@ -151,7 +130,7 @@ const Dashboard = () => {
             fontWeight: 550,
           }}
         >
-          Welcome Back {`${user.firstName} ${user.lastName && user.lastName}`}
+          Welcome Back {user ? `${user.firstName} ${user.lastName}` : "Guest"}
           <WavingHandIcon sx={{ color: yellow[600], marginLeft: 2 }} />
         </Typography>
 
@@ -179,29 +158,35 @@ const Dashboard = () => {
             borderRadius: 2,
           }}
         >
-          <PersonalTracker setOpenAddExpense={setOpenAddExpense} />
+          <PersonalTracker
+            user={user}
+            setOpenAddExpense={handleAddExpenseButtonButtonClick}
+          />
           <TeamTracker
-            teamDetails={teamDetails}
+            teamDetails={groups}
             setCreateTeam={setCreateTeam}
-            openInvite={openInvite}
             setOpenInvite={handleInviteButtonClick}
-            handleClose={() => setOpenInvite(false)}
+            setOpenAddExpense={handleAddExpenseButtonButtonClick}
           />
         </Box>
       </Box>
 
       {/* Overlay */}
-      {createTeam && <AddTeam onClose={() => setCreateTeam(false)} />}
+      {createTeam && (
+        <AddTeam onClose={() => setCreateTeam(false)} user={user} />
+      )}
       {openAddExpense && (
         <AddExpense
           openAddExpense={openAddExpense}
           setOpenAddExpense={setOpenAddExpense}
+          data={selectedData}
         />
       )}
       {openInvite && (
         <Invite
           openInvite={openInvite}
           handleClose={() => setOpenInvite(false)}
+          group={selectedGroup}
         />
       )}
     </Box>

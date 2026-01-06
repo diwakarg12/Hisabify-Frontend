@@ -6,8 +6,7 @@ import LandingPage from "../Component/Pages/LandingPage/LandingPage";
 import ProfilePage from "../Component/Pages/ProfilePage/ProfilePage";
 import Test from "../Component/Test";
 import Dashboard from "../Component/Pages/Dashboard/Dashboard";
-// import ExpenseListPage from "../Component/Pages/ExpenseListPage/ExpenseListPage";
-import ExpenseListPage from "../Component/Pages/ExpenseListPage/ExpenseListPage";
+import GroupExpense from "../Component/Pages/ExpenseListPage/GroupExpense";
 import TeamList from "../Component/Pages/ExpenseListPage/TeamList";
 import MyExpense from "../Component/Pages/ExpenseListPage/MyExpense";
 import WithAuthRoutes from "../helpers/withAuthRoutes";
@@ -81,11 +80,11 @@ const RoutesConfig = () => {
       ),
     },
     {
-      path: "/expenselist/:groupId",
+      path: "/group-expense/:groupId",
       element: (
         <WithAuthRoutes>
           <LandingPage>
-            <ExpenseListPage />
+            <GroupExpense />
           </LandingPage>
         </WithAuthRoutes>
       ),
@@ -115,7 +114,7 @@ const RoutesConfig = () => {
       element: (
         <WithAuthRoutes>
           <LandingPage>
-            <ExpenseListPage />
+            <GroupExpense />
           </LandingPage>
         </WithAuthRoutes>
       ),
@@ -125,7 +124,7 @@ const RoutesConfig = () => {
       element: (
         <WithAuthRoutes>
           <LandingPage>
-            <ExpenseListPage />
+            <GroupExpense />
           </LandingPage>
         </WithAuthRoutes>
       ),

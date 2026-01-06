@@ -70,7 +70,7 @@ export const sendInvitation = createAsyncThunk('sendInvitation', async ({ groupI
             headers: {
                 "Content-type": "application/json",
             },
-            body: JSON.stringify(invitedTo),
+            body: JSON.stringify({ invitedTo }),
             credentials: 'include'
         });
 

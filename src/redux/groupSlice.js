@@ -8,6 +8,29 @@ const initialState = {
     error: null
 }
 
+export const searchUser = createAsyncThunk('searchuser', async (email, { rejectWithValue }) => {
+    try {
+
+        const response = await fetch(`http://localhost:3000/group/searchUser/${email}`, {
+            method: 'GET',
+            headers: {
+                "Content-type": "application/json"
+            },
+            credentials: 'include',
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            return rejectWithValue(result);
+        }
+
+        return result;
+
+    } catch (error) {
+        return rejectWithValue(error);
+    }
+});
 
 export const createGroup = createAsyncThunk('createGroup', async (data, { rejectWithValue }) => {
     try {
@@ -21,6 +44,10 @@ export const createGroup = createAsyncThunk('createGroup', async (data, { reject
             body: JSON.stringify(data)
         });
         const result = await response.json();
+
+        if (!response.ok) {
+            return rejectWithValue(result);
+        }
         return result;
 
     } catch (error) {
@@ -32,7 +59,7 @@ export const updateGroup = createAsyncThunk('updateGroup', async ({ data, groupI
     try {
 
         const response = await fetch(`http://localhost:3000/group/update/${groupId}`, {
-            method: 'PORT',
+            method: 'POST',
             headers: {
                 "Content-type": "application/json"
             },
@@ -109,7 +136,13 @@ const groupSlice = createSlice({
     reducers: {
         toggleAddGroupForm: (state) => {
             state.isAddGroupFormOpen = !state.isAddGroupFormOpen
-        }
+        },
+        resetSearchUsers: (state) => {
+            state.users = [];
+            state.loading = false;
+            state.error = null;
+            console.log('userrrs', state.users)
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -119,7 +152,7 @@ const groupSlice = createSlice({
             })
             .addCase(getAllGroup.fulfilled, (state, action) => {
                 state.loading = false;
-                state.groups = action.payload;
+                state.groups = action.payload.groups;
                 state.error = null;
             })
             .addCase(getAllGroup.rejected, (state, action) => {
@@ -127,13 +160,28 @@ const groupSlice = createSlice({
                 state.error = action.payload;
             })
 
+            // //searchUser
+            // .addCase(searchUser.pending, (state) => {
+            //     state.loading = true;
+            // })
+            // .addCase(searchUser.fulfilled, (state, action) => {
+            //     state.loading = false;
+            //     state.users.push(action.payload.user);
+            //     console.log('Userrr', state.users)
+            //     state.error = null;
+            // })
+            // .addCase(searchUser.rejected, (state, action) => {
+            //     state.loading = false;
+            //     state.error = action.payload;
+            // })
+
             //createGroup
             .addCase(createGroup.pending, (state) => {
                 state.loading = true;
             })
             .addCase(createGroup.fulfilled, (state, action) => {
-                state.loading = true;
-                state.groups.push(action.payload);
+                state.loading = false;
+                state.groups.push(action.payload.group);
                 state.error = null;
             })
             .addCase(createGroup.rejected, (state, action) => {
@@ -160,17 +208,18 @@ const groupSlice = createSlice({
                 state.loading = true;
             })
             .addCase(removeUser.fulfilled, (state, action) => {
-                state.pending = false;
-                state.groups = state.groups.map(group => {
-                    if (group.members.some(user => user._id === action.payload)) {
-                        return {
+                state.loading = false;
+                state.groups = state.groups.map(group =>
+                    group.members.some(user => user._id === action.payload)
+                        ? {
                             ...group,
-                            members: group.members.filter(user => user._id !== action.payload)
-                        };
-                    };
-                });
+                            members: group.members.filter(user => user._id !== action.payload),
+                        }
+                        : group
+                );
                 state.error = null;
             })
+
             .addCase(removeUser.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
@@ -192,5 +241,5 @@ const groupSlice = createSlice({
     }
 });
 
-export const { toggleAddGroupForm } = groupSlice.actions;
+export const { toggleAddGroupForm, resetSearchUsers } = groupSlice.actions;
 export default groupSlice.reducer;
