@@ -40,12 +40,10 @@ dayjs.extend(utc);
 const ProfilePage = () => {
   //#region Component states
   const user = useSelector((store) => store.auth.user);
-  console.log("user", user);
   const [editable, setEditable] = useState(false);
   const [userData, setUserData] = useState(user);
   const [emailUpdate, setEmailUpdate] = useState(false);
   const [phoneUpdate, setPhoneUpdate] = useState(false);
-  const [uploading, setUploading] = useState(true);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   //#endregion
@@ -70,8 +68,6 @@ const ProfilePage = () => {
 
   //#region Component Api methods
   const handleProfileUpdate = async () => {
-    setUploading(true);
-    console.log("userData", userData);
     const userProfile = {
       firstName: userData.firstName,
       lastName: userData.lastName,
@@ -89,13 +85,11 @@ const ProfilePage = () => {
       });
       navigate("/dashboard");
     } else {
-      setUploading(false);
       toast.error(response.error, {
         position: "top-center",
         theme: "dark",
       });
     }
-    setUploading(false);
   };
   //#endregion
 
@@ -113,7 +107,6 @@ const ProfilePage = () => {
   };
 
   const handleEmailUpdate = async () => {
-    console.log("userEmail", userData.email);
     const response = await dispatch(updateEmail(userData.email)).unwrap();
     if (!response.error) {
       toast.success(response.message, {
@@ -130,7 +123,6 @@ const ProfilePage = () => {
   };
 
   const handlePhoneUpdate = async () => {
-    console.log("userPhone", userData.phone);
     const response = await dispatch(updatePhone(userData.phone)).unwrap();
     if (!response.error) {
       toast.success(response.message, {
@@ -208,7 +200,7 @@ const ProfilePage = () => {
           padding: 2,
         }}
       >
-        <ProfilePhoto profile={userData.profile} setUserData={setUserData} uploading={uploading} />
+        <ProfilePhoto profile={userData.profile} setUserData={setUserData} />
         <Box>
           <Typography
             sx={{

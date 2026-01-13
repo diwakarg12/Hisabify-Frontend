@@ -1,22 +1,29 @@
 //#region imports
-import { Box, Card, CardContent, Typography } from "@mui/material";
+import { Box, Card, CardContent, Typography, IconButton } from "@mui/material";
 import React from "react";
 import MultiChart from "../Chart_Graph/MultiChart";
 import { useNavigate } from "react-router-dom";
+import { Delete, EditSquare } from "@mui/icons-material";
 //#endregion
 
 //#region Component make Styles
 //#endregion
 
 //#region Function Component
-const TeamListCart = ({ teamDetails }) => {
+const TeamListCart = ({
+  teamDetail,
+  handleOpenDeleteGroup,
+  handleOpenEditGroup,
+}) => {
   const {
-    teamName,
-    totAmount,
+    groupId,
+    groupName,
+    totalAmount,
     topCategory,
+    biggestExpense,
     yourContribution,
-    lastTransaction,
-  } = teamDetails;
+    latestExpense,
+  } = teamDetail;
   //#region Component states
   //#endregion
   const navigate = useNavigate();
@@ -44,12 +51,6 @@ const TeamListCart = ({ teamDetails }) => {
   //#endregion
 
   //#region Component feature methods
-  const data = [
-    { label: "Group A", value: 400, color: "#0088FE" },
-    { label: "Group B", value: 300, color: "#00C49F" },
-    { label: "Group C", value: 300, color: "#FFBB28" },
-    { label: "Group D", value: 200, color: "#FF8042" },
-  ];
 
   const datacategory = [
     { label: "Shoping", value: 400, color: "#0088FE" },
@@ -98,12 +99,13 @@ const TeamListCart = ({ teamDetails }) => {
           justifyContent: "center",
         }}
       >
-        {teamName}
+        {groupName}
       </Typography>
 
       <Card
         sx={{
           display: "flex",
+          cursor: "pointer",
           boxShadow: 5,
           marginBottom: {
             xs: 0.5,
@@ -113,13 +115,13 @@ const TeamListCart = ({ teamDetails }) => {
             xs: "95%",
             md: "90%",
           },
-          gap: 10,
+          gap: 3,
           overflow: "auto",
           scrollbarWidth: "none",
         }}
-        onClick={() => navigate("/expenselist/123")}
+        onClick={() => navigate(`/group-expense/${groupId}`)}
       >
-        <CardContent sx={{}}>
+        <CardContent sx={{ width: "45%" }}>
           <Typography
             variant="h6"
             sx={{
@@ -129,7 +131,7 @@ const TeamListCart = ({ teamDetails }) => {
               },
             }}
           >
-            <strong>Total Spend :</strong> {totAmount}
+            <strong>Total Spend :</strong> {totalAmount ? totalAmount : 0}
           </Typography>
           <Typography
             variant="h6"
@@ -142,7 +144,7 @@ const TeamListCart = ({ teamDetails }) => {
           >
             <strong>Top Category: </strong>
             <Box component="span" sx={{ color: "error.main", fontWeight: 600 }}>
-              {topCategory}
+              {topCategory?.category ? topCategory?.category : "NA"}
             </Box>
           </Typography>
           <Typography
@@ -154,7 +156,8 @@ const TeamListCart = ({ teamDetails }) => {
               },
             }}
           >
-            <strong>Top Spend :</strong> {yourContribution}
+            <strong>Your Contribution :</strong>{" "}
+            {yourContribution ? yourContribution : 0}
           </Typography>
           <Typography
             variant="h6"
@@ -165,7 +168,7 @@ const TeamListCart = ({ teamDetails }) => {
               },
             }}
           >
-            <strong>Top Contribution:</strong> {yourContribution}
+            <strong>Top Spend:</strong> {biggestExpense ? biggestExpense : 0}
           </Typography>
           <Typography
             variant="h6"
@@ -176,13 +179,64 @@ const TeamListCart = ({ teamDetails }) => {
               },
             }}
           >
-            <strong>Last Contribution :</strong> {lastTransaction}
+            <strong>Last Transaction :</strong>{" "}
+            {latestExpense
+              ? new Date(latestExpense).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
+              : "NA"}
           </Typography>
         </CardContent>
 
-        <Box sx={{ display: "flex", gap: 6 }}>
-          <MultiChart data={data} outerRadius={80} />
+        <Box
+          sx={{
+            display: "flex",
+            gap: 6,
+            width: "40%",
+          }}
+        >
           <MultiChart data={datacategory} outerRadius={80} />
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 4,
+            width: "8%",
+          }}
+        >
+          <IconButton
+            sx={{
+              color: "white",
+              backgroundColor: "#e57373",
+              "&:hover": {
+                backgroundColor: "red",
+              },
+            }}
+            onClick={(e) => {
+              handleOpenDeleteGroup(e, groupId);
+            }}
+          >
+            <Delete />
+          </IconButton>
+          <IconButton
+            sx={{
+              color: "white",
+              backgroundColor: "#e57373",
+              "&:hover": {
+                backgroundColor: "red",
+              },
+            }}
+            onClick={(e) => {
+              handleOpenEditGroup(e, groupId);
+            }}
+          >
+            <EditSquare />
+          </IconButton>
         </Box>
       </Card>
     </Box>

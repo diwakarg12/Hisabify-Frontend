@@ -42,7 +42,7 @@ const Header = () => {
         const res = await dispatch(checkAuth()).unwrap();
         setUser(res.user);
       } catch (error) {
-        console.log("Auth failed", error);
+        console.log("Auth failed", error?.message);
       }
     };
 
@@ -63,7 +63,6 @@ const Header = () => {
     });
 
     setCurrentDate(formatted);
-    console.log("formatteddfgh", formatted);
   }, []);
   //#endregion
 
@@ -75,14 +74,14 @@ const Header = () => {
 
   //#region Component Api methods
   const handleRequestDialog = async () => {
-    setOpenDialog(!openDialog);
-    const response = await dispatch(getReceivedRequests()).unwrap();
+    setOpenDialog(true);
+    const res = await dispatch(getReceivedRequests()).unwrap();
   };
   //#endregion
 
   //#region Component feature methods
   const handleDialogClose = () => {
-    setOpenDialog(!openDialog);
+    setOpenDialog(false);
   };
 
   const handleNotificationClick = () => {
@@ -120,7 +119,6 @@ const Header = () => {
       2,
       "0"
     )}-${yearPart}`;
-    console.log("formattedDate", formattedDate);
   }
 
   //#endregion

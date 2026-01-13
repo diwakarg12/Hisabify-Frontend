@@ -10,16 +10,25 @@ import {
 } from "@mui/material";
 import React from "react";
 import { Delete, EditSquare } from "@mui/icons-material";
+import {
+  EXPENSE_CATEGORY_COLORS,
+  DEFAULT_EXPENSE_COLOR,
+} from "../../../helpers/expenseCategoryColors";
 //#endregion
 
 //#region Component make Styles
 //#endregion
 
 //#region Function Component
-const ExpenseDetails = ({ expense }) => {
+const ExpenseDetails = ({
+  expense,
+  handleOpenEditExpense,
+  handleOpenDeleteExpense,
+}) => {
   //#region Component states
   //#endregion
-
+  const color =
+    EXPENSE_CATEGORY_COLORS[expense?.category] || DEFAULT_EXPENSE_COLOR;
   //#region Component hooks
   React.useEffect(() => {
     // Anything in here is fired on component mount.
@@ -40,6 +49,7 @@ const ExpenseDetails = ({ expense }) => {
   //#endregion
 
   //#region Component Api methods
+
   //#endregion
 
   //#region Component feature methods
@@ -55,7 +65,7 @@ const ExpenseDetails = ({ expense }) => {
       sx={{
         p: 5,
         backgroundColor: "#f6f9fc",
-        border: "1px solid #ddd",
+        border: `2px solid ${color?.color}`,
         margin: "0 auto",
         height: "86vh",
       }}
@@ -63,21 +73,20 @@ const ExpenseDetails = ({ expense }) => {
       <Stack direction="row" spacing={2} alignItems="center">
         <Avatar
           variant="rounded"
-          src={""}
+          src={expense?.receiptImage ? expense?.receiptImage : ""}
           sx={{ width: 64, height: 64 }}
         />
         <Box>
           <Typography variant="subtitle1" fontWeight="bold">
-            {expense.title}
-          </Typography>
-          <Typography variant="body2">
-            Category :{" "}
-            <Box component="span" sx={{ color: expense.categoryColor }}>
-              {expense.category}
-            </Box>
+            {expense?.category}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Added on: {expense.date}
+            Added on:{" "}
+            {new Date(expense?.createdAt).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })}
           </Typography>
         </Box>
       </Stack>
@@ -93,16 +102,17 @@ const ExpenseDetails = ({ expense }) => {
       >
         <Stack spacing={1} mt={2}>
           <Typography variant="body2">
-            <strong>Amount :</strong> Rs {expense.price} /-
+            <strong>Amount :</strong> Rs {expense?.amount} /-
           </Typography>
           <Typography variant="body2">
-            <strong>Expense Title:</strong> {expense.title}
+            <strong>Expense Title:</strong> {expense?.category}
           </Typography>
           <Typography variant="body2">
-            <strong>Expense Description:</strong> {expense.description}
+            <strong>Expense Description:</strong> {expense?.description}
           </Typography>
           <Typography variant="body2">
-            <strong>Paid By:</strong> {expense.paid_by}
+            <strong>Paid By:</strong>{" "}
+            {`${expense?.createdFor?.firstName} ${expense?.createdFor?.lastName}`}
           </Typography>
         </Stack>
 
@@ -121,6 +131,7 @@ const ExpenseDetails = ({ expense }) => {
                 backgroundColor: "red",
               },
             }}
+            onClick={() => handleOpenDeleteExpense(expense?._id)}
           >
             <Delete />
           </IconButton>
@@ -132,6 +143,7 @@ const ExpenseDetails = ({ expense }) => {
                 backgroundColor: "red",
               },
             }}
+            onClick={() => handleOpenEditExpense(expense?._id)}
           >
             <EditSquare />
           </IconButton>

@@ -55,6 +55,11 @@ export const reviewReceivedRequest = createAsyncThunk('reviewReceivedRequest', a
             credentials: 'include'
         });
         const result = await response.json();
+
+        if (!response.ok) {
+            return rejectWithValue(result.message || "Request failed");
+        }
+
         return result;
 
     } catch (error) {

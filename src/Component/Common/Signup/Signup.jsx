@@ -100,7 +100,6 @@ const Signup = ({ isLogin, setIsLogin }) => {
       ...user,
     };
     const response = await dispatch(register(formattedUser)).unwrap();
-    console.log("response", response);
     if (!response.error) {
       toast.success(response.message, {
         position: "top-center",

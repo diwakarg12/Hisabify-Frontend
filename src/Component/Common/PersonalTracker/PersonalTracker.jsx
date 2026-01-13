@@ -5,35 +5,23 @@ import { red } from "@mui/material/colors";
 import React from "react";
 import Chart from "../Chart_Graph/Chart";
 import { useNavigate } from "react-router-dom";
+import { getExpenseAnalytics } from "../../../helpers/expenseAnalytics";
 //#endregion
 
 //#region Component make Styles
 //#endregion
 
 //#region Function Component
-const PersonalTracker = ({
-  totTransaction,
-  category,
-  totSpent,
-  lastUpdated,
-  user,
-  setOpenAddExpense,
-}) => {
+const PersonalTracker = ({ user, setOpenAddExpense, expenses, teamCards }) => {
   //#region Component states
   const navigate = useNavigate();
+  const month = new Date().toLocaleString("default", { month: "short" });
+  const { totalAmount, topCategory, biggestExpense, latestExpense } =
+    getExpenseAnalytics(expenses);
   //#endregion
 
   //#region Component hooks
-  React.useEffect(() => {
-    // Anything in here is fired on component mount.
-    return () => {
-      // Anything in here is fired on component unmount.
-    };
-  }, []);
 
-  React.useEffect(() => {
-    // Anything in here is fired on component update.
-  });
   //#endregion
 
   //#region Component use Styles
@@ -46,7 +34,6 @@ const PersonalTracker = ({
   //#endregion
 
   //#region Component feature methods
-  const month = new Date().toLocaleString("default", { month: "short" });
   //#endregion
 
   //#region Component JSX.members
@@ -97,7 +84,7 @@ const PersonalTracker = ({
       >
         <PendingActionsOutlined sx={{ color: "#A1A3AB" }} />
         <Typography
-          onClick={() => setOpenAddExpense(user._id)}
+          onClick={(e) => setOpenAddExpense(e, user._id)}
           sx={{
             color: red[300],
             textDecoration: "none",
@@ -181,7 +168,13 @@ const PersonalTracker = ({
               },
             }}
           >
-            <Chart value={200} totValue={1000} name={""} size={130} font={15} />
+            <Chart
+              value={totalAmount}
+              totValue={user?.income}
+              name={`${((totalAmount / user?.income) * 100).toFixed(2)} %`}
+              size={130}
+              font={15}
+            />
           </Box>
           <Box
             sx={{
@@ -190,13 +183,13 @@ const PersonalTracker = ({
             }}
           >
             <Typography sx={{ fontSize: 19 }}>
-              Total transaction : {totTransaction ? totTransaction : 0}
+              Top transaction : {biggestExpense ? biggestExpense : 0}
             </Typography>
             <Typography sx={{ fontSize: 19 }}>
-              Top Category : {category ? category : "Food"}
+              Top Category : {topCategory ? topCategory?.category : "NA"}
             </Typography>
             <Typography sx={{ fontSize: 19 }}>
-              Total Spent: {totSpent ? totSpent : 0} /-
+              Total Spent: {totalAmount ? totalAmount : 0} /-
             </Typography>
           </Box>
         </Box>
@@ -212,12 +205,16 @@ const PersonalTracker = ({
           }}
         >
           <Typography sx={{ fontSize: { sm: 12, md: 15 } }}>
-            Top Category : {"Personal"}
+            Top Category : {topCategory ? topCategory?.category : "NA"}
           </Typography>
           <Typography sx={{ fontSize: { sm: 12, md: 15 } }}>
             Last Updated on:{" "}
-            {lastUpdated
-              ? lastUpdated
+            {latestExpense
+              ? new Date(latestExpense).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
               : new Date().toLocaleDateString("en-GB", {
                   day: "2-digit",
                   month: "short",
@@ -243,6 +240,7 @@ const PersonalTracker = ({
           paddingX: {
             md: 1,
           },
+          overflowX: "auto",
         }}
       >
         <Typography
@@ -272,75 +270,38 @@ const PersonalTracker = ({
             justifyContent: "space-evenly",
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "start",
-              alignItems: "center",
+          {teamCards && teamCards.length > 0 ? (
+            teamCards?.map((group) => (
+              <Box
+                key={group?._id}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "start",
+                  alignItems: "center",
 
-              paddingLeft: 2,
-            }}
-          >
-            <Chart
-              value={800}
-              totValue={1000}
-              name={"Team A"}
-              size={120}
-              font={15}
-            />
-            <Typography fontSize={10}>Your Contribution : {} /-</Typography>
-          </Box>
-
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "start",
-              alignItems: "center",
-
-              paddingLeft: 2,
-            }}
-          >
-            <Chart
-              value={200}
-              totValue={1000}
-              name={"Team B"}
-              size={120}
-              font={15}
-            />
-            <Typography fontSize={10}>Your Contribution : {} /-</Typography>
-          </Box>
-
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "start",
-              alignItems: "center",
-              paddingLeft: 2,
-            }}
-          >
-            <Chart
-              value={600}
-              totValue={1000}
-              name={"Team C"}
-              size={120}
-              font={15}
-            />
-            <Typography fontSize={10}>Your Contribution : {} /-</Typography>
-          </Box>
-        </Box>
-
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-evenly",
-            padding: 2,
-          }}
-        >
-          <Typography>Category : {}</Typography>
-          <Typography>Last Updated on: {}</Typography>
+                  paddingLeft: 2,
+                }}
+              >
+                <Chart
+                  value={group?.yourContribution ? group?.yourContribution : 0}
+                  totValue={group?.totalAmount ? group?.totalAmount : 0}
+                  name={group.groupName}
+                  size={120}
+                  font={15}
+                />
+                <Typography fontSize={10}>
+                  Your Contribution :{" "}
+                  {group?.yourContribution ? group?.yourContribution : 0}
+                  /-
+                </Typography>
+              </Box>
+            ))
+          ) : (
+            <Typography sx={{ fontSize: 22, fontWeight: 600, my: 3 }}>
+              You Don't have any group
+            </Typography>
+          )}
         </Box>
       </Card>
     </Box>

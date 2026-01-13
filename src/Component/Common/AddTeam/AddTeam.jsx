@@ -2,7 +2,11 @@
 import React, { useRef, useState } from "react";
 import { Box, Typography, TextField, Button, Stack } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { createGroup, searchUser } from "../../../redux/groupSlice";
+import {
+  createGroup,
+  searchUser,
+  updateGroup,
+} from "../../../redux/groupSlice";
 import { resetSearchUsers } from "../../../redux/groupSlice";
 import { sendInvitation } from "../../../redux/requestSlice";
 // import { sendInvitation } from "../../../redux/requestSlice";
@@ -12,7 +16,7 @@ import { sendInvitation } from "../../../redux/requestSlice";
 //#endregion
 
 //#region Function Component
-const AddTeam = ({ onClose, user }) => {
+const AddTeam = ({ onClose, user, editableData = null }) => {
   //#region Component states
   const contentRef = useRef(null);
   const dispatch = useDispatch();
@@ -44,7 +48,18 @@ const AddTeam = ({ onClose, user }) => {
 
   React.useEffect(() => {
     // Anything in here is fired on component update.
-  });
+
+    if (editableData) {
+      setTeamDetails(() => ({
+        groupName: editableData.groupName,
+        description: editableData.description,
+        members: editableData.members,
+      }));
+      if (editableData?.members) {
+        setInvitedMembers([...editableData.members]);
+      }
+    }
+  }, [editableData]);
   //#endregion
 
   //#region Component use Styles
@@ -71,7 +86,7 @@ const AddTeam = ({ onClose, user }) => {
         [name]: value,
       }));
     } catch (error) {
-      console.log("Error: ", error);
+      console.log("Error: ", error?.message);
     }
   };
 
@@ -86,7 +101,6 @@ const AddTeam = ({ onClose, user }) => {
       members: [],
     };
     const group = await dispatch(createGroup(finalGroupDetails)).unwrap();
-    console.log("Group", group.group._id);
 
     invitedMembers.map(
       async (member) =>
@@ -104,6 +118,22 @@ const AddTeam = ({ onClose, user }) => {
 
     dispatch(resetSearchUsers());
 
+    onClose();
+  };
+
+  const handleEditGroup = () => {
+    const data = {
+      groupName: teamDetails?.groupName,
+      description: teamDetails?.description,
+    };
+    console.log("updatedGroupDetails", data);
+    dispatch(updateGroup({ data, groupId: editableData?._id }));
+    setInvitedMembers([]);
+    setTeamDetails({
+      groupName: "",
+      description: "",
+      members: [],
+    });
     onClose();
   };
   //#endregion
@@ -161,9 +191,12 @@ const AddTeam = ({ onClose, user }) => {
               textDecorationColor: "#F24E1E",
             }}
           >
-            Create
+            {editableData?.groupName ? "Edit" : "Crreate"}
           </Box>
-          <Box component="span"> New Team</Box>
+          <Box component="span">
+            {" "}
+            {editableData?.groupName ? "Team" : "New Team"}
+          </Box>
         </Typography>
         <Button onClick={() => onClose()} sx={{ textDecoration: "underline" }}>
           Go BACk
@@ -214,8 +247,9 @@ const AddTeam = ({ onClose, user }) => {
             }}
             direction="row"
           >
-            {invitedMembers.map((member) => (
+            {invitedMembers.map((member, index) => (
               <Box
+                key={index}
                 component="span"
                 sx={{
                   display: "flex",
@@ -230,11 +264,13 @@ const AddTeam = ({ onClose, user }) => {
                 <Box
                   component="span"
                   sx={{
-                    cursor: "pointer",
+                    cursor: editableData ? "not-allowed" : "pointer",
+                    pointerEvents: editableData ? "none" : "auto",
                     padding: "1px 2px",
                     fontWeight: "bold",
                     color: "#000",
                   }}
+                  disabled={editableData ? true : false}
                   onClick={() => handleRemoveInvitedUser(member._id)}
                 >
                   X
@@ -257,11 +293,13 @@ const AddTeam = ({ onClose, user }) => {
             type="email"
             fullWidth
             value={email}
+            disabled={editableData ? true : false}
             onChange={(e) => setEmail(e.target.value)}
           />
           <Button
             variant="contained"
             sx={{ backgroundColor: "#F24E1E" }}
+            disabled={editableData ? true : false}
             onClick={handleUserSearch}
           >
             Search
@@ -286,9 +324,9 @@ const AddTeam = ({ onClose, user }) => {
           variant="contained"
           size="large"
           sx={{ backgroundColor: "#F24E1E" }}
-          onClick={handleCreateGroup}
+          onClick={editableData ? handleEditGroup : handleCreateGroup}
         >
-          Create Group
+          {editableData ? "Edit Group" : "Create Group"}
         </Button>
       </Box>
     </Box>

@@ -6,10 +6,11 @@ import LandingPage from "../Component/Pages/LandingPage/LandingPage";
 import ProfilePage from "../Component/Pages/ProfilePage/ProfilePage";
 import Test from "../Component/Test";
 import Dashboard from "../Component/Pages/Dashboard/Dashboard";
-import GroupExpense from "../Component/Pages/ExpenseListPage/GroupExpense";
 import TeamList from "../Component/Pages/ExpenseListPage/TeamList";
-import MyExpense from "../Component/Pages/ExpenseListPage/MyExpense";
+import ExpenseContainer from "../Component/Pages/ExpenseListPage/ExpenseContainer";
 import WithAuthRoutes from "../helpers/withAuthRoutes";
+import Contact from "../Component/Pages/Contact/Contact";
+import Setting from "../Component/Pages/Setting/Setting";
 
 //#endregion
 
@@ -84,7 +85,7 @@ const RoutesConfig = () => {
       element: (
         <WithAuthRoutes>
           <LandingPage>
-            <GroupExpense />
+            <ExpenseContainer />
           </LandingPage>
         </WithAuthRoutes>
       ),
@@ -104,7 +105,7 @@ const RoutesConfig = () => {
       element: (
         <WithAuthRoutes>
           <LandingPage>
-            <MyExpense />
+            <ExpenseContainer />
           </LandingPage>
         </WithAuthRoutes>
       ),
@@ -114,17 +115,17 @@ const RoutesConfig = () => {
       element: (
         <WithAuthRoutes>
           <LandingPage>
-            <GroupExpense />
+            <Setting />
           </LandingPage>
         </WithAuthRoutes>
       ),
     },
     {
-      path: "/help",
+      path: "/contact",
       element: (
         <WithAuthRoutes>
           <LandingPage>
-            <GroupExpense />
+            <Contact />
           </LandingPage>
         </WithAuthRoutes>
       ),

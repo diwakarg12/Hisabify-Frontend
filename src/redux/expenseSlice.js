@@ -1,81 +1,75 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { toast } from 'react-toastify';
 
 const initialState = {
-    groupExpenses: [],
     personalExpenses: [],
+    groupExpenses: {},
     toggleExpenseForm: false,
     loading: false,
     error: null
 };
 
-export const getGroupExpense = createAsyncThunk('getGroupExpense', async (groupId, { rejectWithValue }) => {
+export const getExpenses = createAsyncThunk('getExpenses', async (groupId, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`http://localhost:3000/expense/getAllExpense/${groupId}`, {
+        const url = groupId
+            ? `http://localhost:3000/expense/getAllExpense/${groupId}`
+            : `http://localhost:3000/expense/getAllExpense`;
+
+
+        const response = await fetch(url, {
             method: 'GET',
             headers: {
                 "Content-type": "application/json",
             },
+            credentials: "include"
         });
         const result = await response.json();
-        return result;
+
+        if (!response.ok) {
+            toast.error(result?.message);
+            return rejectWithValue(result.message || "Failed to add expense");
+        }
+
+        return { groupId, data: result.expense };
 
     } catch (error) {
-        return rejectWithValue(error)
-    }
-})
-
-export const getPersonalExpense = createAsyncThunk('getPersonalExpense', async ({ rejectWithValue }) => {
-    try {
-
-        const response = await fetch(`http://localhost:3000/expense/getAllExpense`, {
-            method: 'GET',
-            headers: {
-                "Content-type": "application/json",
-            },
-        });
-        const result = await response.json();
-        return result;
-
-    } catch (error) {
-        return rejectWithValue(error)
-    }
-})
-
-export const addPersonalExpense = createAsyncThunk('addPersonalExpense', async (data, { rejectWithValue }) => {
-    try {
-
-        const response = await fetch(`http://localhost:3000/expense/add`, {
-            method: 'POST',
-            headers: {
-                "Content-type": "application/json",
-            },
-            body: JSON.stringify(data),
-        });
-        const result = await response.json();
-        return result;
-
-    } catch (error) {
-        return rejectWithValue(error);
+        toast.error(error?.message);
+        return rejectWithValue(error?.message || "Something went wrong. Please try again.")
     }
 });
 
-export const addGroupExpense = createAsyncThunk('addGroupExpense', async ({ data, groupId }, { rejectWithValue }) => {
+export const addExpense = createAsyncThunk('addGroupExpense', async ({ data, groupId }, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`http://localhost:3000/expense/add/${groupId}`, {
+        const url = groupId
+            ? `http://localhost:3000/expense/add/${groupId}`
+            : `http://localhost:3000/expense/add`;
+
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 "Content-type": "application/json",
             },
+            credentials: "include",
             body: JSON.stringify(data)
         });
+
         const result = await response.json();
+
+        if (!response.ok) {
+            toast.error(result?.message);
+            return rejectWithValue(result.message || "Failed to add expense");
+        }
+
+        toast.success("Expense Added !");
+
         return result;
 
     } catch (error) {
-        return rejectWithValue(error)
+        toast.error(error?.message);
+        return rejectWithValue(error?.message || "Something went wrong. Please try again.")
     }
 });
 
@@ -87,17 +81,25 @@ export const editExpense = createAsyncThunk('editExpense', async ({ data, expens
             headers: {
                 "Content-type": "application/json",
             },
+            credentials: "include",
             body: JSON.stringify(data)
         });
         const result = await response.json();
+
+        if (!response.ok) {
+            toast.error(result?.message);
+            return rejectWithValue(result.message || "Falied to edit Expense")
+        }
+        toast.success("Expense updated !");
         return result;
 
     } catch (error) {
-        return rejectWithValue(error)
+        toast.error(error?.message);
+        return rejectWithValue(error?.message || "Something went wrong. Please try again.")
     }
 });
 
-export const deleteExpense = createAsyncThunk('deleteExpense', async (expenseId, { rejectWithValue }) => {
+export const deleteExpense = createAsyncThunk('deleteExpense', async ({ expenseId, isPersonal, groupId }, { rejectWithValue }) => {
     try {
 
         const response = await fetch(`http://localhost:3000/expense/delete/${expenseId}`, {
@@ -105,12 +107,22 @@ export const deleteExpense = createAsyncThunk('deleteExpense', async (expenseId,
             headers: {
                 "Content-type": "application/json",
             },
+            credentials: "include"
         });
         const result = await response.json();
-        return result;
+
+        if (!response.ok) {
+            toast.error(result?.message);
+            return rejectWithValue(result.message || "Failed to add expense");
+        }
+
+        toast.success("Expense Deleted !");
+
+        return { expenseId, isPersonal, groupId };
 
     } catch (error) {
-        return rejectWithValue(error)
+        toast.error(error?.message);
+        return rejectWithValue(error?.message || "Something went wrong. Please try again.")
     }
 })
 
@@ -124,58 +136,36 @@ const expenseSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            //getGroupExpense
-            .addCase(getGroupExpense.pending, (state) => {
+            //getExpense
+            .addCase(getExpenses.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(getGroupExpense.fulfilled, (state, action) => {
+            .addCase(getExpenses.fulfilled, (state, action) => {
                 state.loading = false;
-                state.groupExpenses = action.payload;
                 state.error = null;
+
+                const { groupId, data } = action.payload;
+                if (groupId) {
+                    state.groupExpenses[groupId] = data;
+                } else {
+                    state.personalExpenses = data
+                }
             })
-            .addCase(getGroupExpense.rejected, (state, action) => {
+            .addCase(getExpenses.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload
             })
 
-            //getPersonalExpense
-            .addCase(getPersonalExpense.pending, (state) => {
+            //addExpense
+            .addCase(addExpense.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(getPersonalExpense.fulfilled, (state, action) => {
+            .addCase(addExpense.fulfilled, (state, action) => {
                 state.loading = false;
-                state.personalExpenses = action.payload;
+                state.expenses.push(action.payload.expense);
                 state.error = null;
             })
-            .addCase(getPersonalExpense.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-
-            //addGroupExpense
-            .addCase(addGroupExpense.pending, (state) => {
-                state.loading = true;
-            })
-            .addCase(addGroupExpense.fulfilled, (state, action) => {
-                state.loading = false;
-                state.groupExpenses.push(action.payload);
-                state.error = null;
-            })
-            .addCase(addGroupExpense.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-
-            //addPersonalExpense
-            .addCase(addPersonalExpense.pending, (state) => {
-                state.loading = true;
-            })
-            .addCase(addPersonalExpense.fulfilled, (state, action) => {
-                state.loading = false;
-                state.personalExpenses.push(action.payload);
-                state.error = null;
-            })
-            .addCase(addPersonalExpense.rejected, (state, action) => {
+            .addCase(addExpense.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
@@ -186,12 +176,14 @@ const expenseSlice = createSlice({
             })
             .addCase(editExpense.fulfilled, (state, action) => {
                 state.loading = false;
-                state.groupExpenses = state.groupExpenses.map(expense => (
-                    expense._id === action.payload._id ? action.payload : expense
-                ))
-                state.personalExpenses = state.personalExpenses.map(expense => (
-                    expense._id === action.payload._id ? action.payload : expense
-                ))
+                const { expenseId, isPersonal, groupId } = action.payload;
+                if (isPersonal) {
+                    state.personalExpenses = state.personalExpenses.filter(exp => exp?._id !== expenseId);
+                } else {
+                    if (state.groupExpenses[groupId]) {
+                        state.groupExpenses[groupId] = state.groupExpenses[groupId].filter(exp => exp?._id !== expenseId)
+                    }
+                }
                 state.error = null;
             })
             .addCase(editExpense.rejected, (state, action) => {
@@ -205,8 +197,7 @@ const expenseSlice = createSlice({
             })
             .addCase(deleteExpense.fulfilled, (state, action) => {
                 state.loading = false;
-                state.groupExpenses = state.groupExpenses.filter(expense => expense._id !== action.payload._id)
-                state.personalExpenses = state.personalExpenses.filter(expense => expense._id !== action.payload._id)
+                state.expenses = state.expenses.filter((expense) => expense?._id !== action.payload.expenseId)
                 state.error = null;
             })
             .addCase(deleteExpense.rejected, (state, action) => {

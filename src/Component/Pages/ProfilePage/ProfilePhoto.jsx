@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { Avatar, Box, CircularProgress } from "@mui/material";
 import { toast } from "react-toastify";
 
-const ProfilePhoto = ({ profile, setUserData, uploading }) => {
+const ProfilePhoto = ({ profile, setUserData }) => {
   const fileInputRef = useRef(null);
 
   const handleAvatarClick = () => {
@@ -50,23 +50,6 @@ const ProfilePhoto = ({ profile, setUserData, uploading }) => {
         }}
         onClick={handleAvatarClick}
       />
-
-      {uploading && (
-        <CircularProgress
-          size={100}
-          thickness={2}
-          sx={{
-            color: "#ff6467",
-            position: "absolute",
-            top: "0%",
-            left: "0%",
-            transform: "translate(-50%, -50%)",
-            "& .MuiCircularProgress-circle": {
-              strokeLinecap: "round",
-            },
-          }}
-        />
-      )}
 
       <input
         type="file"

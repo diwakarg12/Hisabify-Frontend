@@ -12,10 +12,10 @@ import { Groups } from "@mui/icons-material";
 
 //#region Function Component
 const TeamTracker = ({
-  teamDetails,
   setCreateTeam,
   setOpenInvite,
   setOpenAddExpense,
+  teamCards,
 }) => {
   //#region Component states
 
@@ -114,10 +114,10 @@ const TeamTracker = ({
           },
         }}
       >
-        {teamDetails?.map((teamDetail, index) => (
+        {teamCards?.map((team, index) => (
           <TeamCart
-            index={index}
-            teamDetails={teamDetail}
+            key={index}
+            teamDetail={team}
             setOpenInvite={setOpenInvite}
             setOpenAddExpense={setOpenAddExpense}
           />

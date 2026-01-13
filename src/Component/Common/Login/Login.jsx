@@ -67,7 +67,7 @@ const Login = ({ isLogin, setIsLogin }) => {
     return () => {
       // Anything in here is fired on component unmount.
     };
-  }, []);
+  }, [navigate]);
 
   React.useEffect(() => {
     // Anything in here is fired on component update.
@@ -91,7 +91,6 @@ const Login = ({ isLogin, setIsLogin }) => {
   //#region Component Api methods
   const handleLoginClick = async () => {
     const response = await dispatch(login(user)).unwrap();
-    console.log("Login Response", response);
     if (!response.error) {
       toast.success(response.message, {
         theme: "dark",

@@ -1,35 +1,28 @@
-/* eslint-disable no-unused-vars */
-
 //#region imports
-import React from 'react';
-import { Gauge, gaugeClasses } from '@mui/x-charts'
-import { red } from '@mui/material/colors';
+import React from "react";
+import { Gauge, gaugeClasses } from "@mui/x-charts";
+import { green, orange, red } from "@mui/material/colors";
 //#endregion
 
 //#region Component make Styles
 //#endregion
 
 //#region Function Component
-const Chart = ({value, totValue, name, size, font}) => {
-   
-  //#region Component states
- 
+const Chart = ({ value, totValue, name, size, font }) => {
+  //#region Component state
   //#endregion
 
   //#region Component hooks
-   React.useEffect(() => {
-      // Anything in here is fired on component mount.
-      return () => {
-          // Anything in here is fired on component unmount.
-      }
-    }, [])
+  React.useEffect(() => {
+    // Anything in here is fired on component mount.
+    return () => {
+      // Anything in here is fired on component unmount.
+    };
+  }, []);
 
-   React.useEffect(() => {
-      // Anything in here is fired on component update.
-   
-
-
-   },[]);
+  React.useEffect(() => {
+    // Anything in here is fired on component update.
+  }, []);
   //#endregion
 
   //#region Component use Styles
@@ -42,41 +35,47 @@ const Chart = ({value, totValue, name, size, font}) => {
   //#endregion
 
   //#region Component feature methods
-  
+
   //#endregion
 
   //#region Component JSX.members
-  const percent = (value/totValue)*100
-  
+  const safeValue = Number(value) || 0;
+  const safeTotal = Number(totValue) || 1;
+  const percent = (safeValue / safeTotal) * 100;
+  const safeSize = size || 200;
   //#endregion
 
   //#region Component renders
-  return(
-    <Gauge 
-        width={size} 
-        height={size} 
-        text={name}
-        value={value} 
-        valueMax={totValue} 
-        innerRadius="70%"
-         sx={(theme) => ({
+  return (
+    <Gauge
+      width={safeSize}
+      height={safeSize}
+      text={name}
+      value={safeValue}
+      valueMax={safeTotal}
+      innerRadius="70%"
+      sx={(theme) => ({
         [`& .${gaugeClasses.valueText}`]: {
           fontSize: font,
         },
         [`& .${gaugeClasses.valueArc}`]: {
-          fill: (percent > 0 & percent <=25 ) ? red[700] :
-          (percent >25 & percent <=50) ? red[500] : (percent >50 & percent <= 75) ? red[300] :
-           'green' ,
+          fill:
+            (percent > 0) & (percent <= 33)
+              ? green[800]
+              : (percent > 33) & (percent <= 66)
+              ? orange[800]
+              : (percent > 66) & (percent <= 100)
+              ? red[800]
+              : theme.palette.text.disabled,
         },
         [`& .${gaugeClasses.referenceArc}`]: {
           fill: theme.palette.text.disabled,
         },
-      })}/>
-
-      
+      })}
+    />
   );
   //#endregion
-}
+};
 //#endregion
 
 //#region Component export

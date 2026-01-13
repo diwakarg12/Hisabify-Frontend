@@ -1,58 +1,133 @@
 //#region imports
+import React from "react";
 import {
-  RadioButtonCheckedOutlined,
-  RadioButtonUncheckedOutlined,
-} from "@mui/icons-material";
-import {
-  Backdrop,
   Box,
   Button,
-  Checkbox,
   FormControl,
-  FormControlLabel,
   InputLabel,
   MenuItem,
   Modal,
-  Radio,
-  RadioGroup,
   Select,
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
 import upload_files from "../../../assets/upload_files.jpg";
 import { green, red } from "@mui/material/colors";
+import { toast } from "react-toastify";
 //#endregion
 
 //#region Component make Styles
 //#endregion
 
 //#region Function Component
-const AddExpense = ({ openAddExpense, setOpenAddExpense }) => {
+const AddExpense = ({
+  openAddExpense,
+  setOpenAddExpense,
+  data,
+  flag,
+  handleAddExpense,
+  editableData,
+}) => {
   //#region Component states
-  const [category, setCategory] = useState("");
-  const [creation, setCreation] = useState("");
-  const [splitWith, setsplitWith] = useState([]);
+  const fileInputRef = React.useRef(null);
+  const isEdit = Boolean(editableData?._id);
+  const [expense, setExpense] = React.useState({
+    amount: "",
+    description: "",
+    date: "",
+    category: "",
+    createdFor: "",
+    splitwith: [],
+    receiptImage: "",
+  });
 
   //#endregion
 
   //#region Component hooks
-  React.useEffect(() => {
-    // Anything in here is fired on component mount.
-    return () => {
-      // Anything in here is fired on component unmount.
-    };
-  }, []);
 
   React.useEffect(() => {
-    // Anything in here is fired on component update.
-  });
+    // Anything in here is fired on component mount.
+    if (flag === "personal" && data?.length) {
+      const userId = data[0]._id;
+      setExpense((prev) => ({
+        ...prev,
+        createdFor: userId,
+        splitwith: [userId],
+      }));
+    }
+  }, [flag, data]);
+
+  React.useEffect(() => {
+    if (editableData && editableData?._id) {
+      setExpense({
+        amount: editableData?.amount,
+        description: editableData?.description,
+        date: editableData?.date,
+        category: editableData?.category,
+        createdFor: editableData?.createdFor,
+        splitwith:
+          flag === "personal"
+            ? [data[0]?._id]
+            : editableData?.splitInfo?.splitBetween,
+        receiptImage: editableData?.receiptImage,
+      });
+    }
+  }, [editableData, flag, data]);
+
   //#endregion
 
   //#region Component use Styles
   //#endregion
 
   //#region Component validation methods
+  const handleValueChange = (e) => {
+    try {
+      const { name, value } = e.target;
+      setExpense((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    } catch (error) {
+      console.log("Error: ", error?.message);
+    }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only image files allowed");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+
+    reader.onloadend = () => {
+      const base64Image = reader.result;
+
+      // ✅ just update local state
+      setExpense((prev) => ({
+        ...prev,
+        receiptImage: base64Image,
+      }));
+    };
+  };
+
+  const handleSplitWithChange = (event) => {
+    const { value } = event.target;
+
+    setExpense((prev) => ({
+      ...prev,
+      splitwith: typeof value === "string" ? value.split(",") : value,
+    }));
+  };
   //#endregion
 
   //#region Component Api methods
@@ -60,54 +135,23 @@ const AddExpense = ({ openAddExpense, setOpenAddExpense }) => {
 
   //#region Component feature methods
 
-  const handleAddClick = () => {
+  const handleButtonClick = () => {
+    handleAddExpense(expense, isEdit, editableData?._id);
+
+    setExpense({
+      amount: "",
+      description: "",
+      date: "",
+      category: "",
+      addingFor: "",
+      splitwith: [],
+      receiptImage: "",
+    });
     setOpenAddExpense(false);
-  };
-
-  const handleCategoryChange = (event) => {
-    setCategory(event.target.value);
-  };
-
-  const handleChange = (event) => {
-    setCreation(event.target.value);
-    console.log("addinf for ", creation);
-  };
-  const handleSplitWithChange = (event) => {
-    const {
-      target: { value },
-    } = event;
-
-    setsplitWith(typeof value === "string" ? value.split(",") : value);
   };
   //#endregion
 
   //#region Component JSX.members
-  const users = [
-    {
-      _id: 1,
-      firstName: "Harsh",
-      lastName: "Raj",
-      email: "harsh@Gmail.com",
-    },
-    {
-      _id: 2,
-      firstName: "Rahul",
-      lastName: "Raj",
-      email: "rahul@Gmail.com",
-    },
-    {
-      _id: 3,
-      firstName: "Sumit",
-      lastName: "Raj",
-      email: "Sumith@Gmail.com",
-    },
-    {
-      _id: 4,
-      firstName: "Rohit",
-      lastName: "Raj",
-      email: "Rohit@Gmail.com",
-    },
-  ];
 
   //#endregion
 
@@ -156,7 +200,7 @@ const AddExpense = ({ openAddExpense, setOpenAddExpense }) => {
                   textUnderlineOffset: "4px",
                 }}
               >
-                Add Expen
+                {editableData ? "Edit" : "Add"} {flag} Expen
               </Box>
               se
             </Typography>
@@ -182,12 +226,23 @@ const AddExpense = ({ openAddExpense, setOpenAddExpense }) => {
               },
             }}
           >
-            <TextField label="Amount" type="number" fullWidth sx={{ mt: 2 }} />
+            <TextField
+              label="Amount"
+              type="number"
+              name="amount"
+              fullWidth
+              sx={{ mt: 2 }}
+              value={expense.amount}
+              onChange={handleValueChange}
+            />
             <TextField
               label="Date"
               type="date"
+              name="date"
               fullWidth
               sx={{ mt: 2 }}
+              value={expense.date}
+              onChange={handleValueChange}
               InputLabelProps={{ shrink: true }}
             />
           </Box>
@@ -213,9 +268,10 @@ const AddExpense = ({ openAddExpense, setOpenAddExpense }) => {
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
-                value={category}
+                value={expense.category}
                 label="Category"
-                onChange={handleCategoryChange}
+                name="category"
+                onChange={handleValueChange}
               >
                 {[
                   "shopping",
@@ -235,18 +291,21 @@ const AddExpense = ({ openAddExpense, setOpenAddExpense }) => {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="adding-for">Adding For</InputLabel>
+              <InputLabel id="created-for">Created For</InputLabel>
               <Select
                 labelId="adding-for"
-                id="adding-for"
-                value={creation}
-                label="Category"
-                onChange={handleChange}
+                id="created-for"
+                name="createdFor"
+                value={expense.createdFor}
+                label="Created For"
+                onChange={handleValueChange}
+                disabled={flag === "personal"}
                 sx={{ display: "flex", justifyContent: "space-between" }}
               >
-                {users.map((user) => (
+                {data.map((user) => (
                   <MenuItem
-                    value={user.email}
+                    value={user._id}
+                    key={user._id}
                     sx={{ display: "flex", justifyContent: "space-between" }}
                   >
                     <Box component={"span"}>
@@ -263,14 +322,16 @@ const AddExpense = ({ openAddExpense, setOpenAddExpense }) => {
                 labelId="split-with"
                 id="split-with"
                 multiple
-                value={splitWith}
+                value={expense.splitwith}
                 label="Split With"
                 onChange={handleSplitWithChange}
+                disabled={flag === "personal"}
                 sx={{ display: "flex", justifyContent: "space-between" }}
               >
-                {users.map((user) => (
+                {data.map((user) => (
                   <MenuItem
-                    value={user.email}
+                    value={user._id}
+                    key={user._id}
                     sx={{ display: "flex", justifyContent: "space-between" }}
                   >
                     <Box component={"span"}>
@@ -305,6 +366,9 @@ const AddExpense = ({ openAddExpense, setOpenAddExpense }) => {
               rows={4}
               placeholder="Start writing here..."
               fullWidth
+              name="description"
+              value={expense.description}
+              onChange={handleValueChange}
             />
 
             <Box
@@ -323,16 +387,20 @@ const AddExpense = ({ openAddExpense, setOpenAddExpense }) => {
               }}
             >
               <input
-                accept="*"
+                accept="image/*"
                 id="upload-file"
                 type="file"
+                name="receiptImage"
+                ref={fileInputRef}
                 style={{ display: "none" }}
                 multiple
-                // onChange={handleFileChange}
+                onChange={handleFileUpload}
               />
               <InputLabel htmlFor="upload-file" sx={{ cursor: "pointer" }}>
                 <img
-                  src={upload_files}
+                  src={
+                    expense.receiptImage ? expense.receiptImage : upload_files
+                  }
                   style={{
                     height: "7.35rem",
                   }}
@@ -343,7 +411,7 @@ const AddExpense = ({ openAddExpense, setOpenAddExpense }) => {
           <Button
             variant="contained"
             fullWidth
-            onClick={handleAddClick}
+            onClick={handleButtonClick}
             sx={{
               mt: 2,
               backgroundColor: red[300],

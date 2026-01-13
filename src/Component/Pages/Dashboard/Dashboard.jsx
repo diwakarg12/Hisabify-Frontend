@@ -10,6 +10,9 @@ import AddExpense from "../../Common/AddExpense/AddExpense";
 import Invite from "../../Common/Invite/Invite";
 import { useSelector, useDispatch } from "react-redux";
 import { getAllGroup } from "../../../redux/groupSlice";
+import { addExpense, getExpenses } from "../../../redux/expenseSlice";
+import { toast } from "react-toastify";
+import { getExpenseAnalytics } from "../../../helpers/expenseAnalytics";
 
 //#endregion
 
@@ -24,32 +27,30 @@ const Dashboard = () => {
   const [openInvite, setOpenInvite] = useState(false);
   const [selectedGroup, setselectedGroup] = useState(null);
   const [selectedData, setselectedData] = useState(null);
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
+  const [flag, setFlag] = useState("");
   //#endregion
 
   const dispatch = useDispatch();
 
-  const user = useSelector((state) => state.auth.user);
-  const groups = useSelector((state) => state.group.groups);
+  const user = useSelector((store) => store.auth.user);
+  const groups = useSelector((store) => store.group.groups);
+  const personalExpenses = useSelector(
+    (store) => store.expense.personalExpenses
+  );
+  const groupExpenses = useSelector((store) => store.expense.groupExpenses);
   //#region Component hooks
   React.useEffect(() => {
-    // Anything in here is fired on component mount.
-    const fetchGroups = async () => {
-      try {
-        await dispatch(getAllGroup()).unwrap();
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    };
-
-    fetchGroups();
+    // Anything in here is fired on component mount
+    dispatch(getAllGroup());
+    dispatch(getExpenses());
+    groups.forEach((group) => {
+      dispatch(getExpenses(group._id));
+    });
     return () => {
       // Anything in here is fired on component unmount.
     };
-  }, [dispatch]);
-
-  React.useEffect(() => {
-    // Anything in here is fired on component update.
-  });
+  }, [dispatch, groups]);
   //#endregion
 
   //#region Component use Styles
@@ -64,21 +65,62 @@ const Dashboard = () => {
     setselectedGroup(group);
   };
 
-  const handleAddExpenseButtonButtonClick = (e, id) => {
+  const openExpenseDialog = (e, id) => {
     e.stopPropagation();
     setOpenAddExpense(true);
-    const data =
-      String(id) === String(user._id)
-        ? user
-        : groups.find((group) => String(group._id) === String(id));
-    setselectedData(data);
+
+    const isPersonal = String(id) === String(user._id);
+    if (isPersonal) {
+      setselectedData([user]);
+      setFlag("personal");
+      setSelectedGroupId(null);
+    } else {
+      const group = groups.find((g) => String(g._id) === String(id));
+      setselectedData(group.members);
+      setFlag("group");
+      setSelectedGroupId(group._id);
+    }
   };
+
+  const handleAddExpense = async (data) => {
+    if (flag === "personal") {
+      try {
+        await dispatch(addExpense({ data: data })).unwrap();
+        toast.success("Personal Expense Added successfully");
+      } catch (error) {
+        toast.error(error);
+      }
+    } else {
+      try {
+        await dispatch(
+          addExpense({ data: data, groupId: selectedGroupId })
+        ).unwrap();
+        toast.success("Group Expense Added successfully");
+      } catch (error) {
+        toast.error(error);
+      }
+    }
+  };
+
   //#endregion
 
   //#region Component Api methods
   //#endregion
 
   //#region Component feature methods
+
+  const teamCards = groups?.map((teamDetail) => {
+    const expenses = groupExpenses[teamDetail?._id] || [];
+
+    const summary = getExpenseAnalytics(expenses, { userId: user?._id });
+
+    return {
+      _id: teamDetail?._id,
+      groupName: teamDetail?.groupName,
+      members: teamDetail?.members,
+      ...summary,
+    };
+  });
 
   //#endregion
 
@@ -160,13 +202,17 @@ const Dashboard = () => {
         >
           <PersonalTracker
             user={user}
-            setOpenAddExpense={handleAddExpenseButtonButtonClick}
+            setOpenAddExpense={openExpenseDialog}
+            expenses={personalExpenses}
+            teamCards={teamCards}
           />
           <TeamTracker
             teamDetails={groups}
             setCreateTeam={setCreateTeam}
             setOpenInvite={handleInviteButtonClick}
-            setOpenAddExpense={handleAddExpenseButtonButtonClick}
+            setOpenAddExpense={openExpenseDialog}
+            groupExpenses={groupExpenses}
+            teamCards={teamCards}
           />
         </Box>
       </Box>
@@ -180,6 +226,8 @@ const Dashboard = () => {
           openAddExpense={openAddExpense}
           setOpenAddExpense={setOpenAddExpense}
           data={selectedData}
+          flag={flag}
+          handleAddExpense={handleAddExpense}
         />
       )}
       {openInvite && (

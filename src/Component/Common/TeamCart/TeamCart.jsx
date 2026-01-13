@@ -19,8 +19,16 @@ import { useNavigate } from "react-router-dom";
 //#endregion
 
 //#region Function Component
-const TeamCart = ({ teamDetails, setOpenInvite, setOpenAddExpense }) => {
-  const { _id, groupName, members } = teamDetails;
+const TeamCart = ({ teamDetail, setOpenInvite, setOpenAddExpense }) => {
+  const {
+    _id,
+    groupName,
+    members,
+    totalAmount,
+    topCategory,
+    yourContribution,
+    latestExpense,
+  } = teamDetail;
   const navigate = useNavigate();
   //#region Component states
   // const navigate = useNavigate()
@@ -74,7 +82,7 @@ const TeamCart = ({ teamDetails, setOpenInvite, setOpenAddExpense }) => {
     >
       <CardContent>
         <Typography variant="h6" fontWeight="bold" mb={1}>
-          {groupName}
+          {groupName ? groupName : "Unknown"}
         </Typography>
 
         <Typography
@@ -84,7 +92,7 @@ const TeamCart = ({ teamDetails, setOpenInvite, setOpenAddExpense }) => {
             mb: 0.5,
           }}
         >
-          Total Spend : {1000}
+          Total Spend : {totalAmount ? totalAmount : 0}
         </Typography>
 
         <Typography
@@ -94,9 +102,9 @@ const TeamCart = ({ teamDetails, setOpenInvite, setOpenAddExpense }) => {
             mb: 0.5,
           }}
         >
-          Top Category :{" "}
+          Top Category :{}
           <Box component="span" sx={{ color: "error.main", fontWeight: 600 }}>
-            {"Shopping"}
+            {topCategory?.category ? topCategory?.category : "NA"}
           </Box>
         </Typography>
 
@@ -107,7 +115,7 @@ const TeamCart = ({ teamDetails, setOpenInvite, setOpenAddExpense }) => {
             mb: 0.5,
           }}
         >
-          Your Contribution : {500}
+          Your Contribution : {yourContribution ? yourContribution : 0}
         </Typography>
 
         <Typography
@@ -120,7 +128,14 @@ const TeamCart = ({ teamDetails, setOpenInvite, setOpenAddExpense }) => {
             },
           }}
         >
-          Last Transaction : {"01-01-2026"}
+          Last Transaction :{" "}
+          {latestExpense
+            ? new Date(latestExpense).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+            : "NA"}
         </Typography>
 
         <Box
