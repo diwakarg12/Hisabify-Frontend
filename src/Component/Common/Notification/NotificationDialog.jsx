@@ -1,9 +1,8 @@
-
 //#region imports
-import { List, ListItem, Dialog, Typography, DialogTitle } from '@mui/material';
-import React from 'react';
-import NotificationTile from './NotificationTile';
-import CloseIcon from '@mui/icons-material/Close';
+import { List, ListItem, Dialog, Typography, DialogTitle } from "@mui/material";
+import React from "react";
+import NotificationTile from "./NotificationTile";
+import CloseIcon from "@mui/icons-material/Close";
 
 //#endregion
 
@@ -11,21 +10,21 @@ import CloseIcon from '@mui/icons-material/Close';
 //#endregion
 
 //#region Function Component
-const NotificationDialog = ({open , onClose }) => {
+const NotificationDialog = ({ open, onClose }) => {
   //#region Component states
   //#endregion
 
   //#region Component hooks
-   React.useEffect(() => {
-      // Anything in here is fired on component mount.
-      return () => {
-          // Anything in here is fired on component unmount.
-      }
-    }, [])
+  React.useEffect(() => {
+    // Anything in here is fired on component mount.
+    return () => {
+      // Anything in here is fired on component unmount.
+    };
+  }, []);
 
-   React.useEffect(() => {
-      // Anything in here is fired on component update.
-   });
+  React.useEffect(() => {
+    // Anything in here is fired on component update.
+  });
   //#endregion
 
   //#region Component use Styles
@@ -41,121 +40,88 @@ const NotificationDialog = ({open , onClose }) => {
   //#endregion
 
   //#region Component JSX.members
-  const Notifications=[
-    {
-        amount: 20,
-        item: 'Ball',
-        teamName: 'Thailand Trip',
-        time: '2H',
-        adderName: 'Harsh Raj'
-    },
-    {
-        amount: 20,
-        item: 'Ball',
-        teamName: 'Room Expense',
-        time: '2H',
-        adderName: 'Harsh'
-    },
-    {
-        amount: 20,
-        item: 'Ball',
-        teamName: 'A',
-        time: '2H',
-        adderName: 'Harsh'
-    },
-    {
-        amount: 20,
-        item: 'Ball',
-        teamName: 'A',
-        time: '2H',
-        adderName: 'Harsh'
-    },
-    {
-        amount: 20,
-        item: 'Ball',
-        teamName: 'A',
-        time: '2H',
-        adderName: 'Harsh'
-    },
-    {
-        amount: 20,
-        item: 'Ball',
-        teamName: 'A',
-        time: '2H',
-        adderName: 'Harsh'
-    },
-
-  ]
+  const Notifications = [];
   //#endregion
 
   //#region Component renders
-  return(
+  return (
     <Dialog
-        open={open}
-        onClose={onClose}
-       sx={{
-        
-        '& .MuiDialog-container': {
-            justifyContent: 'flex-end',
-            alignItems: 'flex-start',
-            
+      open={open}
+      onClose={onClose}
+      sx={{
+        "& .MuiDialog-container": {
+          justifyContent: {
+            xs: "center",
+            sm: "flex-end",
+          },
+          alignItems: "flex-start",
         },
-        '& .MuiPaper-root': {
-            margin: '100px',
-            marginTop: '60px',
-            maxHeight: '70vh',
-            backgroundColor: 'rgba(255, 100, 103, 1)',
-            scrollbarWidth: 'none',
-            scrollbarColor: '#fff rgba(0, 0, 0, 0.1)',
-        }, 
-    }}
+        "& .MuiPaper-root": {
+          margin: {
+            xs: "60px 0px",
+            sm: "60px 100px",
+          },
+          maxHeight: "70vh",
+          backgroundColor: "rgba(255, 100, 103, 1)",
+          scrollbarWidth: "none",
+          scrollbarColor: "#fff rgba(0, 0, 0, 0.1)",
+        },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          display: "flex",
+          gap: "3rem",
+          justifyContent: "space-between",
+          fontWeight: 700,
+          fontSize: "1.5rem",
+          alignItems: "center",
+          color: "#fff",
+        }}
       >
-       <DialogTitle sx={{
-            display:'flex',
-            justifyContent:'space-between',
-            fontWeight: 700,
-            fontSize: '1.8rem',
-            alignItems:'center',
-            color: '#fff'
-            }}>
-            Notifications
-            <CloseIcon
-                onClick = {onClose} 
-                sx={{cursor:'pointer'}}
-            />
-        </DialogTitle>
-        <List sx={{
-           display: 'flex',
-           flexDirection: 'column',
-           alignItems: 'center',
-           justifyContent: 'center',
-            pt: 0
-
-        }}>
-            {Notifications.length > 0 ?
-                Notifications.map((notification,index) => (
-                    <ListItem key={index} sx={{padding:'0.2rem 0.75rem'}}>
-                        <NotificationTile 
-                            amount={notification.amount} 
-                            teamName={notification.teamName}
-                            item={notification.item} 
-                            adderName={notification.adderName}
-                            time={notification.time}
-                        />
-                    </ListItem>
-                )):
-                    <Typography sx={{
-                        display:'flex',
-                        fontSize: 22
-                        }}>
-                        No Request Found
-                    </Typography>
-            }
-        </List>
-      </Dialog>
+        Notifications
+        <CloseIcon onClick={onClose} sx={{ cursor: "pointer" }} />
+      </DialogTitle>
+      <List
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          pt: 0,
+          border: "2px solid green",
+        }}
+      >
+        {Notifications.length > 0 ? (
+          Notifications.map((notification, index) => (
+            <ListItem key={index} sx={{ padding: "0.2rem 0.75rem" }}>
+              <NotificationTile
+                amount={notification.amount}
+                teamName={notification.teamName}
+                item={notification.item}
+                adderName={notification.adderName}
+                time={notification.time}
+              />
+            </ListItem>
+          ))
+        ) : (
+          <Typography
+            sx={{
+              padding: "1rem 1rem",
+              mt: 1,
+              fontSize: 22,
+              backgroundColor: "#fff",
+              borderRadius: 1,
+            }}
+          >
+            No Notification Found
+          </Typography>
+        )}
+      </List>
+    </Dialog>
   );
   //#endregion
-}
+};
 //#endregion
 
 //#region Component export

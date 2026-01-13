@@ -4,7 +4,7 @@ import groupReducer from './groupSlice';
 import expenseReducer from './expenseSlice';
 import splitReducer from './splitSlice';
 import requestReducer from './requestSlice';
-
+import messageReducer from './messageSlice'
 
 export const store = configureStore({
     reducer: {
@@ -13,6 +13,7 @@ export const store = configureStore({
         expense: expenseReducer,
         request: requestReducer,
         split: splitReducer,
+        message: messageReducer
     },
 
 });

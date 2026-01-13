@@ -55,6 +55,11 @@ export const reviewReceivedRequest = createAsyncThunk('reviewReceivedRequest', a
             credentials: 'include'
         });
         const result = await response.json();
+
+        if (!response.ok) {
+            return rejectWithValue(result.message || "Request failed");
+        }
+
         return result;
 
     } catch (error) {
@@ -70,7 +75,7 @@ export const sendInvitation = createAsyncThunk('sendInvitation', async ({ groupI
             headers: {
                 "Content-type": "application/json",
             },
-            body: JSON.stringify(invitedTo),
+            body: JSON.stringify({ invitedTo }),
             credentials: 'include'
         });
 

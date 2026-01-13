@@ -57,12 +57,17 @@ const CalenderDialog = ({open , onClose}) => {
         onClose={onClose}
         sx={{
         '& .MuiDialog-container': {
-            justifyContent: 'flex-end',
+            justifyContent: {
+              xs: 'center',
+              sm: 'flex-end',
+            },
             alignItems: 'flex-start',
         },
         '& .MuiPaper-root': {
-            margin: '75px',
-            marginTop: '60px',
+            margin: {
+              xs: '65px 0 0 0',
+              sm: '65px 75px 75px 75px',
+            },
             backgroundColor: 'rgba(255, 100, 103, 1)',
             scrollbarWidth: 'none',
             scrollbarColor: '#fff rgba(0, 0, 0, 0.1)',
