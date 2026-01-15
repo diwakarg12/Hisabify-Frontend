@@ -79,7 +79,7 @@ const ExpenseCart = ({ item, index, onSelectExpense, selectedExpenseId }) => {
             alignItems: "center",
           }}
         >
-          {item?.description.length > 20
+          {item?.description?.length > 20
             ? item?.description.slice(0, 20) + "..."
             : item?.description}
           <Card

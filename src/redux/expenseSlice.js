@@ -10,121 +10,138 @@ const initialState = {
     error: null
 };
 
-export const getExpenses = createAsyncThunk('getExpenses', async (groupId, { rejectWithValue }) => {
-    try {
+export const getExpenses = createAsyncThunk(
+    'expense/getExpenses',
+    async (groupId, { getState, rejectWithValue }) => {
+        const state = getState();
 
-        const url = groupId
-            ? `http://localhost:3000/expense/getAllExpense/${groupId}`
-            : `http://localhost:3000/expense/getAllExpense`;
-
-
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                "Content-type": "application/json",
-            },
-            credentials: "include"
-        });
-        const result = await response.json();
-
-        if (!response.ok) {
-            toast.error(result?.message);
-            return rejectWithValue(result.message || "Failed to add expense");
+        // 🛑 GUARD: prevent duplicate fetch
+        if (!groupId && state.expense.personalExpenses.length > 0) {
+            return rejectWithValue('Personal expenses already fetched');
         }
 
-        return { groupId, data: result.expense };
-
-    } catch (error) {
-        toast.error(error?.message);
-        return rejectWithValue(error?.message || "Something went wrong. Please try again.")
-    }
-});
-
-export const addExpense = createAsyncThunk('addGroupExpense', async ({ data, groupId }, { rejectWithValue }) => {
-    try {
-
-        const url = groupId
-            ? `http://localhost:3000/expense/add/${groupId}`
-            : `http://localhost:3000/expense/add`;
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                "Content-type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify(data)
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            toast.error(result?.message);
-            return rejectWithValue(result.message || "Failed to add expense");
+        if (groupId && state.expense.groupExpenses[groupId]) {
+            return rejectWithValue('Group expenses already fetched');
         }
 
-        toast.success("Expense Added !");
+        try {
+            const url = groupId
+                ? `http://localhost:3000/expense/getAllExpense/${groupId}`
+                : `http://localhost:3000/expense/getAllExpense`;
 
-        return result;
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: { "Content-type": "application/json" },
+                credentials: "include"
+            });
 
-    } catch (error) {
-        toast.error(error?.message);
-        return rejectWithValue(error?.message || "Something went wrong. Please try again.")
-    }
-});
+            const result = await response.json();
 
-export const editExpense = createAsyncThunk('editExpense', async ({ data, expenseId }, { rejectWithValue }) => {
-    try {
+            if (!response.ok) {
+                toast.error(result?.message);
+                return rejectWithValue(result?.message);
+            }
 
-        const response = await fetch(`http://localhost:3000/expense/edit/${expenseId}`, {
-            method: 'PATCH',
-            headers: {
-                "Content-type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify(data)
-        });
-        const result = await response.json();
+            return { groupId, data: result.expense };
 
-        if (!response.ok) {
-            toast.error(result?.message);
-            return rejectWithValue(result.message || "Falied to edit Expense")
+        } catch (error) {
+            toast.error(error?.message);
+            return rejectWithValue(error?.message || "Something went wrong");
         }
-        toast.success("Expense updated !");
-        return result;
-
-    } catch (error) {
-        toast.error(error?.message);
-        return rejectWithValue(error?.message || "Something went wrong. Please try again.")
     }
-});
+);
 
-export const deleteExpense = createAsyncThunk('deleteExpense', async ({ expenseId, isPersonal, groupId }, { rejectWithValue }) => {
-    try {
+export const addExpense = createAsyncThunk(
+    'expense/addExpense',
+    async ({ data, groupId }, { rejectWithValue }) => {
+        try {
+            const url = groupId
+                ? `http://localhost:3000/expense/add/${groupId}`
+                : `http://localhost:3000/expense/add`;
 
-        const response = await fetch(`http://localhost:3000/expense/delete/${expenseId}`, {
-            method: 'DELETE',
-            headers: {
-                "Content-type": "application/json",
-            },
-            credentials: "include"
-        });
-        const result = await response.json();
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { "Content-type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify(data)
+            });
 
-        if (!response.ok) {
-            toast.error(result?.message);
-            return rejectWithValue(result.message || "Failed to add expense");
+            const result = await response.json();
+
+            if (!response.ok) {
+                toast.error(result?.message);
+                return rejectWithValue(result?.message);
+            }
+
+            toast.success("Expense added!");
+            return { expense: result.expense, groupId };
+
+        } catch (error) {
+            toast.error(error?.message);
+            return rejectWithValue(error?.message);
         }
-
-        toast.success("Expense Deleted !");
-
-        return { expenseId, isPersonal, groupId };
-
-    } catch (error) {
-        toast.error(error?.message);
-        return rejectWithValue(error?.message || "Something went wrong. Please try again.")
     }
-})
+);
+
+
+export const editExpense = createAsyncThunk(
+    'expense/editExpense',
+    async ({ data, expenseId, isPersonal, groupId }, { rejectWithValue }) => {
+        try {
+            const response = await fetch(
+                `http://localhost:3000/expense/edit/${expenseId}`,
+                {
+                    method: 'PATCH',
+                    headers: { "Content-type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify(data)
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                toast.error(result?.message);
+                return rejectWithValue(result?.message);
+            }
+
+            toast.success("Expense updated!");
+            return { expense: result.updatedExpense, isPersonal, groupId };
+
+        } catch (error) {
+            toast.error(error?.message);
+            return rejectWithValue(error?.message);
+        }
+    }
+);
+
+
+export const deleteExpense = createAsyncThunk(
+    'expense/deleteExpense',
+    async ({ expenseId, isPersonal, groupId }, { rejectWithValue }) => {
+        try {
+            const response = await fetch(
+                `http://localhost:3000/expense/delete/${expenseId}`,
+                { method: 'DELETE', credentials: 'include' }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                toast.error(result?.message);
+                return rejectWithValue(result?.message);
+            }
+
+            toast.success("Expense deleted!");
+            return { expenseId, isPersonal, groupId };
+
+        } catch (error) {
+            toast.error(error?.message);
+            return rejectWithValue(error?.message);
+        }
+    }
+);
+
 
 const expenseSlice = createSlice({
     name: 'expense',
@@ -153,6 +170,10 @@ const expenseSlice = createSlice({
             })
             .addCase(getExpenses.rejected, (state, action) => {
                 state.loading = false;
+                if (
+                    action.payload === 'Personal expenses already fetched' ||
+                    action.payload === 'Group expenses already fetched'
+                ) return;
                 state.error = action.payload
             })
 
@@ -162,7 +183,14 @@ const expenseSlice = createSlice({
             })
             .addCase(addExpense.fulfilled, (state, action) => {
                 state.loading = false;
-                state.expenses.push(action.payload.expense);
+                const { expense, groupId } = action.payload;
+
+                if (groupId) {
+                    state.groupExpenses[groupId]?.push(expense);
+                } else {
+                    state.personalExpenses.push(expense);
+                }
+
                 state.error = null;
             })
             .addCase(addExpense.rejected, (state, action) => {
@@ -176,16 +204,21 @@ const expenseSlice = createSlice({
             })
             .addCase(editExpense.fulfilled, (state, action) => {
                 state.loading = false;
-                const { expenseId, isPersonal, groupId } = action.payload;
+                const { expense, isPersonal, groupId } = action.payload;
+
                 if (isPersonal) {
-                    state.personalExpenses = state.personalExpenses.filter(exp => exp?._id !== expenseId);
-                } else {
-                    if (state.groupExpenses[groupId]) {
-                        state.groupExpenses[groupId] = state.groupExpenses[groupId].filter(exp => exp?._id !== expenseId)
-                    }
+                    state.personalExpenses = state.personalExpenses.map(e =>
+                        e._id === expense._id ? expense : e
+                    );
+                } else if (state.groupExpenses[groupId]) {
+                    state.groupExpenses[groupId] = state.groupExpenses[groupId].map(e =>
+                        e._id === expense._id ? expense : e
+                    );
                 }
+
                 state.error = null;
             })
+
             .addCase(editExpense.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
@@ -197,9 +230,19 @@ const expenseSlice = createSlice({
             })
             .addCase(deleteExpense.fulfilled, (state, action) => {
                 state.loading = false;
-                state.expenses = state.expenses.filter((expense) => expense?._id !== action.payload.expenseId)
+                const { expenseId, isPersonal, groupId } = action.payload;
+
+                if (isPersonal) {
+                    state.personalExpenses = state.personalExpenses.filter(e => e._id !== expenseId);
+                } else if (state.groupExpenses[groupId]) {
+                    state.groupExpenses[groupId] = state.groupExpenses[groupId].filter(
+                        e => e._id !== expenseId
+                    );
+                }
+
                 state.error = null;
             })
+
             .addCase(deleteExpense.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;

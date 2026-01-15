@@ -57,7 +57,7 @@ const RoutesConfig = () => {
       path: "/login",
       element:
         sessionStorage.getItem("user") === "true" ? (
-          <Navigate to={"/dashboard"} />
+          <Navigate to={"/"} />
         ) : (
           <Loginsignup />
         ),

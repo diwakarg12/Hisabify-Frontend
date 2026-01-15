@@ -8,7 +8,7 @@ const LandingPage = ({ children }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   return (
-    <Box sx={{ overflow: "hidden", height: "100vh" }}>
+    <Box sx={{ overflow: "hidden", height: isMobile ? "103vh" : "100vh" }}>
       <Header />
       <Box
         sx={{

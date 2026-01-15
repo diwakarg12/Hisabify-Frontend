@@ -32,6 +32,6 @@ export const EXPENSE_CATEGORY_COLORS = {
 };
 
 export const DEFAULT_EXPENSE_COLOR = {
-    color: "607D8B"
+    color: "#B0BEC5",
 };
 

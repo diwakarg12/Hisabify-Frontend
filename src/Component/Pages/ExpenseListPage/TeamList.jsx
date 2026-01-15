@@ -1,5 +1,5 @@
 //#region imports
-import { Box, Button, Card } from "@mui/material";
+import { Box, Button, Card, Typography } from "@mui/material";
 import React, { useState } from "react";
 import TeamListCart from "../../Common/TeamListCart/TeamListCart";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -32,13 +32,11 @@ const TeamList = () => {
   React.useEffect(() => {
     // Anything in here is fired on component mount.
     dispatch(getAllGroup());
-    // groups.forEach((group) => {
-    //   dispatch(getExpenses(group._id));
-    // });
+
     return () => {
       // Anything in here is fired on component unmount.
     };
-  }, [dispatch, groups]);
+  }, [dispatch]);
 
   //#endregion
   const groupCards = groups?.map((group) => {
@@ -118,37 +116,44 @@ const TeamList = () => {
 
   //#region Component renders
   return (
-    <Box
+    <Card
       sx={{
         position: "relative",
         paddingBottom: "4rem",
       }}
     >
-      <Button
-        variant="outlined"
-        size="large"
-        startIcon={<GroupsIcon />}
-        onClick={() => setOpenAddGroup(true)}
+      <Box
         sx={{
-          textTransform: "none",
-          backgroundColor: "#ff6467",
-          color: "white",
-          position: "fixed",
-          top: {
-            xs: "6.75rem",
-            md: "6rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderBottom: "solid #d1d5db 2px",
+          padding: {
+            xs: "0.5rem 0.5rem",
+            md: "0.5rem 2rem",
           },
-          right: {
-            xs: "1rem",
-            md: "3rem",
-          },
-          boxShadow: 3,
-          fontWeight: 600,
-          zIndex: 1000,
         }}
       >
-        Add Team
-      </Button>
+        <Typography fontSize={{ xs: "1.25rem", md: "1.5rem" }} fontWeight={700}>
+          Your Groups
+        </Typography>
+        <Button
+          variant="outlined"
+          size="large"
+          startIcon={<GroupsIcon />}
+          onClick={() => setOpenAddGroup(true)}
+          sx={{
+            textTransform: "none",
+            backgroundColor: "#ff6467",
+            color: "white",
+            boxShadow: 3,
+            fontWeight: 600,
+            zIndex: 1000,
+          }}
+        >
+          Add Team
+        </Button>
+      </Box>
 
       <Card>
         {groupCards.map((teamDetail) => (
@@ -182,7 +187,7 @@ const TeamList = () => {
       {openAddGroup && (
         <AddTeam user={user} onClose={() => setOpenAddGroup(false)} />
       )}
-    </Box>
+    </Card>
   );
   //#endregion
 };

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 //#region imports
 import { Box, Typography } from "@mui/material";
 import React, { useState } from "react";
@@ -11,7 +12,6 @@ import Invite from "../../Common/Invite/Invite";
 import { useSelector, useDispatch } from "react-redux";
 import { getAllGroup } from "../../../redux/groupSlice";
 import { addExpense, getExpenses } from "../../../redux/expenseSlice";
-import { toast } from "react-toastify";
 import { getExpenseAnalytics } from "../../../helpers/expenseAnalytics";
 
 //#endregion
@@ -44,13 +44,17 @@ const Dashboard = () => {
     // Anything in here is fired on component mount
     dispatch(getAllGroup());
     dispatch(getExpenses());
+  }, [dispatch]);
+
+  React.useEffect(() => {
+    if (!groups.length) return;
     groups.forEach((group) => {
-      dispatch(getExpenses(group._id));
+      dispatch(getExpenses(group?._id));
     });
     return () => {
       // Anything in here is fired on component unmount.
     };
-  }, [dispatch, groups]);
+  }, [dispatch, groups?.length]);
   //#endregion
 
   //#region Component use Styles
@@ -84,21 +88,11 @@ const Dashboard = () => {
 
   const handleAddExpense = async (data) => {
     if (flag === "personal") {
-      try {
-        await dispatch(addExpense({ data: data })).unwrap();
-        toast.success("Personal Expense Added successfully");
-      } catch (error) {
-        toast.error(error);
-      }
+      await dispatch(addExpense({ data: data })).unwrap();
     } else {
-      try {
-        await dispatch(
-          addExpense({ data: data, groupId: selectedGroupId })
-        ).unwrap();
-        toast.success("Group Expense Added successfully");
-      } catch (error) {
-        toast.error(error);
-      }
+      await dispatch(
+        addExpense({ data: data, groupId: selectedGroupId })
+      ).unwrap();
     }
   };
 

@@ -39,11 +39,22 @@ export const getExpenseAnalytics = (expenses = [], options = {}) => {
         new Date(curr.updatedAt) > new Date(latest.updatedAt) ? curr : latest
     ).updatedAt;
 
+    //Your contributon
     const yourContribution = userId
         ? expenses
-            .filter((expense) => String(expense.createdBy) === String(userId))
+            .filter((expense) => String(expense?.createdFor?._id) === String(userId))
             .reduce((sum, expense) => sum + Number(expense.amount || 0), 0)
         : 0;
+
+    //Your Share
+    const yourShare = userId ? expenses?.reduce((sum, expense) => {
+        const splits = expense?.splitInfo?.splits;
+        if (!Array.isArray(splits)) return sum
+
+        const mySplit = splits?.find(s => String(s?.user?._id) === String(userId))
+        return sum + Number(mySplit?.splittedAmount || 0)
+    }, 0) : 0
+
 
     return {
         totalAmount,
@@ -51,5 +62,6 @@ export const getExpenseAnalytics = (expenses = [], options = {}) => {
         biggestExpense,
         latestExpense,
         yourContribution,
+        yourShare
     };
 };

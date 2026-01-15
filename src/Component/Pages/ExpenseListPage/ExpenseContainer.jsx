@@ -13,9 +13,11 @@ import {
 } from "../../../redux/expenseSlice";
 import { toast } from "react-toastify";
 import { getExpenseAnalytics } from "../../../helpers/expenseAnalytics";
+import { getCategoryChartData } from "../../../helpers/getCategoryChartData";
 import ExpenseList from "./ExpenseList";
 import { useParams } from "react-router-dom";
 import DeleteModal from "../../Common/DeleteModal/DeleteModal";
+import { getGroupExpenseChartData } from "../../../helpers/getGroupExpenseChartData";
 
 //#endregion
 
@@ -28,21 +30,35 @@ const ExpenseContainer = () => {
   const { groupId } = useParams();
   const dispatch = useDispatch();
   const user = useSelector((store) => store.auth.user);
-  const group = useSelector((store) => store.group.groups).filter(
-    (g) => g?._id === groupId
-  );
+  const groups = useSelector((store) => store.group.groups);
+  const group = groups?.filter((g) => g?._id === groupId);
+  console.log("Groups", group);
   const expenses = useSelector((store) =>
     groupId
       ? store.expense.groupExpenses[groupId] || []
       : store.expense.personalExpenses || []
   );
+  const groupExpenses = useSelector((store) => store?.expense?.groupExpenses);
+  console.log("expenses", expenses);
   const [toggleChart, settoggleChart] = useState(false);
   const [openAddExpense, setOpenAddExpense] = useState(false);
   const [openDeleteExpense, setOpenDeleteExpense] = useState(false);
   const [editableData, setEditableData] = useState({});
   const [deletableId, setEditableId] = useState(null);
-  const { totalAmount, topCategory, biggestExpense, latestExpense } =
-    getExpenseAnalytics(expenses);
+  const {
+    totalAmount,
+    topCategory,
+    biggestExpense,
+    latestExpense,
+    yourContribution,
+    yourShare,
+  } = getExpenseAnalytics(expenses, { userId: user?._id });
+  const categoryChartData = getCategoryChartData(expenses);
+  const groupExpenseChartData = getGroupExpenseChartData(
+    groupExpenses,
+    groups,
+    user?._id
+  );
 
   //#endregion
 
@@ -108,20 +124,6 @@ const ExpenseContainer = () => {
   //#endregion
 
   //#region Component JSX.members
-  const data = [
-    { label: "Group A", value: 400, color: "#0088FE" },
-    { label: "Group B", value: 300, color: "#00C49F" },
-    { label: "Group C", value: 300, color: "#FFBB28" },
-    { label: "Group D", value: 200, color: "#FF8042" },
-  ];
-
-  const datacategory = [
-    { label: "Shoping", value: 400, color: "#0088FE" },
-    { label: "Study", value: 300, color: "#00C49F" },
-    { label: "Phone", value: 300, color: "#FFBB28" },
-    { label: "Misscellenous", value: 200, color: "#FF8042" },
-    { label: "Shoping", value: 400, color: "#0088FE" },
-  ];
   //#endregion
 
   //#region Component renders
@@ -165,7 +167,9 @@ const ExpenseContainer = () => {
           }}
           sx={{}}
         >
-          {groupId ? "Group Expense" : `'${user?.firstName}s Expense`}
+          {groupId
+            ? `${group[0]?.groupName}'s Expense`
+            : `${user?.firstName}'s Expense`}
         </Typography>
         <Button
           variant="outlined"
@@ -231,7 +235,7 @@ const ExpenseContainer = () => {
                 fontWeight: 600,
               }}
             >
-              {toggleChart ? "Category Chart" : "Group Chart"}
+              {"Toggle Chart"}
             </Button>
           )}
 
@@ -251,7 +255,7 @@ const ExpenseContainer = () => {
             },
             overflowY: "auto",
             padding: {
-              xs: 3,
+              xs: 2,
               md: 4,
             },
           }}
@@ -263,7 +267,7 @@ const ExpenseContainer = () => {
               </Typography>
             )}
             <Typography variant="h6">
-              <strong>Monthly Spend :</strong> {totalAmount ? totalAmount : 0}
+              <strong>Total Spend :</strong> {totalAmount ? totalAmount : 0}
             </Typography>
 
             <Typography variant="h6">
@@ -279,6 +283,20 @@ const ExpenseContainer = () => {
             <Typography variant="h6">
               <strong>Top Spend :</strong> {biggestExpense ? biggestExpense : 0}
             </Typography>
+
+            {groupId && (
+              <>
+                <Typography variant="h6">
+                  <strong>Your Contribution :</strong>{" "}
+                  {yourContribution ? yourContribution : 0}
+                </Typography>
+
+                <Typography variant="h6">
+                  <strong>Your Expense Share :</strong>{" "}
+                  {yourShare ? yourShare : 0}
+                </Typography>
+              </>
+            )}
 
             <Typography variant="h6">
               <strong>Last Transaction:</strong>{" "}
@@ -297,7 +315,7 @@ const ExpenseContainer = () => {
           </CardContent>
 
           <MultiChart
-            data={toggleChart ? data : datacategory}
+            data={toggleChart ? groupExpenseChartData : categoryChartData}
             outerRadius={100}
           />
         </Box>

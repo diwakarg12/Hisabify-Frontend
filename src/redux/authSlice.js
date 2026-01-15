@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import { toast } from 'react-toastify'
 
 const initialState = {
     user: null,
@@ -19,10 +20,17 @@ export const register = createAsyncThunk('create', async (user, { rejectWithValu
             credentials: 'include'
         });
         const result = await response.json();
+
+        if (!response.ok) {
+            toast.error(result?.message);
+            return rejectWithValue(result?.message);
+        }
+        toast.success("Signup Successful !")
         return result;
 
     } catch (error) {
-        return rejectWithValue(error);
+        toast.error(error?.message);
+        return rejectWithValue(error?.message);
     }
 })
 
@@ -39,9 +47,12 @@ export const login = createAsyncThunk('login', async (user, { rejectWithValue })
             },
         );
         const result = await response.json();
+
+        if (!response.ok) {
+            return rejectWithValue(result?.message);
+        }
+
         return result;
-
-
 
     } catch (error) {
         return rejectWithValue(error);
@@ -64,21 +75,25 @@ export const logout = createAsyncThunk('logout', async (_, { rejectWithValue }) 
     }
 })
 
-export const checkAuth = createAsyncThunk('checkAuth', async (_, { rejectWithValue }) => {
+export const checkAuth = createAsyncThunk('checkAuth', async (_, { getState, rejectWithValue }) => {
+
+    const state = getState();
+    if (state?.auth?.isAuthenticated && state?.auth?.user) {
+        return rejectWithValue("Auth Already Checked")
+    }
     try {
         const response = await fetch('http://localhost:3000/auth/check', {
             method: 'GET',
             headers: {
                 "Content-type": "application/json"
             },
-            credentials: 'include'  // important to send cookies
+            credentials: 'include'
         });
         const result = await response.json();
 
         if (!response.ok) {
-            return rejectWithValue(result);
+            return rejectWithValue(result?.message);
         }
-
         return result;
     } catch (error) {
         return rejectWithValue(error.message || "Network error");
@@ -97,6 +112,11 @@ export const updateProfile = createAsyncThunk('updateProfile', async (data, { re
             body: JSON.stringify(data)
         });
         const result = await response.json();
+
+        if (!response.ok) {
+            return rejectWithValue(result?.message);
+        }
+
         return result;
 
     } catch (error) {
@@ -116,6 +136,11 @@ export const updatePhone = createAsyncThunk('updatePhone', async (phone, { rejec
             body: JSON.stringify(phone)
         });
         const result = await response.json();
+
+        if (!response.ok) {
+            return rejectWithValue(result?.message);
+        }
+
         return result;
 
     } catch (error) {
@@ -135,6 +160,11 @@ export const updateEmail = createAsyncThunk('updateEmail', async (email, { rejec
             body: JSON.stringify({ email })
         });
         const result = await response.json();
+
+        if (!response.ok) {
+            return rejectWithValue(result?.message);
+        }
+
         return result;
 
     } catch (error) {
@@ -153,6 +183,11 @@ export const deleteProfile = createAsyncThunk('deleteProfile', async (_, { rejec
             credentials: 'include'
         });
         const result = await response.json();
+
+        if (!response.ok) {
+            return rejectWithValue(result?.message);
+        }
+
         return result;
 
     } catch (error) {
@@ -223,6 +258,7 @@ const authSlice = createSlice({
             })
             .addCase(checkAuth.rejected, (state, action) => {
                 state.loading = false;
+                if (action?.payload === "Auth Already Checked") return
                 state.user = null;
                 state.error = action.payload;
                 state.isAuthenticated = false;

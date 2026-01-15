@@ -4,6 +4,8 @@ import React from "react";
 import MultiChart from "../Chart_Graph/MultiChart";
 import { useNavigate } from "react-router-dom";
 import { Delete, EditSquare } from "@mui/icons-material";
+import { useSelector } from "react-redux";
+import { getCategoryChartData } from "../../../helpers/getCategoryChartData";
 //#endregion
 
 //#region Component make Styles
@@ -23,10 +25,16 @@ const TeamListCart = ({
     biggestExpense,
     yourContribution,
     latestExpense,
+    yourShare,
   } = teamDetail;
   //#region Component states
   //#endregion
   const navigate = useNavigate();
+  const expenses = useSelector(
+    (store) => store.expense.groupExpenses[groupId] || []
+  );
+
+  const categoryChartData = getCategoryChartData(expenses);
 
   //#region Component hooks
   React.useEffect(() => {
@@ -51,14 +59,6 @@ const TeamListCart = ({
   //#endregion
 
   //#region Component feature methods
-
-  const datacategory = [
-    { label: "Shoping", value: 400, color: "#0088FE" },
-    { label: "Study", value: 300, color: "#00C49F" },
-    { label: "Phone", value: 300, color: "#FFBB28" },
-    { label: "Misscellenous", value: 200, color: "#FF8042" },
-    { label: "Shoping", value: 400, color: "#0088FE" },
-  ];
   //#endregion
 
   //#region Component JSX.members
@@ -75,19 +75,23 @@ const TeamListCart = ({
           xs: 0,
           md: 2,
         },
+        paddingTop: {
+          xs: 1,
+          md: 2,
+        },
         paddingBottom: {
           xs: 1,
           md: 0,
         },
         gap: 1,
         alignItems: "center",
-        borderBottom: "solid #d1d5db 4px",
+        borderBottom: "solid #d1d5db 3px",
       }}
     >
       <Typography
         variant="h5"
         fontSize={{
-          xs: "1.25rem",
+          xs: "1.30rem",
           sm: "1.5rem",
           md: "1.75rem",
           lg: "2rem",
@@ -105,7 +109,9 @@ const TeamListCart = ({
       <Card
         sx={{
           display: "flex",
+          flexWrap: "nowrap",
           cursor: "pointer",
+          WebkitOverflowScrolling: "touch",
           boxShadow: 5,
           marginBottom: {
             xs: 0.5,
@@ -115,70 +121,40 @@ const TeamListCart = ({
             xs: "95%",
             md: "90%",
           },
-          gap: 3,
           overflow: "auto",
           scrollbarWidth: "none",
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
         }}
         onClick={() => navigate(`/group-expense/${groupId}`)}
       >
-        <CardContent sx={{ width: "45%" }}>
-          <Typography
-            variant="h6"
-            sx={{
-              width: {
-                xs: "160%",
-                md: "100%",
-              },
-            }}
-          >
+        <CardContent
+          sx={{
+            minWidth: { xs: 280, sm: 320, md: "45%" },
+            flexShrink: 0,
+          }}
+        >
+          <Typography variant="h6">
             <strong>Total Spend :</strong> {totalAmount ? totalAmount : 0}
           </Typography>
-          <Typography
-            variant="h6"
-            sx={{
-              width: {
-                xs: "200%",
-                md: "100%",
-              },
-            }}
-          >
+          <Typography variant="h6">
             <strong>Top Category: </strong>
             <Box component="span" sx={{ color: "error.main", fontWeight: 600 }}>
               {topCategory?.category ? topCategory?.category : "NA"}
             </Box>
           </Typography>
-          <Typography
-            variant="h6"
-            sx={{
-              width: {
-                xs: "200%",
-                md: "100%",
-              },
-            }}
-          >
+          <Typography variant="h6">
             <strong>Your Contribution :</strong>{" "}
             {yourContribution ? yourContribution : 0}
           </Typography>
-          <Typography
-            variant="h6"
-            sx={{
-              width: {
-                xs: "200%",
-                md: "100%",
-              },
-            }}
-          >
+          <Typography variant="h6">
             <strong>Top Spend:</strong> {biggestExpense ? biggestExpense : 0}
           </Typography>
-          <Typography
-            variant="h6"
-            sx={{
-              width: {
-                xs: "200%",
-                md: "100%",
-              },
-            }}
-          >
+          <Typography variant="h6">
+            <strong>Your Expense Share:</strong> {yourShare ? yourShare : 0}
+          </Typography>
+          <Typography variant="h6">
             <strong>Last Transaction :</strong>{" "}
             {latestExpense
               ? new Date(latestExpense).toLocaleDateString("en-GB", {
@@ -192,21 +168,24 @@ const TeamListCart = ({
 
         <Box
           sx={{
+            minWidth: { xs: 260, sm: 300, md: "40%" },
             display: "flex",
-            gap: 6,
-            width: "40%",
+            justifyContent: "center",
+            alignItems: "center",
+            flexShrink: 0,
           }}
         >
-          <MultiChart data={datacategory} outerRadius={80} />
+          <MultiChart data={categoryChartData} outerRadius={80} />
         </Box>
         <Box
           sx={{
+            minWidth: { xs: 100, sm: 120, md: "8%" },
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
             justifyContent: "center",
-            gap: 4,
-            width: "8%",
+            alignItems: "center",
+            gap: 2,
+            flexShrink: 0,
           }}
         >
           <IconButton

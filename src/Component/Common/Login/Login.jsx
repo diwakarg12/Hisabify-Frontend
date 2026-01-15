@@ -1,7 +1,7 @@
 //#region imports
-import { Box } from "@mui/material";
 import React from "react";
 import {
+  Box,
   TextField,
   Typography,
   InputAdornment,
@@ -17,8 +17,8 @@ import { Person, Facebook, Google, Twitter, Lock } from "@mui/icons-material";
 import loginImage from "../../../assets/Login/login.svg";
 import { FaGithub, FaApple } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { login } from "../../../redux/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { login, checkAuth } from "../../../redux/authSlice";
 import { toast } from "react-toastify";
 //#endregion
 
@@ -30,7 +30,8 @@ const Login = ({ isLogin, setIsLogin }) => {
   //#region Component states
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [user, setUser] = React.useState({
+  const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
+  const [form, setForm] = React.useState({
     email: "",
     password: "",
   });
@@ -39,39 +40,14 @@ const Login = ({ isLogin, setIsLogin }) => {
 
   //#region Component hooks
   React.useEffect(() => {
-    // Anything in here is fired on component mount.
-    async function checkSession() {
-      try {
-        const res = await fetch("http://localhost:3000/auth/check", {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data.authenticated) {
-            setUser(data.user);
-            navigate("/dashboard");
-          } else {
-            navigate("/login");
-          }
-        } else {
-          navigate("/login");
-        }
-      } catch (err) {
-        console.error("Error during auth check:", err.message);
-        navigate("/login");
-      }
+    if (isAuthenticated && user) {
+      navigate("/");
     }
-    checkSession();
-    return () => {
-      // Anything in here is fired on component unmount.
-    };
-  }, [navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   React.useEffect(() => {
-    // Anything in here is fired on component update.
-  });
+    dispatch(checkAuth());
+  }, [dispatch]);
   //#endregion
 
   //#region Component use Styles
@@ -81,7 +57,7 @@ const Login = ({ isLogin, setIsLogin }) => {
   const handleFormChange = (e) => {
     const { name, value } = e.target;
 
-    setUser((prev) => ({
+    setForm((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -90,18 +66,13 @@ const Login = ({ isLogin, setIsLogin }) => {
 
   //#region Component Api methods
   const handleLoginClick = async () => {
-    const response = await dispatch(login(user)).unwrap();
-    if (!response.error) {
-      toast.success(response.message, {
-        theme: "dark",
-      });
-      navigate("/dashboard");
-    } else {
-      toast.error(response.error, {
-        theme: "dark",
-      });
+    try {
+      await dispatch(login(form)).unwrap();
+      toast.success("Login Sucessful !");
+      navigate("/");
+    } catch (error) {
+      toast.error("Email or Password is not correct", error?.message);
     }
-
     // if(rememberMe){
     //     sessionStorage.setItem('user', JSON.stringify(response.user));
     // }
@@ -154,7 +125,7 @@ const Login = ({ isLogin, setIsLogin }) => {
             placeholder="Enter Phone/Email"
             variant="outlined"
             name="email"
-            value={user.email}
+            value={form.email}
             onChange={handleFormChange}
             InputProps={{
               startAdornment: (
@@ -170,7 +141,7 @@ const Login = ({ isLogin, setIsLogin }) => {
             placeholder="Enter Password"
             variant="outlined"
             name="password"
-            value={user.password}
+            value={form.password}
             onChange={handleFormChange}
             InputProps={{
               startAdornment: (
@@ -194,6 +165,7 @@ const Login = ({ isLogin, setIsLogin }) => {
           <Button
             variant="contained"
             fullWidth
+            disabled={loading}
             sx={{
               mb: 2,
               py: 1,
@@ -202,7 +174,7 @@ const Login = ({ isLogin, setIsLogin }) => {
             }}
             onClick={handleLoginClick}
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </Button>
         </Box>
 

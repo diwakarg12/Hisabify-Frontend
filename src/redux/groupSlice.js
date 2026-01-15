@@ -9,31 +9,40 @@ const initialState = {
     error: null
 }
 
-export const searchUser = createAsyncThunk('searchuser', async (email, { rejectWithValue }) => {
-    try {
-
-        const response = await fetch(`http://localhost:3000/group/searchUser/${email}`, {
-            method: 'GET',
-            headers: {
-                "Content-type": "application/json"
-            },
-            credentials: 'include',
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            toast.error(result?.message);
-            return rejectWithValue(result?.message);
+export const searchUser = createAsyncThunk(
+    'searchuser',
+    async (email, { rejectWithValue }) => {
+        if (!email) {
+            return rejectWithValue("Email is required");
         }
-        toast.success("User Found");
-        return result;
 
-    } catch (error) {
-        toast.error(error?.message);
-        return rejectWithValue(error);
+        try {
+            const response = await fetch(
+                `http://localhost:3000/group/searchUser/${email}`,
+                {
+                    method: 'GET',
+                    headers: { "Content-type": "application/json" },
+                    credentials: 'include',
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                toast.error(result?.message);
+                return rejectWithValue(result?.message);
+            }
+
+            toast.success("User Found");
+            return result;
+
+        } catch (error) {
+            toast.error(error?.message);
+            return rejectWithValue(error?.message);
+        }
     }
-});
+);
+
 
 export const createGroup = createAsyncThunk('createGroup', async (data, { rejectWithValue }) => {
     try {
@@ -112,55 +121,70 @@ export const removeUser = createAsyncThunk('removeUser', async ({ groupId, userI
     }
 });
 
-export const deleteGroup = createAsyncThunk('deleteGroup', async (groupId, { rejectWithValue }) => {
-    try {
+export const deleteGroup = createAsyncThunk(
+    'deleteGroup',
+    async (groupId, { rejectWithValue }) => {
+        try {
+            const response = await fetch(
+                `http://localhost:3000/group/delete/${groupId}`,
+                {
+                    method: 'DELETE',
+                    headers: { "Content-type": "application/json" },
+                    credentials: 'include',
+                }
+            );
 
-        const response = await fetch(`http://localhost:3000/group/delete/${groupId}`, {
-            method: 'DELETE',
-            headers: {
-                "Content-type": "application/json"
-            },
-            credentials: 'include',
-        });
-        const result = await response.json();
+            const result = await response.json();
 
-        if (!response.ok) {
-            toast.error(result?.message);
-            return rejectWithValue(result?.message);
+            if (!response.ok) {
+                toast.error(result?.message);
+                return rejectWithValue(result?.message);
+            }
+
+            toast.success(result?.message);
+
+            return { groupId };
+
+        } catch (error) {
+            toast.error(error?.message);
+            return rejectWithValue(error?.message);
         }
-        toast.success(result?.message);
-        return result;
-
-    } catch (error) {
-        toast.error(error?.message);
-        return rejectWithValue(error)
     }
-});
+);
 
-export const getAllGroup = createAsyncThunk('getAllGroup', async (_, { rejectWithValue }) => {
-    try {
 
-        const response = await fetch(`http://localhost:3000/group/view`, {
-            method: 'GET',
-            headers: {
-                "Content-type": "application/json",
-            },
-            credentials: 'include',
-        });
+export const getAllGroup = createAsyncThunk(
+    'getAllGroup',
+    async (_, { getState, rejectWithValue }) => {
+        const state = getState();
 
-        const result = await response.json();
-
-        if (!response.ok) {
-            toast.error(result?.message);
-            return rejectWithValue(result?.message)
+        if (state.group.groups.length > 0) {
+            return rejectWithValue("Groups already fetched");
         }
-        return result;
 
-    } catch (error) {
-        toast.error(error?.message);
-        return rejectWithValue(error);
+        try {
+            const response = await fetch(`http://localhost:3000/group/view`, {
+                method: 'GET',
+                headers: { "Content-type": "application/json" },
+                credentials: 'include',
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                toast.error(result?.message);
+                return rejectWithValue(result?.message);
+            }
+
+            return result;
+
+        } catch (error) {
+            toast.error(error?.message);
+            return rejectWithValue(error?.message);
+        }
     }
-})
+);
+
 
 const groupSlice = createSlice({
     name: 'Group',
@@ -188,6 +212,7 @@ const groupSlice = createSlice({
             })
             .addCase(getAllGroup.rejected, (state, action) => {
                 state.loading = false;
+                if (action.payload === "Groups already fetched") return;
                 state.error = action.payload;
             })
 
@@ -225,16 +250,20 @@ const groupSlice = createSlice({
             })
             .addCase(removeUser.fulfilled, (state, action) => {
                 state.loading = false;
+                const { groupId, userId } = action.payload;
+
                 state.groups = state.groups.map(group =>
-                    group.members.some(user => user._id === action.payload)
+                    group._id === groupId
                         ? {
                             ...group,
-                            members: group.members.filter(user => user._id !== action.payload),
+                            members: group.members.filter(user => user._id !== userId),
                         }
                         : group
                 );
+
                 state.error = null;
             })
+
 
             .addCase(removeUser.rejected, (state, action) => {
                 state.loading = false;
@@ -247,9 +276,12 @@ const groupSlice = createSlice({
             })
             .addCase(deleteGroup.fulfilled, (state, action) => {
                 state.loading = false;
-                state.groups = state.groups.filter(group => group?._id?.toString() !== action.payload.groupId?.toString());
+                state.groups = state.groups.filter(
+                    group => group._id !== action.payload.groupId
+                );
                 state.error = null;
             })
+
             .addCase(deleteGroup.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload.message;

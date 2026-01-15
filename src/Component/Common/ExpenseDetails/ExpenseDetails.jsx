@@ -63,11 +63,12 @@ const ExpenseDetails = ({
     <Card
       variant="outlined"
       sx={{
-        p: 5,
+        p: { xs: 1, sm: 2, md: 5 },
+        pt: { xs: 5, sm: 5, md: 5 },
         backgroundColor: "#f6f9fc",
         border: `2px solid ${color?.color}`,
         margin: "0 auto",
-        height: "86vh",
+        height: { md: "86vh" },
       }}
     >
       <Stack direction="row" spacing={2} alignItems="center">

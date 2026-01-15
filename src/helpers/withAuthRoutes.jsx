@@ -1,17 +1,3 @@
-import React from "react";
-// import { Navigate } from "react-router-dom";
-
-// const WithAuthRoutes = ({ children }) => {
-//    const savedUser= sessionStorage.getItem('user');
-
-//     return(
-//     <>
-//         {savedUser ? children: <Navigate to="/login" />}
-//     </>
-    
-// );
-// };
-
 // export default WithAuthRoutes;
 import { Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';

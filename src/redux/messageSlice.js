@@ -5,7 +5,8 @@ import { toast } from 'react-toastify'
 const initialState = {
     messages: [],
     loading: false,
-    error: null
+    error: null,
+    isFetched: false,
 };
 
 export const sendMessage = createAsyncThunk("sendMessage", async (data, { rejectWithValue }) => {
@@ -20,7 +21,7 @@ export const sendMessage = createAsyncThunk("sendMessage", async (data, { reject
             body: JSON.stringify(data)
         });
 
-        const result = await response.json();
+        const result = await response?.json();
 
         if (!response.ok) {
             toast.error(result?.message)
@@ -32,7 +33,7 @@ export const sendMessage = createAsyncThunk("sendMessage", async (data, { reject
 
     } catch (error) {
         toast.error(error?.message)
-        return rejectWithValue(error.messages)
+        return rejectWithValue(error?.messages)
     }
 });
 
@@ -41,7 +42,7 @@ export const deleteMessage = createAsyncThunk("deleteMessage", async (id, { reje
     try {
 
         const response = await fetch(`http://localhost:3000/message/delete/${id}`, {
-            method: "POST",
+            method: "DELETE",
             headers: {
                 "Content-type": "application/json"
             },
@@ -51,39 +52,51 @@ export const deleteMessage = createAsyncThunk("deleteMessage", async (id, { reje
         const result = await response.json();
 
         if (!response.ok) {
+            toast.error(result?.message);
             return rejectWithValue(result);
         }
 
-        return result;
+        toast.success("Message deleted!");
+        return { messageId: id };
 
     } catch (error) {
+        toast.error(error.message);
         return rejectWithValue(error.messages);
     }
 });
 
-export const getAllMessage = createAsyncThunk("getAllMessages", async ({ rejectWithValue }) => {
-    try {
+export const getAllMessage = createAsyncThunk(
+    "message/getAllMessages",
+    async (_, { getState, rejectWithValue }) => {
+        const state = getState();
 
-        const response = await fetch("http://localhost:3000/message/getAll", {
-            method: "GET",
-            headers: {
-                "Content-type": "application/json"
-            },
-            credentials: "include"
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            return rejectWithValue(result)
+        // 🛑 Prevent unnecessary fetch
+        if (state.message.isFetched) {
+            return rejectWithValue("Messages already fetched");
         }
 
-        return result;
+        try {
+            const response = await fetch("http://localhost:3000/message/getAll", {
+                method: "GET",
+                headers: { "Content-type": "application/json" },
+                credentials: "include",
+            });
 
-    } catch (error) {
-        return rejectWithValue(error.messages);
+            const result = await response.json();
+
+            if (!response.ok) {
+                toast.error(result?.message);
+                return rejectWithValue(result?.message);
+            }
+
+            return result;
+
+        } catch (error) {
+            toast.error(error.message);
+            return rejectWithValue(error.message);
+        }
     }
-});
+);
 
 const messageSlice = createSlice({
     name: "Message",
@@ -100,8 +113,8 @@ const messageSlice = createSlice({
                 state.error = null
             })
             .addCase(getAllMessage.rejected, (state, action) => {
-                state.loading = false,
-                    state.error = action.payload
+                state.loading = false;
+                state.error = action.payload
             })
 
             // sendMessage
@@ -114,7 +127,7 @@ const messageSlice = createSlice({
                 state.error = null
             })
             .addCase(sendMessage.rejected, (state, action) => {
-                state.loading = true
+                state.loading = false
                 state.error = action.payload
             })
 
@@ -124,7 +137,9 @@ const messageSlice = createSlice({
             })
             .addCase(deleteMessage.fulfilled, (state, action) => {
                 state.loading = false
-                state.messages = state.messages.filter(message => message?._id !== action?.payload?.message?._id)
+                state.messages = state.messages.filter(
+                    (msg) => msg._id !== action.payload.messageId
+                );
                 state.error = null
             })
             .addCase(deleteMessage.rejected, (state, action) => {
