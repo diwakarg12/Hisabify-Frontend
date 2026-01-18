@@ -20,7 +20,7 @@ export const getReceivedRequests = createAsyncThunk('getReceivedRequests', async
     }
     try {
 
-        const response = await fetch(`http://localhost:3000/invite/view/received-request`, {
+        const response = await fetch(`https://hisabify-api.vercel.app/invite/view/received-request`, {
             method: 'GET',
             headers: {
                 "Content-type": "application/json",
@@ -51,7 +51,7 @@ export const getSentRequests = createAsyncThunk('getSentRequests', async (groupI
 
     try {
 
-        const response = await fetch(`http://localhost:3000/invite/view/sent-request/${groupId}`, {
+        const response = await fetch(`https://hisabify-api.vercel.app/invite/view/sent-request/${groupId}`, {
             method: 'GET',
             headers: {
                 "Content-type": "application/json",
@@ -75,7 +75,7 @@ export const getSentRequests = createAsyncThunk('getSentRequests', async (groupI
 export const reviewReceivedRequest = createAsyncThunk('reviewReceivedRequest', async ({ status, requestId, groupId }, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`http://localhost:3000/invite/review/${status}/${requestId}/${groupId}`, {
+        const response = await fetch(`https://hisabify-api.vercel.app/invite/review/${status}/${requestId}/${groupId}`, {
             method: 'POST',
             headers: {
                 "Content-type": "application/json",
@@ -102,7 +102,7 @@ export const reviewReceivedRequest = createAsyncThunk('reviewReceivedRequest', a
 export const sendInvitation = createAsyncThunk('sendInvitation', async ({ groupId, invitedTo }, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`http://localhost:3000/invite/send/${groupId}`, {
+        const response = await fetch(`https://hisabify-api.vercel.app/invite/send/${groupId}`, {
             method: 'POST',
             headers: {
                 "Content-type": "application/json",

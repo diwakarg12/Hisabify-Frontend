@@ -12,22 +12,22 @@ const initialState = {
 
 export const getExpenses = createAsyncThunk(
     'expense/getExpenses',
-    async (groupId, { getState, rejectWithValue }) => {
-        const state = getState();
+    async (groupId, { rejectWithValue }) => {
+        // const state = getState();
 
-        // 🛑 GUARD: prevent duplicate fetch
-        if (!groupId && state.expense.personalExpenses.length > 0) {
-            return rejectWithValue('Personal expenses already fetched');
-        }
+        // // 🛑 GUARD: prevent duplicate fetch
+        // if (!groupId && state.expense.personalExpenses.length > 0) {
+        //     return rejectWithValue('Personal expenses already fetched');
+        // }
 
-        if (groupId && state.expense.groupExpenses[groupId]) {
-            return rejectWithValue('Group expenses already fetched');
-        }
+        // if (groupId && state.expense.groupExpenses[groupId]) {
+        //     return rejectWithValue('Group expenses already fetched');
+        // }
 
         try {
             const url = groupId
-                ? `http://localhost:3000/expense/getAllExpense/${groupId}`
-                : `http://localhost:3000/expense/getAllExpense`;
+                ? `https://hisabify-api.vercel.app/expense/getAllExpense/${groupId}`
+                : `https://hisabify-api.vercel.app/expense/getAllExpense`;
 
             const response = await fetch(url, {
                 method: 'GET',
@@ -41,6 +41,8 @@ export const getExpenses = createAsyncThunk(
                 toast.error(result?.message);
                 return rejectWithValue(result?.message);
             }
+
+            console.log("Result2", result)
 
             return { groupId, data: result.expense };
 
@@ -56,8 +58,8 @@ export const addExpense = createAsyncThunk(
     async ({ data, groupId }, { rejectWithValue }) => {
         try {
             const url = groupId
-                ? `http://localhost:3000/expense/add/${groupId}`
-                : `http://localhost:3000/expense/add`;
+                ? `https://hisabify-api.vercel.app/expense/add/${groupId}`
+                : `https://hisabify-api.vercel.app/expense/add`;
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -89,7 +91,7 @@ export const editExpense = createAsyncThunk(
     async ({ data, expenseId, isPersonal, groupId }, { rejectWithValue }) => {
         try {
             const response = await fetch(
-                `http://localhost:3000/expense/edit/${expenseId}`,
+                `https://hisabify-api.vercel.app/expense/edit/${expenseId}`,
                 {
                     method: 'PATCH',
                     headers: { "Content-type": "application/json" },
@@ -121,7 +123,7 @@ export const deleteExpense = createAsyncThunk(
     async ({ expenseId, isPersonal, groupId }, { rejectWithValue }) => {
         try {
             const response = await fetch(
-                `http://localhost:3000/expense/delete/${expenseId}`,
+                `https://hisabify-api.vercel.app/expense/delete/${expenseId}`,
                 { method: 'DELETE', credentials: 'include' }
             );
 

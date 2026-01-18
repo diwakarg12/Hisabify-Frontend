@@ -10,8 +10,9 @@ const initialState = {
 };
 
 export const register = createAsyncThunk('create', async (user, { rejectWithValue }) => {
+
     try {
-        const response = await fetch('http://localhost:3000/auth/signup', {
+        const response = await fetch('https://hisabify-api.vercel.app/auth/signup', {
             method: 'POST',
             headers: {
                 "Content-type": "application/json"
@@ -36,7 +37,7 @@ export const register = createAsyncThunk('create', async (user, { rejectWithValu
 
 export const login = createAsyncThunk('login', async (user, { rejectWithValue }) => {
     try {
-        const response = await fetch('http://localhost:3000/auth/login',
+        const response = await fetch('https://hisabify-api.vercel.app/auth/login',
             {
                 method: 'POST',
                 headers: {
@@ -59,31 +60,10 @@ export const login = createAsyncThunk('login', async (user, { rejectWithValue })
     }
 })
 
-export const logout = createAsyncThunk('logout', async (_, { rejectWithValue }) => {
+export const logout = createAsyncThunk('logout', async (_, { dispatch, rejectWithValue }) => {
     try {
-        const response = await fetch('http://localhost:3000/auth/logout', {
+        const response = await fetch('https://hisabify-api.vercel.app/auth/logout', {
             method: 'POST',
-            headers: {
-                "Content-type": "application/json"
-            },
-            credentials: 'include'
-        });
-        const result = await response.json();
-        return result
-    } catch (error) {
-        return rejectWithValue(error);
-    }
-})
-
-export const checkAuth = createAsyncThunk('checkAuth', async (_, { getState, rejectWithValue }) => {
-
-    const state = getState();
-    if (state?.auth?.isAuthenticated && state?.auth?.user) {
-        return rejectWithValue("Auth Already Checked")
-    }
-    try {
-        const response = await fetch('http://localhost:3000/auth/check', {
-            method: 'GET',
             headers: {
                 "Content-type": "application/json"
             },
@@ -94,6 +74,35 @@ export const checkAuth = createAsyncThunk('checkAuth', async (_, { getState, rej
         if (!response.ok) {
             return rejectWithValue(result?.message);
         }
+
+        dispatch(resetAuth());
+
+        return result
+    } catch (error) {
+        return rejectWithValue(error);
+    }
+})
+
+export const checkAuth = createAsyncThunk('checkAuth', async (_, { getState, rejectWithValue }) => {
+
+    const state = getState();
+    if (state?.auth?.isAuthenticated && state?.auth?.user) {
+        return { alreadyChecked: true };
+    }
+    try {
+        const response = await fetch('https://hisabify-api.vercel.app/auth/check', {
+            method: 'GET',
+            headers: {
+                "Content-type": "application/json"
+            },
+            credentials: 'include'
+        });
+        const result = await response.json();
+
+        if (!response.ok) {
+            return rejectWithValue(result?.message || "UnAuthorized");
+        }
+
         return result;
     } catch (error) {
         return rejectWithValue(error.message || "Network error");
@@ -103,7 +112,7 @@ export const checkAuth = createAsyncThunk('checkAuth', async (_, { getState, rej
 export const updateProfile = createAsyncThunk('updateProfile', async (data, { rejectWithValue }) => {
     try {
 
-        const response = await fetch('http://localhost:3000/profile/update', {
+        const response = await fetch('https://hisabify-api.vercel.app/profile/update', {
             method: 'PATCH',
             headers: {
                 "Content-type": "application/json"
@@ -127,7 +136,7 @@ export const updateProfile = createAsyncThunk('updateProfile', async (data, { re
 export const updatePhone = createAsyncThunk('updatePhone', async (phone, { rejectWithValue }) => {
     try {
 
-        const response = await fetch('http://localhost:3000/profile/update-phone', {
+        const response = await fetch('https://hisabify-api.vercel.app/profile/update-phone', {
             method: 'PATCH',
             headers: {
                 "Content-type": "application/json"
@@ -151,7 +160,7 @@ export const updatePhone = createAsyncThunk('updatePhone', async (phone, { rejec
 export const updateEmail = createAsyncThunk('updateEmail', async (email, { rejectWithValue }) => {
     try {
 
-        const response = await fetch('http://localhost:3000/profile/update-email', {
+        const response = await fetch('https://hisabify-api.vercel.app/profile/update-email', {
             method: 'PATCH',
             headers: {
                 "Content-type": "application/json"
@@ -175,7 +184,7 @@ export const updateEmail = createAsyncThunk('updateEmail', async (email, { rejec
 export const deleteProfile = createAsyncThunk('deleteProfile', async (_, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`http://localhost:3000/profile/delete`, {
+        const response = await fetch(`https://hisabify-api.vercel.app/profile/delete`, {
             method: 'DELETE',
             headers: {
                 "Content-type": "application/json"
@@ -199,6 +208,15 @@ export const deleteProfile = createAsyncThunk('deleteProfile', async (_, { rejec
 const authSlice = createSlice({
     name: "auth",
     initialState,
+
+    reducers: {
+        resetAuth: (state) => {
+            state.user = null;
+            state.isAuthenticated = false;
+            state.loading = false;
+            state.error = false;
+        },
+    },
     extraReducers: (builder) => {
         builder
             //Register
@@ -235,9 +253,9 @@ const authSlice = createSlice({
             .addCase(logout.pending, (state) => {
                 state.loading = true
             })
-            .addCase(logout.fulfilled, (state, action) => {
+            .addCase(logout.fulfilled, (state) => {
                 state.loading = false;
-                state.user = action.payload.user;
+                state.user = null;
                 state.error = null;
                 state.isAuthenticated = false;
             })
@@ -252,13 +270,13 @@ const authSlice = createSlice({
             })
             .addCase(checkAuth.fulfilled, (state, action) => {
                 state.loading = false;
+                if (action?.payload?.alreadyChecked) return
                 state.user = action.payload.user;
                 state.isAuthenticated = true;
                 state.error = null;
             })
             .addCase(checkAuth.rejected, (state, action) => {
                 state.loading = false;
-                if (action?.payload === "Auth Already Checked") return
                 state.user = null;
                 state.error = action.payload;
                 state.isAuthenticated = false;
@@ -322,4 +340,5 @@ const authSlice = createSlice({
     }
 });
 
+export const { resetAuth } = authSlice.actions;
 export default authSlice.reducer;
