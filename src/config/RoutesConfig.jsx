@@ -4,13 +4,14 @@ import Loginsignup from "../Component/Pages/LoginSignup/Loginsignup";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "../Component/Pages/LandingPage/LandingPage";
 import ProfilePage from "../Component/Pages/ProfilePage/ProfilePage";
-import Test from "../Component/Test";
 import Dashboard from "../Component/Pages/Dashboard/Dashboard";
 import TeamList from "../Component/Pages/ExpenseListPage/TeamList";
 import ExpenseContainer from "../Component/Pages/ExpenseListPage/ExpenseContainer";
 import WithAuthRoutes from "../helpers/withAuthRoutes";
 import Contact from "../Component/Pages/Contact/Contact";
 import Setting from "../Component/Pages/Setting/Setting";
+import NotFound from "../Component/NotFound";
+import Home from "../Component/Pages/Home/Home";
 
 //#endregion
 
@@ -51,7 +52,7 @@ const RoutesConfig = () => {
   const routes = [
     {
       path: "/",
-      element: <Test />,
+      element: <Home />,
     },
     {
       path: "/login",
@@ -65,9 +66,11 @@ const RoutesConfig = () => {
     {
       path: "/profile",
       element: (
-        <LandingPage>
-          <ProfilePage />
-        </LandingPage>
+        <WithAuthRoutes>
+          <LandingPage>
+            <ProfilePage />
+          </LandingPage>
+        </WithAuthRoutes>
       ),
     },
     {
@@ -132,7 +135,7 @@ const RoutesConfig = () => {
     },
     {
       path: "*",
-      element: <Test />,
+      element: <NotFound />,
     },
   ];
   //#endregion

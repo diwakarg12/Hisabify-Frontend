@@ -28,25 +28,14 @@ const Header = () => {
   const [openDialog, setOpenDialog] = React.useState(false);
   const [openNotfication, setOpenNotification] = React.useState(false);
   const [openCalender, setOpenCalender] = React.useState(false);
-  const [user, setUser] = React.useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
 
   //#endregion
 
   //#region Component hooks
   React.useEffect(() => {
-    const checkUserAuth = async () => {
-      try {
-        const res = await dispatch(checkAuth()).unwrap();
-        setUser(res.user);
-      } catch (error) {
-        console.log("Auth failed", error?.message);
-      }
-    };
-
-    checkUserAuth();
     return () => {
       // Anything in here is fired on component unmount.
     };
@@ -117,7 +106,7 @@ const Header = () => {
     const [month, day] = datePart.split(" ");
     formattedDate = `${day.padStart(2, "0")}-${month.padStart(
       2,
-      "0"
+      "0",
     )}-${yearPart}`;
   }
 
@@ -187,7 +176,7 @@ const Header = () => {
             >
               <Avatar
                 alt="R"
-                src={user.profile}
+                src={user?.profile}
                 sx={{ bgcolor: red[400], width: 40, height: 40 }}
               />
             </Link>

@@ -1,24 +1,32 @@
 // export default WithAuthRoutes;
-import { Navigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { checkAuth } from "../redux/authSlice";
 
 const WithAuthRoutes = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  // const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const dispatch = useDispatch();
+  const { isAuthenticated, user, loading } = useSelector((store) => store.auth);
 
   useEffect(() => {
-    fetch('http://localhost:3000/auth/check', {
-      credentials: 'include'
-    })
-    .then(res => res.json())
-    .then(data => {
-      setIsAuthenticated(data.authenticated);
-    })
-    .catch(() => setIsAuthenticated(false));
-  }, []);
+    if (!isAuthenticated && !user) {
+      dispatch(checkAuth());
+    }
+  }, [dispatch, isAuthenticated, user]);
 
-  if (isAuthenticated === null) return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>;
 
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
 export default WithAuthRoutes;
+
+// fetch("https://hisabify-api.vercel.app/auth/check", {
+//   credentials: "include",
+// })
+//   .then((res) => res.json())
+//   .then((data) => {
+//     setIsAuthenticated(data.authenticated);
+//   })
+//   .catch(() => setIsAuthenticated(false));

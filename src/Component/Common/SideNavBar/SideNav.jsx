@@ -32,9 +32,8 @@ const SideNav = ({ isMobile = false }) => {
 
   const handleLogoutClick = async () => {
     const response = await dispatch(logout()).unwrap();
-    navigate("/login");
+    navigate("/");
     toast.success(response.message, { theme: "dark" });
-    sessionStorage.removeItem("user");
   };
 
   // ========== 🟦 Mobile Bottom Navigation ========== //
