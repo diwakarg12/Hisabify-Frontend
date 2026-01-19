@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../config/Api";
 
 const initialState = {
     groups: [],
@@ -18,7 +19,7 @@ export const searchUser = createAsyncThunk(
 
         try {
             const response = await fetch(
-                `https://hisabify-api.vercel.app/group/searchUser/${email}`,
+                `${API_BASE_URL}/group/searchUser/${email}`,
                 {
                     method: 'GET',
                     headers: { "Content-type": "application/json" },
@@ -47,7 +48,7 @@ export const searchUser = createAsyncThunk(
 export const createGroup = createAsyncThunk('createGroup', async (data, { rejectWithValue }) => {
     try {
 
-        const response = await fetch('https://hisabify-api.vercel.app/group/create', {
+        const response = await fetch(`${API_BASE_URL}/group/create`, {
             method: 'POST',
             headers: {
                 "Content-type": "application/json"
@@ -73,7 +74,7 @@ export const createGroup = createAsyncThunk('createGroup', async (data, { reject
 export const updateGroup = createAsyncThunk('updateGroup', async ({ data, groupId }, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`https://hisabify-api.vercel.app/group/update/${groupId}`, {
+        const response = await fetch(`${API_BASE_URL}/group/update/${groupId}`, {
             method: 'PUT',
             headers: {
                 "Content-type": "application/json"
@@ -99,7 +100,7 @@ export const updateGroup = createAsyncThunk('updateGroup', async ({ data, groupI
 export const removeUser = createAsyncThunk('removeUser', async ({ groupId, userId }, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`https://hisabify-api.vercel.app/group/remove-user/${groupId}/${userId}`, {
+        const response = await fetch(`${API_BASE_URL}/group/remove-user/${groupId}/${userId}`, {
             method: 'POST',
             headers: {
                 "Content-type": "application/json"
@@ -126,7 +127,7 @@ export const deleteGroup = createAsyncThunk(
     async (groupId, { rejectWithValue }) => {
         try {
             const response = await fetch(
-                `https://hisabify-api.vercel.app/group/delete/${groupId}`,
+                `${API_BASE_URL}/group/delete/${groupId}`,
                 {
                     method: 'DELETE',
                     headers: { "Content-type": "application/json" },
@@ -163,7 +164,7 @@ export const getAllGroup = createAsyncThunk(
         // }
 
         try {
-            const response = await fetch(`https://hisabify-api.vercel.app/group/view`, {
+            const response = await fetch(`${API_BASE_URL}/group/view`, {
                 method: 'GET',
                 headers: { "Content-type": "application/json" },
                 credentials: 'include',

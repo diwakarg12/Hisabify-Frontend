@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { toast } from 'react-toastify'
+import { API_BASE_URL } from "../config/Api";
 
 const initialState = {
     user: null,
@@ -12,7 +13,7 @@ const initialState = {
 export const register = createAsyncThunk('create', async (user, { rejectWithValue }) => {
 
     try {
-        const response = await fetch('https://hisabify-api.vercel.app/auth/signup', {
+        const response = await fetch(`${API_BASE_URL}/auth/signup`, {
             method: 'POST',
             headers: {
                 "Content-type": "application/json"
@@ -37,7 +38,7 @@ export const register = createAsyncThunk('create', async (user, { rejectWithValu
 
 export const login = createAsyncThunk('login', async (user, { rejectWithValue }) => {
     try {
-        const response = await fetch('https://hisabify-api.vercel.app/auth/login',
+        const response = await fetch(`${API_BASE_URL}/auth/login`,
             {
                 method: 'POST',
                 headers: {
@@ -62,7 +63,7 @@ export const login = createAsyncThunk('login', async (user, { rejectWithValue })
 
 export const logout = createAsyncThunk('logout', async (_, { dispatch, rejectWithValue }) => {
     try {
-        const response = await fetch('https://hisabify-api.vercel.app/auth/logout', {
+        const response = await fetch(`${API_BASE_URL}/auth/logout`, {
             method: 'POST',
             headers: {
                 "Content-type": "application/json"
@@ -90,7 +91,7 @@ export const checkAuth = createAsyncThunk('checkAuth', async (_, { getState, rej
         return { alreadyChecked: true };
     }
     try {
-        const response = await fetch('https://hisabify-api.vercel.app/auth/check', {
+        const response = await fetch(`${API_BASE_URL}/auth/check`, {
             method: 'GET',
             headers: {
                 "Content-type": "application/json"
@@ -112,7 +113,7 @@ export const checkAuth = createAsyncThunk('checkAuth', async (_, { getState, rej
 export const updateProfile = createAsyncThunk('updateProfile', async (data, { rejectWithValue }) => {
     try {
 
-        const response = await fetch('https://hisabify-api.vercel.app/profile/update', {
+        const response = await fetch(`${API_BASE_URL}/profile/update`, {
             method: 'PATCH',
             headers: {
                 "Content-type": "application/json"
@@ -136,7 +137,7 @@ export const updateProfile = createAsyncThunk('updateProfile', async (data, { re
 export const updatePhone = createAsyncThunk('updatePhone', async (phone, { rejectWithValue }) => {
     try {
 
-        const response = await fetch('https://hisabify-api.vercel.app/profile/update-phone', {
+        const response = await fetch(`${API_BASE_URL}/profile/update-phone`, {
             method: 'PATCH',
             headers: {
                 "Content-type": "application/json"
@@ -160,7 +161,7 @@ export const updatePhone = createAsyncThunk('updatePhone', async (phone, { rejec
 export const updateEmail = createAsyncThunk('updateEmail', async (email, { rejectWithValue }) => {
     try {
 
-        const response = await fetch('https://hisabify-api.vercel.app/profile/update-email', {
+        const response = await fetch(`${API_BASE_URL}/profile/update-email`, {
             method: 'PATCH',
             headers: {
                 "Content-type": "application/json"
@@ -184,7 +185,7 @@ export const updateEmail = createAsyncThunk('updateEmail', async (email, { rejec
 export const deleteProfile = createAsyncThunk('deleteProfile', async (_, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`https://hisabify-api.vercel.app/profile/delete`, {
+        const response = await fetch(`${API_BASE_URL}/profile/delete`, {
             method: 'DELETE',
             headers: {
                 "Content-type": "application/json"

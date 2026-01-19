@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { toast } from 'react-toastify'
+import { API_BASE_URL } from "../config/Api";
 
 const initialState = {
     messages: [],
@@ -12,7 +13,7 @@ const initialState = {
 export const sendMessage = createAsyncThunk("sendMessage", async (data, { rejectWithValue }) => {
     try {
 
-        const response = await fetch("https://hisabify-api.vercel.app/message/send", {
+        const response = await fetch(`${API_BASE_URL}/message/send`, {
             method: "POST",
             headers: {
                 "Content-type": "application/json",
@@ -41,7 +42,7 @@ export const sendMessage = createAsyncThunk("sendMessage", async (data, { reject
 export const deleteMessage = createAsyncThunk("deleteMessage", async (id, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`https://hisabify-api.vercel.app/message/delete/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/message/delete/${id}`, {
             method: "DELETE",
             headers: {
                 "Content-type": "application/json"
@@ -76,7 +77,7 @@ export const getAllMessage = createAsyncThunk(
         }
 
         try {
-            const response = await fetch("https://hisabify-api.vercel.app/message/getAll", {
+            const response = await fetch(`${API_BASE_URL}/message/getAll`, {
                 method: "GET",
                 headers: { "Content-type": "application/json" },
                 credentials: "include",

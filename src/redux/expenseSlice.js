@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from '../config/Api';
 
 const initialState = {
     personalExpenses: [],
@@ -26,8 +27,8 @@ export const getExpenses = createAsyncThunk(
 
         try {
             const url = groupId
-                ? `https://hisabify-api.vercel.app/expense/getAllExpense/${groupId}`
-                : `https://hisabify-api.vercel.app/expense/getAllExpense`;
+                ? `${API_BASE_URL}/expense/getAllExpense/${groupId}`
+                : `${API_BASE_URL}/expense/getAllExpense`;
 
             const response = await fetch(url, {
                 method: 'GET',
@@ -56,8 +57,8 @@ export const addExpense = createAsyncThunk(
     async ({ data, groupId }, { rejectWithValue }) => {
         try {
             const url = groupId
-                ? `https://hisabify-api.vercel.app/expense/add/${groupId}`
-                : `https://hisabify-api.vercel.app/expense/add`;
+                ? `${API_BASE_URL}/expense/add/${groupId}`
+                : `${API_BASE_URL}/expense/add`;
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -89,7 +90,7 @@ export const editExpense = createAsyncThunk(
     async ({ data, expenseId, isPersonal, groupId }, { rejectWithValue }) => {
         try {
             const response = await fetch(
-                `https://hisabify-api.vercel.app/expense/edit/${expenseId}`,
+                `${API_BASE_URL}/expense/edit/${expenseId}`,
                 {
                     method: 'PATCH',
                     headers: { "Content-type": "application/json" },
@@ -121,7 +122,7 @@ export const deleteExpense = createAsyncThunk(
     async ({ expenseId, isPersonal, groupId }, { rejectWithValue }) => {
         try {
             const response = await fetch(
-                `https://hisabify-api.vercel.app/expense/delete/${expenseId}`,
+                `${API_BASE_URL}/expense/delete/${expenseId}`,
                 { method: 'DELETE', credentials: 'include' }
             );
 

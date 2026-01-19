@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../config/Api";
 
 const initialState = {
     sentRequest: [],
@@ -20,7 +21,7 @@ export const getReceivedRequests = createAsyncThunk('getReceivedRequests', async
     }
     try {
 
-        const response = await fetch(`https://hisabify-api.vercel.app/invite/view/received-request`, {
+        const response = await fetch(`${API_BASE_URL}/invite/view/received-request`, {
             method: 'GET',
             headers: {
                 "Content-type": "application/json",
@@ -51,7 +52,7 @@ export const getSentRequests = createAsyncThunk('getSentRequests', async (groupI
 
     try {
 
-        const response = await fetch(`https://hisabify-api.vercel.app/invite/view/sent-request/${groupId}`, {
+        const response = await fetch(`${API_BASE_URL}/invite/view/sent-request/${groupId}`, {
             method: 'GET',
             headers: {
                 "Content-type": "application/json",
@@ -75,7 +76,7 @@ export const getSentRequests = createAsyncThunk('getSentRequests', async (groupI
 export const reviewReceivedRequest = createAsyncThunk('reviewReceivedRequest', async ({ status, requestId, groupId }, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`https://hisabify-api.vercel.app/invite/review/${status}/${requestId}/${groupId}`, {
+        const response = await fetch(`${API_BASE_URL}/invite/review/${status}/${requestId}/${groupId}`, {
             method: 'POST',
             headers: {
                 "Content-type": "application/json",
@@ -102,7 +103,7 @@ export const reviewReceivedRequest = createAsyncThunk('reviewReceivedRequest', a
 export const sendInvitation = createAsyncThunk('sendInvitation', async ({ groupId, invitedTo }, { rejectWithValue }) => {
     try {
 
-        const response = await fetch(`https://hisabify-api.vercel.app/invite/send/${groupId}`, {
+        const response = await fetch(`${API_BASE_URL}/invite/send/${groupId}`, {
             method: 'POST',
             headers: {
                 "Content-type": "application/json",
