@@ -126,7 +126,6 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
       groupName: teamDetails?.groupName,
       description: teamDetails?.description,
     };
-    console.log("updatedGroupDetails", data);
     dispatch(updateGroup({ data, groupId: editableData?._id }));
     setInvitedMembers([]);
     setTeamDetails({

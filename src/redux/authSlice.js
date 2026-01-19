@@ -264,9 +264,11 @@ const authSlice = createSlice({
                 state.error = action.payload;
             })
 
-            //check auth 
+            //checkAuth 
             .addCase(checkAuth.pending, (state) => {
-                state.loading = true;
+                if (!state?.isAuthenticated) {
+                    state.loading = true;
+                }
             })
             .addCase(checkAuth.fulfilled, (state, action) => {
                 state.loading = false;

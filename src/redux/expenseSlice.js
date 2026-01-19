@@ -42,8 +42,6 @@ export const getExpenses = createAsyncThunk(
                 return rejectWithValue(result?.message);
             }
 
-            console.log("Result2", result)
-
             return { groupId, data: result.expense };
 
         } catch (error) {

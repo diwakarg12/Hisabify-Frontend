@@ -1,23 +1,13 @@
 // export default WithAuthRoutes;
+import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { checkAuth } from "../redux/authSlice";
 
 const WithAuthRoutes = ({ children }) => {
-  // const [isAuthenticated, setIsAuthenticated] = useState(null);
-  const dispatch = useDispatch();
-  const { isAuthenticated, user, loading } = useSelector((store) => store.auth);
-
-  useEffect(() => {
-    if (!isAuthenticated && !user) {
-      dispatch(checkAuth());
-    }
-  }, [dispatch, isAuthenticated, user]);
+  const { isAuthenticated, loading } = useSelector((store) => store.auth);
 
   if (loading) return <div>Loading...</div>;
 
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
 export default WithAuthRoutes;

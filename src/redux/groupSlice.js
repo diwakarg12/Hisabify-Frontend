@@ -175,7 +175,6 @@ export const getAllGroup = createAsyncThunk(
                 toast.error(result?.message);
                 return rejectWithValue(result?.message);
             }
-            console.log("Result2", result)
             return result;
 
         } catch (error) {

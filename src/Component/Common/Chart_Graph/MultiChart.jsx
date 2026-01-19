@@ -1,5 +1,4 @@
 //#region imports
-import { getLabel } from "@mui/x-charts/internals";
 import { PieChart, pieArcLabelClasses } from "@mui/x-charts/PieChart";
 import React from "react";
 //#endregion
@@ -46,12 +45,10 @@ const MultiChart = ({ data, outerRadius }) => {
     const percent = value / TOTAL;
     return `${(percent * 100).toFixed(0)}%`;
   };
-  console.log("getArc", getLabel);
   //#endregion
 
   //#region Component JSX.members
   const TOTAL = data.map((item) => item.value).reduce((a, b) => a + b, 0);
-  console.log("Value", TOTAL);
   //#endregion
 
   //#region Component renders

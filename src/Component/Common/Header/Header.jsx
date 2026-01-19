@@ -13,7 +13,6 @@ import NotificationDialog from "../Notification/NotificationDialog";
 import CalenderDialog from "../Calender/CalenderDialog";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { checkAuth } from "../../../redux/authSlice";
 import { Button } from "@mui/material";
 import { getReceivedRequests } from "../../../redux/requestSlice";
 //#endregion
@@ -35,11 +34,6 @@ const Header = () => {
   //#endregion
 
   //#region Component hooks
-  React.useEffect(() => {
-    return () => {
-      // Anything in here is fired on component unmount.
-    };
-  }, [dispatch]);
 
   React.useEffect(() => {
     // Anything in here is fired on component update.

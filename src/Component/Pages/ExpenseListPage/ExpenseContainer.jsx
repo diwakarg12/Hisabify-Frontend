@@ -32,14 +32,12 @@ const ExpenseContainer = () => {
   const user = useSelector((store) => store.auth.user);
   const groups = useSelector((store) => store.group.groups);
   const group = groups?.filter((g) => g?._id === groupId);
-  console.log("Groups", group);
   const expenses = useSelector((store) =>
     groupId
       ? store.expense.groupExpenses[groupId] || []
       : store.expense.personalExpenses || []
   );
   const groupExpenses = useSelector((store) => store?.expense?.groupExpenses);
-  console.log("expenses", expenses);
   const [toggleChart, settoggleChart] = useState(false);
   const [openAddExpense, setOpenAddExpense] = useState(false);
   const [openDeleteExpense, setOpenDeleteExpense] = useState(false);

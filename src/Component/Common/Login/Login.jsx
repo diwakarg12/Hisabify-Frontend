@@ -18,7 +18,7 @@ import loginImage from "../../../assets/Login/login.svg";
 import { FaGithub, FaApple } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { login, checkAuth } from "../../../redux/authSlice";
+import { login } from "../../../redux/authSlice";
 import { toast } from "react-toastify";
 //#endregion
 
@@ -45,9 +45,6 @@ const Login = ({ isLogin, setIsLogin }) => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  React.useEffect(() => {
-    dispatch(checkAuth());
-  }, [dispatch]);
   //#endregion
 
   //#region Component use Styles
