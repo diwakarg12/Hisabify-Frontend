@@ -118,7 +118,7 @@ const Header = () => {
           />
         </div>
         <div className="font-medium text-xl">
-          <span className="text-red-400">Hisabi-</span>
+          <span className="text-red-400">Hisabi</span>
           <span className="text-black">FY</span>
         </div>
       </Link>

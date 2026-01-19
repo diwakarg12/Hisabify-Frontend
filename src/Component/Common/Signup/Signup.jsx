@@ -38,7 +38,6 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useDispatch } from "react-redux";
 import { register } from "../../../redux/authSlice";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 
 //#endregion
 
@@ -101,16 +100,9 @@ const Signup = ({ isLogin, setIsLogin }) => {
     };
     const response = await dispatch(register(formattedUser)).unwrap();
     if (!response.error) {
-      toast.success(response.message, {
-        position: "top-center",
-        theme: "dark",
-      });
-      navigate("/profile");
+      navigate("/");
     } else {
-      toast.error(response.error, {
-        position: "top-center",
-        theme: "dark",
-      });
+      console.log("Error:", response?.error?.message);
     }
   };
   //#endregion
