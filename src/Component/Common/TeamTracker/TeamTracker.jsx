@@ -114,14 +114,27 @@ const TeamTracker = ({
           },
         }}
       >
-        {teamCards?.map((team, index) => (
-          <TeamCart
-            key={index}
-            teamDetail={team}
-            setOpenInvite={setOpenInvite}
-            setOpenAddExpense={setOpenAddExpense}
-          />
-        ))}
+        {teamCards && teamCards.length > 0 ? (
+          teamCards?.map((team, index) => (
+            <TeamCart
+              key={index}
+              teamDetail={team}
+              setOpenInvite={setOpenInvite}
+              setOpenAddExpense={setOpenAddExpense}
+            />
+          ))
+        ) : (
+          <Typography
+            sx={{
+              fontSize: 20,
+              fontWeight: 600,
+              textAlign: "center",
+              my: "20%",
+            }}
+          >
+            You Don't have any group
+          </Typography>
+        )}
       </Box>
     </Box>
   );

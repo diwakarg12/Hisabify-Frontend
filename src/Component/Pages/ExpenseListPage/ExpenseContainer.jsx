@@ -11,13 +11,13 @@ import {
   editExpense,
   getExpenses,
 } from "../../../redux/expenseSlice";
-import { toast } from "react-toastify";
 import { getExpenseAnalytics } from "../../../helpers/expenseAnalytics";
 import { getCategoryChartData } from "../../../helpers/getCategoryChartData";
 import ExpenseList from "./ExpenseList";
 import { useParams } from "react-router-dom";
 import DeleteModal from "../../Common/DeleteModal/DeleteModal";
 import { getGroupExpenseChartData } from "../../../helpers/getGroupExpenseChartData";
+import FullScreenLoader from "../../Common/Loader/FullScreenLoader";
 
 //#endregion
 
@@ -32,16 +32,21 @@ const ExpenseContainer = () => {
   const user = useSelector((store) => store.auth.user);
   const groups = useSelector((store) => store.group.groups);
   const group = groups?.filter((g) => g?._id === groupId);
-  const expenses = useSelector((store) =>
-    groupId
-      ? store.expense.groupExpenses[groupId] || []
-      : store.expense.personalExpenses || []
-  );
+  const { expenses, expenseLoading } = useSelector((store) => {
+    const expenseState = store.expense;
+
+    return {
+      expenses: groupId
+        ? expenseState.groupExpenses[groupId] || []
+        : expenseState.personalExpenses || [],
+      expenseLoading: expenseState.expenseLoading,
+    };
+  });
   const groupExpenses = useSelector((store) => store?.expense?.groupExpenses);
   const [toggleChart, settoggleChart] = useState(false);
   const [openAddExpense, setOpenAddExpense] = useState(false);
   const [openDeleteExpense, setOpenDeleteExpense] = useState(false);
-  const [editableData, setEditableData] = useState({});
+  const [editableData, setEditableData] = useState(null);
   const [deletableId, setEditableId] = useState(null);
   const {
     totalAmount,
@@ -55,7 +60,7 @@ const ExpenseContainer = () => {
   const groupExpenseChartData = getGroupExpenseChartData(
     groupExpenses,
     groups,
-    user?._id
+    user?._id,
   );
 
   //#endregion
@@ -70,7 +75,7 @@ const ExpenseContainer = () => {
   }, [groupId, dispatch]);
 
   //#endregion
-
+ 
   //#region Component use Styles
   //#endregion
 
@@ -79,18 +84,14 @@ const ExpenseContainer = () => {
 
   //#region Component Api methods
   const handleAddExpense = async (data, isEdit, expenseId) => {
-    try {
-      if (isEdit) {
-        await dispatch(editExpense({ data, expenseId })).unwrap();
+    if (isEdit) {
+      await dispatch(editExpense({ data, expenseId })).unwrap();
+    } else {
+      if (groupId) {
+        await dispatch(addExpense({ data: data, groupId: groupId })).unwrap();
       } else {
-        if (groupId) {
-          await dispatch(addExpense({ data: data, groupId: groupId })).unwrap();
-        } else {
-          await dispatch(addExpense({ data: data })).unwrap();
-        }
+        await dispatch(addExpense({ data: data })).unwrap();
       }
-    } catch (error) {
-      toast.error(error);
     }
   };
 
@@ -113,7 +114,7 @@ const ExpenseContainer = () => {
         isPersonal: expenses.find((expense) => expense?._id === deletableId)
           ?.isPersonal,
         groupId: groupId || null,
-      })
+      }),
     ).unwrap();
   };
   //#endregion
@@ -137,6 +138,7 @@ const ExpenseContainer = () => {
         gap: 2,
       }}
     >
+      {expenseLoading && <FullScreenLoader />}
       <Card
         sx={{
           display: "flex",

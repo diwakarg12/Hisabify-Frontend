@@ -9,6 +9,7 @@ import DeleteModal from "../../Common/DeleteModal/DeleteModal";
 import { deleteGroup, getAllGroup } from "../../../redux/groupSlice";
 // import { getExpenses } from "../../../redux/expenseSlice";
 import AddTeam from "../../Common/AddTeam/AddTeam";
+import FullScreenLoader from "../../Common/Loader/FullScreenLoader";
 //#endregion
 
 //#region Component make Styles
@@ -19,7 +20,7 @@ const TeamList = () => {
   //#region Component states
   const dispatch = useDispatch();
   const user = useSelector((store) => store.auth.user);
-  const groups = useSelector((store) => store.group.groups);
+  const { groups, groupLoading } = useSelector((store) => store.group);
   const groupExpenses = useSelector((store) => store.expense.groupExpenses);
 
   const [openDelete, setOpenDelete] = useState(false);
@@ -154,6 +155,7 @@ const TeamList = () => {
           Add Team
         </Button>
       </Box>
+      {groupLoading && <FullScreenLoader />}
 
       <Card>
         {groupCards.map((teamDetail) => (

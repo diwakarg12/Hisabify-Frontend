@@ -38,6 +38,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useDispatch } from "react-redux";
 import { register } from "../../../redux/authSlice";
 import { useNavigate } from "react-router-dom";
+import FullScreenLoader from "../Loader/FullScreenLoader";
 
 //#endregion
 
@@ -52,6 +53,7 @@ const Signup = ({ isLogin, setIsLogin }) => {
   const [agree, setAgree] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [loading, setLoading] = useState(false);
   const [user, setUser] = React.useState({
     firstName: "",
     lastName: "",
@@ -95,14 +97,22 @@ const Signup = ({ isLogin, setIsLogin }) => {
 
   //#region Component feature methods
   const handleRegisterClick = async () => {
-    const formattedUser = {
-      ...user,
-    };
-    const response = await dispatch(register(formattedUser)).unwrap();
-    if (!response.error) {
-      navigate("/");
-    } else {
-      console.log("Error:", response?.error?.message);
+    try {
+      setLoading(true);
+      const formattedUser = {
+        ...user,
+      };
+      const response = await dispatch(register(formattedUser)).unwrap();
+      if (!response.error) {
+        navigate("/");
+      } else {
+        console.log("Error:", response?.error?.message);
+      }
+      setLoading;
+      false;
+      // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      setLoading(false);
     }
   };
   //#endregion
@@ -121,6 +131,7 @@ const Signup = ({ isLogin, setIsLogin }) => {
         m: "auto",
       }}
     >
+      {loading && <FullScreenLoader />}
       {/* Image in Sign Up Component  */}
       <Box
         sx={{

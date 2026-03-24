@@ -13,8 +13,10 @@ import {
   IconButton,
   Paper,
 } from "@mui/material";
-import { Person, Facebook, Google, Twitter, Lock } from "@mui/icons-material";
+import { Person, Facebook, Google, Twitter, Visibility,
+  VisibilityOff, Lock } from "@mui/icons-material";
 import loginImage from "../../../assets/Login/login.svg";
+import FullScreenLoader from "../Loader/FullScreenLoader";
 import { FaGithub, FaApple } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -30,12 +32,15 @@ const Login = ({ isLogin, setIsLogin }) => {
   //#region Component states
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
+  const { user, isAuthenticated, authLoading } = useSelector(
+    (state) => state.auth,
+  );
   const [form, setForm] = React.useState({
     email: "",
     password: "",
   });
   const [rememberMe, setRememberMe] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
   //#endregion
 
   //#region Component hooks
@@ -97,6 +102,7 @@ const Login = ({ isLogin, setIsLogin }) => {
         width: "100vw",
       }}
     >
+      {authLoading && <FullScreenLoader />}
       <Box
         sx={{
           display: "flex",
@@ -135,6 +141,7 @@ const Login = ({ isLogin, setIsLogin }) => {
 
           <TextField
             fullWidth
+            type={showPassword ? "text" : "password"}
             placeholder="Enter Password"
             variant="outlined"
             name="password"
@@ -144,6 +151,16 @@ const Login = ({ isLogin, setIsLogin }) => {
               startAdornment: (
                 <InputAdornment position="start">
                   <Lock sx={{ color: "#000" }} />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
                 </InputAdornment>
               ),
             }}
@@ -162,7 +179,7 @@ const Login = ({ isLogin, setIsLogin }) => {
           <Button
             variant="contained"
             fullWidth
-            disabled={loading}
+            disabled={authLoading}
             sx={{
               mb: 2,
               py: 1,
@@ -171,7 +188,7 @@ const Login = ({ isLogin, setIsLogin }) => {
             }}
             onClick={handleLoginClick}
           >
-            {loading ? "Logging in..." : "Login"}
+            {authLoading ? "Logging in..." : "Login"}
           </Button>
         </Box>
 

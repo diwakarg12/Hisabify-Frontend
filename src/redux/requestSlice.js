@@ -7,7 +7,7 @@ const initialState = {
     receivedRequest: [],
     receivedFetched: false,
     sentFetchedByGroup: {},
-    loading: false,
+    requestLoading: false,
     error: null
 };
 
@@ -135,7 +135,7 @@ const requestSlice = createSlice({
             state.receivedRequest = [];
             state.sentFetchedByGroup = {};
             state.receivedFetched = false;
-            state.loading = false;
+            state.requestLoading = false;
             state.error = null;
         },
     },
@@ -144,61 +144,61 @@ const requestSlice = createSlice({
 
             //receivedRequests
             .addCase(getReceivedRequests.pending, (state) => {
-                state.loading = true;
+                state.requestLoading = true;
             })
             .addCase(getReceivedRequests.fulfilled, (state, action) => {
-                state.loading = false;
+                state.requestLoading = false;
                 state.receivedRequest = action.payload.receivedInvitations;
                 state.receivedFetched = true;
                 state.error = null;
             })
             .addCase(getReceivedRequests.rejected, (state, action) => {
-                state.loading = false;
+                state.requestLoading = false;
                 state.error = action.payload;
             })
 
             //actionOnReceivedRequest
             .addCase(reviewReceivedRequest.pending, (state) => {
-                state.loading = true;
+                state.requestLoading = true;
             })
             .addCase(reviewReceivedRequest.fulfilled, (state, action) => {
-                state.loading = false;
+                state.requestLoading = false;
                 state.receivedRequest = state.receivedRequest.filter(
                     (req) => req._id !== action.payload.requestId
                 );
                 state.error = null;
             })
             .addCase(reviewReceivedRequest.rejected, (state, action) => {
-                state.loading = false;
+                state.requestLoading = false;
                 state.error = action.payload;
             })
 
             //getSentRequests
             .addCase(getSentRequests.pending, (state) => {
-                state.loading = true;
+                state.requestLoading = true;
             })
             .addCase(getSentRequests.fulfilled, (state, action) => {
-                state.loading = false;
+                state.requestLoading = false;
                 state.sentRequest = action.payload.sentInvitations;
                 state.sentFetchedByGroup[action.payload.groupId] = true;
                 state.error = null;
             })
             .addCase(getSentRequests.rejected, (state, action) => {
-                state.loading = false;
+                state.requestLoading = false;
                 state.error = action.payload;
             })
 
             //sendInvitation
             .addCase(sendInvitation.pending, (state) => {
-                state.loading = true;
+                state.requestLoading = true;
             })
             .addCase(sendInvitation.fulfilled, (state, action) => {
-                state.loading = false;
+                state.requestLoading = false;
                 state.sentRequest.push(action.payload);
                 state.error = null;
             })
             .addCase(sendInvitation.rejected, (state, action) => {
-                state.loading = false;
+                state.requestLoading = false;
                 state.error = action.payload;
             })
     }

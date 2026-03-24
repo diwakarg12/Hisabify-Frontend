@@ -13,6 +13,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { getAllGroup } from "../../../redux/groupSlice";
 import { addExpense, getExpenses } from "../../../redux/expenseSlice";
 import { getExpenseAnalytics } from "../../../helpers/expenseAnalytics";
+import FullScreenLoader from "../../Common/Loader/FullScreenLoader";
 
 //#endregion
 
@@ -34,11 +35,10 @@ const Dashboard = () => {
   const dispatch = useDispatch();
 
   const user = useSelector((store) => store.auth.user);
-  const groups = useSelector((store) => store.group.groups);
-  const personalExpenses = useSelector(
-    (store) => store.expense.personalExpenses
+  const { groups, groupLoading } = useSelector((store) => store.group);
+  const { personalExpenses, groupExpenses, expenseLoading } = useSelector(
+    (store) => store.expense,
   );
-  const groupExpenses = useSelector((store) => store.expense.groupExpenses);
   //#region Component hooks
   React.useEffect(() => {
     // Anything in here is fired on component mount
@@ -91,7 +91,7 @@ const Dashboard = () => {
       await dispatch(addExpense({ data: data })).unwrap();
     } else {
       await dispatch(
-        addExpense({ data: data, groupId: selectedGroupId })
+        addExpense({ data: data, groupId: selectedGroupId }),
       ).unwrap();
     }
   };
@@ -133,6 +133,7 @@ const Dashboard = () => {
         overflowY: "hidden",
       }}
     >
+      {(groupLoading || expenseLoading) && <FullScreenLoader />}
       {/* Dashboard Content */}
       <Box
         sx={{

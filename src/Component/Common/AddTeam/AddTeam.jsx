@@ -9,6 +9,7 @@ import {
 } from "../../../redux/groupSlice";
 import { resetSearchUsers } from "../../../redux/groupSlice";
 import { sendInvitation } from "../../../redux/requestSlice";
+import FullScreenLoader from "../Loader/FullScreenLoader";
 // import { sendInvitation } from "../../../redux/requestSlice";
 //#endregion
 
@@ -22,6 +23,7 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
   const dispatch = useDispatch();
   const [invitedMembers, setInvitedMembers] = useState([]);
   const [email, setEmail] = useState("");
+  const [loading, setloading] = useState(false);
   const [teamDetails, setTeamDetails] = useState({
     groupName: "",
     description: "",
@@ -70,9 +72,16 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
 
   //#region Component Api methods
   const handleUserSearch = async () => {
-    const res = await dispatch(searchUser(email)).unwrap();
-    setInvitedMembers([...invitedMembers, res.user]);
-    setEmail("");
+    try {
+      setloading;(true)
+      const res = await dispatch(searchUser(email)).unwrap();
+      setInvitedMembers([...invitedMembers, res.user]);
+      setEmail("");
+      setloading(false);
+    // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      setloading(false);
+    }
   };
 
   //#endregion
@@ -95,45 +104,58 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
   };
 
   const handleCreateGroup = async () => {
-    const finalGroupDetails = {
-      ...teamDetails,
-      createdBy: user._id,
-      members: [],
-    };
-    const group = await dispatch(createGroup(finalGroupDetails)).unwrap();
+    try {
+      setloading(true);
+      const finalGroupDetails = {
+        ...teamDetails,
+        createdBy: user._id,
+        members: [],
+      };
+      const group = await dispatch(createGroup(finalGroupDetails)).unwrap();
 
-    invitedMembers.map(
-      async (member) =>
-        await dispatch(
-          sendInvitation({ groupId: group.group._id, invitedTo: member._id })
-        ).unwrap()
-    );
+      invitedMembers.map(
+        async (member) =>
+          await dispatch(
+            sendInvitation({ groupId: group.group._id, invitedTo: member._id }),
+          ).unwrap(),
+      );
 
-    setInvitedMembers([]);
-    setTeamDetails({
-      groupName: "",
-      description: "",
-      members: [],
-    });
+      setInvitedMembers([]);
+      setTeamDetails({
+        groupName: "",
+        description: "",
+        members: [],
+      });
 
-    dispatch(resetSearchUsers());
-
-    onClose();
+      dispatch(resetSearchUsers());
+      setloading(false);
+      onClose();
+    // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      setloading(false);
+    }
   };
 
   const handleEditGroup = () => {
-    const data = {
-      groupName: teamDetails?.groupName,
-      description: teamDetails?.description,
-    };
-    dispatch(updateGroup({ data, groupId: editableData?._id }));
-    setInvitedMembers([]);
-    setTeamDetails({
-      groupName: "",
-      description: "",
-      members: [],
-    });
-    onClose();
+    try {
+      setloading(true);
+      const data = {
+        groupName: teamDetails?.groupName,
+        description: teamDetails?.description,
+      };
+      dispatch(updateGroup({ data, groupId: editableData?._id }));
+      setInvitedMembers([]);
+      setTeamDetails({
+        groupName: "",
+        description: "",
+        members: [],
+      });
+      setloading(false);
+      onClose();
+    // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      setloading(false);
+    }
   };
   //#endregion
 
@@ -175,6 +197,7 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
         boxShadow: 3,
       }}
     >
+      {loading && <FullScreenLoader />}
       <Box
         sx={{
           display: "flex",
@@ -190,7 +213,7 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
               textDecorationColor: "#F24E1E",
             }}
           >
-            {editableData?.groupName ? "Edit" : "Crreate"}
+            {editableData?.groupName ? "Edit" : "Create"}
           </Box>
           <Box component="span">
             {" "}

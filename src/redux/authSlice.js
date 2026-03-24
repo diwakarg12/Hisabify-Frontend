@@ -5,7 +5,7 @@ import { API_BASE_URL } from "../config/Api";
 
 const initialState = {
     user: null,
-    loading: false,
+    authLoading: false,
     error: null,
     isAuthenticated: false
 };
@@ -24,14 +24,14 @@ export const register = createAsyncThunk('create', async (user, { rejectWithValu
         const result = await response.json();
 
         if (!response.ok) {
-            toast.error(result?.message);
+            toast.error(result);
             return rejectWithValue(result?.message);
         }
         toast.success("Signup Successful !")
         return result;
 
     } catch (error) {
-        toast.error(error?.message);
+        toast.error(error);
         return rejectWithValue(error?.message);
     }
 })
@@ -214,7 +214,7 @@ const authSlice = createSlice({
         resetAuth: (state) => {
             state.user = null;
             state.isAuthenticated = false;
-            state.loading = false;
+            state.authLoading = false;
             state.error = false;
         },
     },
@@ -222,64 +222,64 @@ const authSlice = createSlice({
         builder
             //Register
             .addCase(register.pending, (state) => {
-                state.loading = true;
+                state.authLoading = true;
             })
             .addCase(register.fulfilled, (state, action) => {
-                state.loading = false;
+                state.authLoading = false;
                 state.user = action.payload.user;
                 state.error = null;
                 state.isAuthenticated = true;
             })
             .addCase(register.rejected, (state, action) => {
-                state.loading = false;
+                state.authLoading = false;
                 state.error = action.payload;
             })
 
             //Login
             .addCase(login.pending, (state) => {
-                state.loading = true;
+                state.authLoading = true;
             })
             .addCase(login.fulfilled, (state, action) => {
-                state.loading = false;
+                state.authLoading = false;
                 state.user = action.payload.user;
                 state.error = null;
                 state.isAuthenticated = true;
             })
             .addCase(login.rejected, (state, action) => {
-                state.loading = false;
+                state.authLoading = false;
                 state.error = action.payload;
             })
 
             //Logout
             .addCase(logout.pending, (state) => {
-                state.loading = true
+                state.authLoading = true
             })
             .addCase(logout.fulfilled, (state) => {
-                state.loading = false;
+                state.authLoading = false;
                 state.user = null;
                 state.error = null;
                 state.isAuthenticated = false;
             })
             .addCase(logout.rejected, (state, action) => {
-                state.loading = false;
+                state.authLoading = false;
                 state.error = action.payload;
             })
 
             //checkAuth 
             .addCase(checkAuth.pending, (state) => {
                 if (!state?.isAuthenticated) {
-                    state.loading = true;
+                    state.authLoading = true;
                 }
             })
             .addCase(checkAuth.fulfilled, (state, action) => {
-                state.loading = false;
+                state.authLoading = false;
                 if (action?.payload?.alreadyChecked) return
                 state.user = action.payload.user;
                 state.isAuthenticated = true;
                 state.error = null;
             })
             .addCase(checkAuth.rejected, (state, action) => {
-                state.loading = false;
+                state.authLoading = false;
                 state.user = null;
                 state.error = action.payload;
                 state.isAuthenticated = false;
@@ -287,57 +287,57 @@ const authSlice = createSlice({
 
             //update-profile
             .addCase(updateProfile.pending, (state) => {
-                state.loading = true;
+                state.authLoading = true;
             })
             .addCase(updateProfile.fulfilled, (state, action) => {
-                state.loading = false;
+                state.authLoading = false;
                 state.user = action.payload.user;
                 state.error = null;
             })
             .addCase(updateProfile.rejected, (state, action) => {
-                state.loading = true;
+                state.authLoading = true;
                 state.error = action.payload;
             })
 
             //update-email
             .addCase(updateEmail.pending, (state) => {
-                state.loading = true;
+                state.authLoading = true;
             })
             .addCase(updateEmail.fulfilled, (state, action) => {
-                state.loading = false;
+                state.authLoading = false;
                 state.user = action.payload.user;
                 state.error = null;
             })
             .addCase(updateEmail.rejected, (state, action) => {
-                state.loading = false;
+                state.authLoading = false;
                 state.error = action.payload;
             })
 
             //update-phone
             .addCase(updatePhone.pending, (state) => {
-                state.loading = true;
+                state.authLoading = true;
             })
             .addCase(updatePhone.fulfilled, (state, action) => {
-                state.loading = false;
+                state.authLoading = false;
                 state.user = action.payload.user;
                 state.error = null;
             })
             .addCase(updatePhone.rejected, (state, action) => {
-                state.loading = false;
+                state.authLoading = false;
                 state.error = action.payload;
             })
 
             //delete-profile
             .addCase(deleteProfile.pending, (state) => {
-                state.loading = true;
+                state.authLoading = true;
             })
             .addCase(deleteProfile.fulfilled, (state, action) => {
-                state.loading = false;
+                state.authLoading = false;
                 state.user = action.payload.user;
                 state.error = null;
             })
             .addCase(deleteProfile.rejected, (state, action) => {
-                state.loading = false;
+                state.authLoading = false;
                 state.error = action.payload;
             })
     }

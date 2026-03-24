@@ -7,7 +7,7 @@ const initialState = {
     personalExpenses: [],
     groupExpenses: {},
     toggleExpenseForm: false,
-    loading: false,
+    expenseLoading: false,
     error: null
 };
 
@@ -156,10 +156,10 @@ const expenseSlice = createSlice({
         builder
             //getExpense
             .addCase(getExpenses.pending, (state) => {
-                state.loading = true;
+                state.expenseLoading = true;
             })
             .addCase(getExpenses.fulfilled, (state, action) => {
-                state.loading = false;
+                state.expenseLoading = false;
                 state.error = null;
 
                 const { groupId, data } = action.payload;
@@ -170,7 +170,7 @@ const expenseSlice = createSlice({
                 }
             })
             .addCase(getExpenses.rejected, (state, action) => {
-                state.loading = false;
+                state.expenseLoading = false;
                 if (
                     action.payload === 'Personal expenses already fetched' ||
                     action.payload === 'Group expenses already fetched'
@@ -180,10 +180,10 @@ const expenseSlice = createSlice({
 
             //addExpense
             .addCase(addExpense.pending, (state) => {
-                state.loading = true;
+                state.expenseLoading = true;
             })
             .addCase(addExpense.fulfilled, (state, action) => {
-                state.loading = false;
+                state.expenseLoading = false;
                 const { expense, groupId } = action.payload;
 
                 if (groupId) {
@@ -195,16 +195,16 @@ const expenseSlice = createSlice({
                 state.error = null;
             })
             .addCase(addExpense.rejected, (state, action) => {
-                state.loading = false;
+                state.expenseLoading = false;
                 state.error = action.payload;
             })
 
             //editExpense
             .addCase(editExpense.pending, (state) => {
-                state.loading = true;
+                state.expenseLoading = true;
             })
             .addCase(editExpense.fulfilled, (state, action) => {
-                state.loading = false;
+                state.expenseLoading = false;
                 const { expense, isPersonal, groupId } = action.payload;
 
                 if (isPersonal) {
@@ -221,16 +221,16 @@ const expenseSlice = createSlice({
             })
 
             .addCase(editExpense.rejected, (state, action) => {
-                state.loading = false;
+                state.expenseLoading = false;
                 state.error = action.payload;
             })
 
             //deleteExpense
             .addCase(deleteExpense.pending, (state) => {
-                state.loading = true;
+                state.expenseLoading = true;
             })
             .addCase(deleteExpense.fulfilled, (state, action) => {
-                state.loading = false;
+                state.expenseLoading = false;
                 const { expenseId, isPersonal, groupId } = action.payload;
 
                 if (isPersonal) {
@@ -245,7 +245,7 @@ const expenseSlice = createSlice({
             })
 
             .addCase(deleteExpense.rejected, (state, action) => {
-                state.loading = false;
+                state.expenseLoading = false;
                 state.error = action.payload;
             })
     },

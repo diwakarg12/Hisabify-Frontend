@@ -5,6 +5,7 @@ import Members from "./Members";
 import { useDispatch } from "react-redux";
 import { getSentRequests, sendInvitation } from "../../../redux/requestSlice";
 import { searchUser } from "../../../redux/groupSlice";
+import FullScreenLoader from "../Loader/FullScreenLoader";
 //#endregion
 
 //#region Component make Styles
@@ -19,6 +20,7 @@ const Invite = ({ openInvite, handleClose, group }) => {
   const [owner, setOwner] = useState(null);
   const [email, setEmail] = useState("");
   const [memberTab, setMemberTab] = useState(true);
+  const [loading, setLoading] = useState(false);
   //#endregion
 
   //#region Component hooks
@@ -30,7 +32,7 @@ const Invite = ({ openInvite, handleClose, group }) => {
     const handlePendingRequest = async () => {
       const res = await dispatch(getSentRequests(group._id)).unwrap();
       const pendingRequest = res?.sentInvitations?.map(
-        (invitation) => invitation.invitedTo
+        (invitation) => invitation.invitedTo,
       );
       setPendingInvitation(pendingRequest || []);
       setOwner(group.createdBy._id);
@@ -55,13 +57,20 @@ const Invite = ({ openInvite, handleClose, group }) => {
   //#region Component feature methods
 
   const handleInvitation = async () => {
-    const res = await dispatch(searchUser(email)).unwrap();
-    await dispatch(
-      sendInvitation({ groupId: group._id, invitedTo: res.user._id })
-    ).unwrap();
+    try {
+      setLoading(true);
+      const res = await dispatch(searchUser(email)).unwrap();
+      await dispatch(
+        sendInvitation({ groupId: group._id, invitedTo: res.user._id }),
+      ).unwrap();
 
-    setPendingInvitation((prev) => [...prev, res.user]);
-    setEmail("");
+      setPendingInvitation((prev) => [...prev, res.user]);
+      setEmail("");
+      setLoading(false);
+    // eslint-disable-next-line no-unused-vars
+    } catch (err) {
+      setLoading(false);
+    }
   };
 
   //#endregion
@@ -99,6 +108,7 @@ const Invite = ({ openInvite, handleClose, group }) => {
           },
         }}
       >
+        {loading && <FullScreenLoader />}
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h5">Invite new members</Typography>
           <Typography
@@ -128,6 +138,7 @@ const Invite = ({ openInvite, handleClose, group }) => {
           <Button
             variant="contained"
             sx={{ backgroundColor: "#f44336", width: "20%" }}
+            disabled={!email}
             onClick={handleInvitation}
           >
             Invite
@@ -155,6 +166,7 @@ const Invite = ({ openInvite, handleClose, group }) => {
           </Box>
           {formateData.map((user, index) => (
             <Members
+              key={index}
               user={user}
               owner={owner}
               index={index}

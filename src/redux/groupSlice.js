@@ -6,7 +6,7 @@ import { API_BASE_URL } from "../config/Api";
 const initialState = {
     groups: [],
     isAddGroupFormOpen: false,
-    loading: false,
+    groupLoading: false,
     error: null
 }
 
@@ -34,7 +34,6 @@ export const searchUser = createAsyncThunk(
                 return rejectWithValue(result?.message);
             }
 
-            toast.success("User Found");
             return result;
 
         } catch (error) {
@@ -195,7 +194,7 @@ const groupSlice = createSlice({
         },
         resetSearchUsers: (state) => {
             state.users = [];
-            state.loading = false;
+            state.groupLoading = false;
             state.error = null;
         },
     },
@@ -203,53 +202,53 @@ const groupSlice = createSlice({
         builder
             //getAllGroup
             .addCase(getAllGroup.pending, (state) => {
-                state.loading = true;
+                state.groupLoading = true;
             })
             .addCase(getAllGroup.fulfilled, (state, action) => {
-                state.loading = false;
+                state.groupLoading = false;
                 state.groups = action.payload.groups;
                 state.error = null;
             })
             .addCase(getAllGroup.rejected, (state, action) => {
-                state.loading = false;
+                state.groupLoading = false;
                 if (action.payload === "Groups already fetched") return;
                 state.error = action.payload;
             })
 
             //createGroup
             .addCase(createGroup.pending, (state) => {
-                state.loading = true;
+                state.groupLoading = true;
             })
             .addCase(createGroup.fulfilled, (state, action) => {
-                state.loading = false;
+                state.groupLoading = false;
                 state.groups.push(action.payload.group);
                 state.error = null;
             })
             .addCase(createGroup.rejected, (state, action) => {
-                state.loading = false;
+                state.groupLoading = false;
                 state.error = action.payload;
             })
 
             //updateGroup
             .addCase(updateGroup.pending, (state) => {
-                state.loading = true;
+                state.groupLoading = true;
             })
             .addCase(updateGroup.fulfilled, (state, action) => {
-                state.loading = false;
+                state.groupLoading = false;
                 state.groups = state.groups.map(group => group._id.toString() === action.payload.group._id.toString() ? action.payload.group : group);
                 state.error = null;
             })
             .addCase(updateGroup.rejected, (state, action) => {
-                state.loading = false;
+                state.groupLoading = false;
                 state.error = action.payload;
             })
 
             //removeUserFromGroup
             .addCase(removeUser.pending, (state) => {
-                state.loading = true;
+                state.groupLoading = true;
             })
             .addCase(removeUser.fulfilled, (state, action) => {
-                state.loading = false;
+                state.groupLoading = false;
                 const { groupId, userId } = action.payload;
 
                 state.groups = state.groups.map(group =>
@@ -266,16 +265,16 @@ const groupSlice = createSlice({
 
 
             .addCase(removeUser.rejected, (state, action) => {
-                state.loading = false;
+                state.groupLoading = false;
                 state.error = action.payload;
             })
 
             //DeleteGroup
             .addCase(deleteGroup.pending, (state) => {
-                state.loading = true;
+                state.groupLoading = true;
             })
             .addCase(deleteGroup.fulfilled, (state, action) => {
-                state.loading = false;
+                state.groupLoading = false;
                 state.groups = state.groups.filter(
                     group => group._id !== action.payload.groupId
                 );
@@ -283,7 +282,7 @@ const groupSlice = createSlice({
             })
 
             .addCase(deleteGroup.rejected, (state, action) => {
-                state.loading = false;
+                state.groupLoading = false;
                 state.error = action.payload.message;
             })
     }

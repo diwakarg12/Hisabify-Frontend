@@ -5,7 +5,7 @@ import { API_BASE_URL } from "../config/Api";
 
 const initialState = {
     messages: [],
-    loading: false,
+    messageLoading: false,
     error: null,
     isFetched: false,
 };
@@ -106,45 +106,45 @@ const messageSlice = createSlice({
         builder
             // getAllMessages
             .addCase(getAllMessage.pending, (state) => {
-                state.loading = true
+                state.messageLoading = true
             })
             .addCase(getAllMessage.fulfilled, (state, action) => {
-                state.loading = false
+                state.messageLoading = false
                 state.messages = action.payload.messages
                 state.error = null
             })
             .addCase(getAllMessage.rejected, (state, action) => {
-                state.loading = false;
+                state.messageLoading = false;
                 state.error = action.payload
             })
 
             // sendMessage
             .addCase(sendMessage.pending, (state) => {
-                state.loading = true
+                state.messageLoading = true
             })
             .addCase(sendMessage.fulfilled, (state, action) => {
-                state.loading = false
+                state.messageLoading = false
                 state.messages = [...state.messages, action.payload.message]
                 state.error = null
             })
             .addCase(sendMessage.rejected, (state, action) => {
-                state.loading = false
+                state.messageLoading = false
                 state.error = action.payload
             })
 
             // deleteMessage
             .addCase(deleteMessage.pending, (state) => {
-                state.loading = true
+                state.messageLoading = true
             })
             .addCase(deleteMessage.fulfilled, (state, action) => {
-                state.loading = false
+                state.messageLoading = false
                 state.messages = state.messages.filter(
                     (msg) => msg._id !== action.payload.messageId
                 );
                 state.error = null
             })
             .addCase(deleteMessage.rejected, (state, action) => {
-                state.loading = false
+                state.messageLoading = false
                 state.error = action.payload
             })
     },
