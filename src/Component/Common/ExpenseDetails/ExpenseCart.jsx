@@ -72,7 +72,7 @@ const ExpenseCart = ({ item, index, onSelectExpense, selectedExpenseId }) => {
         <Box
           variant="body2"
           color="text.secondary"
-          mt={0.5}
+          
           sx={{
             display: "flex",
             justifyContent: "space-between",
@@ -96,7 +96,7 @@ const ExpenseCart = ({ item, index, onSelectExpense, selectedExpenseId }) => {
           direction="row"
           justifyContent="space-between"
           alignItems="center"
-          mt={1.5}
+          
         >
           <Typography variant="caption" color="text.secondary">
             Added on:{" "}
@@ -105,6 +105,17 @@ const ExpenseCart = ({ item, index, onSelectExpense, selectedExpenseId }) => {
               month: "short",
               year: "numeric",
             })}
+          </Typography>
+        </Stack>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          mt={1.5}
+        >
+          <Typography variant="caption" color="text.secondary">
+            Added By:{" "}
+            {`${item?.createdFor?.firstName} ${item?.createdFor?.lastName}`}
           </Typography>
         </Stack>
       </CardContent>

@@ -181,14 +181,18 @@ const AddExpense = ({
               md: 4,
             },
             borderRadius: 2,
-            overflow: "auto",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
+          {/* Header */}
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
+              flexShrink: 0,
+              p: 2,
             }}
           >
             <Typography variant="h6" component="h2">
@@ -213,215 +217,225 @@ const AddExpense = ({
               Go Back
             </Button>
           </Box>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: {
-                xs: "column",
-                md: "row",
-              },
-              gap: {
-                xs: 0,
-                md: 2,
-              },
-            }}
-          >
-            <TextField
-              label="Amount"
-              type="number"
-              name="amount"
-              fullWidth
-              sx={{ mt: 2 }}
-              value={expense.amount}
-              onChange={handleValueChange}
-            />
-            <TextField
-              label="Date"
-              type="date"
-              name="date"
-              fullWidth
-              sx={{ mt: 2 }}
-              value={expense.date}
-              onChange={handleValueChange}
-              InputLabelProps={{ shrink: true }}
-            />
-          </Box>
-          <Box
-            sx={{
-              mt: {
-                xs: 1.5,
-                md: 2,
-              },
-              display: "flex",
-              flexDirection: {
-                xs: "column",
-                md: "row",
-              },
-              gap: {
-                xs: 1.5,
-                md: 2,
-              },
-            }}
-          >
-            <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">Category</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={expense.category}
-                label="Category"
-                name="category"
-                onChange={handleValueChange}
-              >
-                {[
-                  "shopping",
-                  "Food & Dining",
-                  "Groceries",
-                  "Restaurants",
-                  "Education",
-                  "Travel",
-                  "Entertainment",
-                  "Health & Wellness",
-                  "Gifts & Donations",
-                  "Miscellaneous",
-                ].map((category) => (
-                  <MenuItem value={category}>{category}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="created-for">Created For</InputLabel>
-              <Select
-                labelId="adding-for"
-                id="created-for"
-                name="createdFor"
-                value={expense.createdFor}
-                label="Created For"
-                onChange={handleValueChange}
-                disabled={flag === "personal"}
-                sx={{ display: "flex", justifyContent: "space-between" }}
-              >
-                {data.map((user) => (
-                  <MenuItem
-                    value={user._id}
-                    key={user._id}
-                    sx={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <Box component={"span"}>
-                      {user.firstName} {user.lastName}
-                    </Box>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="split-with">Split With</InputLabel>
-              <Select
-                labelId="split-with"
-                id="split-with"
-                multiple
-                value={expense.splitwith}
-                label="Split With"
-                onChange={handleSplitWithChange}
-                disabled={flag === "personal"}
-                sx={{ display: "flex", justifyContent: "space-between" }}
-              >
-                {data.map((user) => (
-                  <MenuItem
-                    value={user._id}
-                    key={user._id}
-                    sx={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <Box component={"span"}>
-                      {user.firstName} {user.lastName}
-                    </Box>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-
-          <Box
-            sx={{
-              mt: {
-                xs: 1.5,
-                md: 2,
-              },
-              display: "flex",
-              flexDirection: {
-                xs: "column",
-                md: "row",
-              },
-              gap: {
-                xs: 1,
-                md: 2,
-              },
-            }}
-          >
-            <TextField
-              label="Description"
-              multiline
-              rows={4}
-              placeholder="Start writing here..."
-              fullWidth
-              name="description"
-              value={expense.description}
-              onChange={handleValueChange}
-            />
-
+          {/* Form */}
+          <Box flex={1} overflow="auto">
             <Box
               sx={{
-                border: "1px dashed grey",
-                textAlign: "center",
-                cursor: "pointer",
                 display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                width: {
-                  xs: "100%",
-                  md: "20%",
+                flexDirection: {
+                  xs: "column",
+                  md: "row",
                 },
-                borderRadius: "3px",
+                gap: {
+                  xs: 0,
+                  md: 2,
+                },
               }}
             >
-              <input
-                accept="image/*"
-                id="upload-file"
-                type="file"
-                name="receiptImage"
-                ref={fileInputRef}
-                style={{ display: "none" }}
-                multiple
-                onChange={handleFileUpload}
+              <TextField
+                label="Amount"
+                type="number"
+                name="amount"
+                fullWidth
+                sx={{ mt: 2 }}
+                value={expense.amount}
+                onChange={handleValueChange}
               />
-              <InputLabel htmlFor="upload-file" sx={{ cursor: "pointer" }}>
-                <img
-                  src={
-                    expense.receiptImage ? expense.receiptImage : upload_files
-                  }
-                  style={{
-                    height: "7.35rem",
-                  }}
+              <TextField
+                label="Date"
+                type="date"
+                name="date"
+                fullWidth
+                sx={{ mt: 2 }}
+                value={expense.date}
+                onChange={handleValueChange}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Box>
+            <Box
+              sx={{
+                mt: {
+                  xs: 1.5,
+                  md: 2,
+                },
+                display: "flex",
+                flexDirection: {
+                  xs: "column",
+                  md: "row",
+                },
+                gap: {
+                  xs: 1.5,
+                  md: 2,
+                },
+              }}
+            >
+              <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">Category</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={expense.category}
+                  label="Category"
+                  name="category"
+                  onChange={handleValueChange}
+                >
+                  {[
+                    "shopping",
+                    "Food & Dining",
+                    "Groceries",
+                    "Restaurants",
+                    "Education",
+                    "Travel",
+                    "Entertainment",
+                    "Health & Wellness",
+                    "Gifts & Donations",
+                    "Miscellaneous",
+                  ].map((category) => (
+                    <MenuItem value={category}>{category}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel id="created-for">Paid By</InputLabel>
+                <Select
+                  labelId="adding-for"
+                  id="created-for"
+                  name="createdFor"
+                  value={expense.createdFor}
+                  label="Created For"
+                  onChange={handleValueChange}
+                  disabled={flag === "personal"}
+                  sx={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  {data.map((user) => (
+                    <MenuItem
+                      value={user._id}
+                      key={user._id}
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
+                      <Box component={"span"}>
+                        {user.firstName} {user.lastName}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel id="split-with">Split With</InputLabel>
+                <Select
+                  labelId="split-with"
+                  id="split-with"
+                  multiple
+                  value={expense.splitwith}
+                  label="Split With"
+                  onChange={handleSplitWithChange}
+                  disabled={flag === "personal"}
+                  sx={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  {data.map((user) => (
+                    <MenuItem
+                      value={user._id}
+                      key={user._id}
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
+                      <Box component={"span"}>
+                        {user.firstName} {user.lastName}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+            <Box
+              sx={{
+                mt: {
+                  xs: 1.5,
+                  md: 2,
+                },
+                display: "flex",
+                flexDirection: {
+                  xs: "column",
+                  md: "row",
+                },
+                gap: {
+                  xs: 1,
+                  md: 2,
+                },
+              }}
+            >
+              <TextField
+                label="Description"
+                multiline
+                rows={4}
+                placeholder="Start writing here..."
+                fullWidth
+                name="description"
+                value={expense.description}
+                onChange={handleValueChange}
+              />
+
+              <Box
+                sx={{
+                  border: "1px dashed grey",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: {
+                    xs: "100%",
+                    md: "20%",
+                  },
+                  borderRadius: "3px",
+                }}
+              >
+                <input
+                  accept="image/*"
+                  id="upload-file"
+                  type="file"
+                  name="receiptImage"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  multiple
+                  onChange={handleFileUpload}
                 />
-              </InputLabel>
+                <InputLabel htmlFor="upload-file" sx={{ cursor: "pointer" }}>
+                  <img
+                    src={
+                      expense.receiptImage ? expense.receiptImage : upload_files
+                    }
+                    style={{
+                      height: "7.35rem",
+                    }}
+                  />
+                </InputLabel>
+              </Box>
             </Box>
           </Box>
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={handleButtonClick}
+          {/* Footer */}
+          <Box
             sx={{
-              mt: 2,
-              backgroundColor: red[300],
-              "&:hover": {
-                background: green[600],
-              },
+              p: 2,
+              borderTop: "1px solid #eee",
+              flexShrink: 0,
             }}
           >
-            Add
-          </Button>
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={handleButtonClick}
+              sx={{
+                backgroundColor: red[300],
+                "&:hover": {
+                  background: green[600],
+                },
+              }}
+            >
+              {isEdit ? "Update" : "Add"}
+            </Button>
+          </Box>
         </Box>
       </Modal>
     </Box>

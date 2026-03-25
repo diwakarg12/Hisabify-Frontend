@@ -75,7 +75,7 @@ const ExpenseContainer = () => {
   }, [groupId, dispatch]);
 
   //#endregion
- 
+
   //#region Component use Styles
   //#endregion
 
@@ -131,11 +131,15 @@ const ExpenseContainer = () => {
       sx={{
         display: "flex",
         flexDirection: "column",
-        padding: {
-          xs: "0.25rem",
-          md: "2rem",
+        gap: {
+          xs: 1,
+          md: 1.5,
         },
-        gap: 2,
+        height: "88vh",
+        "&::-webkit-scrollbar": {
+          display: "none",
+        },
+        overflowY: "hidden"
       }}
     >
       {expenseLoading && <FullScreenLoader />}
@@ -147,6 +151,7 @@ const ExpenseContainer = () => {
           padding: 2,
           boxShadow: 13,
         }}
+        flexShrink={0}
       >
         <img
           alt="profile"
@@ -189,151 +194,154 @@ const ExpenseContainer = () => {
         </Button>
       </Card>
 
-      <Card
+      <Box
+        flex={1}
+        overflow="auto"
         sx={{
-          border: "2px solid green",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: {
-            xs: "center",
-            md: "start",
-            lg: "center",
+          "&::-webkit-scrollbar": {
+            display: "none",
           },
-
-          boxShadow: 5,
-          // height: "65vh",
         }}
       >
-        {/* Buttons Pane */}
-        <Box
+        <Card
           sx={{
             display: "flex",
-            justifyContent: "center",
-            width: "100%",
-            padding: {
-              xs: "0.5rem",
-              md: "1rem",
+            flexDirection: "column",
+            alignItems: {
+              xs: "center",
+              md: "start",
+              lg: "center",
             },
-            gap: {
-              xs: 1,
-              md: 6,
-            },
-            borderBottom: "solid #d1d5db 3px",
+
+            boxShadow: 5,
           }}
         >
-          {!groupId && (
-            <Button
-              variant="outlined"
-              onClick={() => {
-                settoggleChart(!toggleChart);
-              }}
-              sx={{
-                textTransform: "none",
-                backgroundColor: "#ff6467",
-                color: "white",
-                boxShadow: 3,
-                fontWeight: 600,
-              }}
-            >
-              {"Toggle Chart"}
-            </Button>
-          )}
+          {/* Buttons Pane */}
 
-          <DropDownButton />
-        </Box>
+          <Box
+            sx={{
+              display: "flex",
+              width: {
+                xs: "100%",
+                md: "95%",
+              },
+              justifyContent: "space-between",
+              flexDirection: {
+                xs: "column",
+                md: "row",
+              },
+              gap: {
+                xs: 2,
+                md: 6,
+              },
 
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: {
-              xs: "column",
-              md: "row",
-            },
-            gap: {
-              xs: 2,
-              md: 6,
-            },
-            overflowY: "auto",
-            padding: {
-              xs: 2,
-              md: 4,
-            },
-          }}
-        >
-          <CardContent>
-            {!groupId && (
+              padding: {
+                xs: 2,
+                md: 4,
+              },
+            }}
+          >
+            <CardContent>
+              <DropDownButton />
+              {!groupId && (
+                <Typography variant="h6">
+                  <strong>Monthly Income :</strong> {user?.income}
+                </Typography>
+              )}
               <Typography variant="h6">
-                <strong>Monthly Income :</strong> {user?.income}
+                <strong>Total Spend :</strong> {totalAmount ? totalAmount : 0}
               </Typography>
-            )}
-            <Typography variant="h6">
-              <strong>Total Spend :</strong> {totalAmount ? totalAmount : 0}
-            </Typography>
 
-            <Typography variant="h6">
-              <strong>Top Category :</strong>{" "}
-              <Box
-                component="span"
-                sx={{ color: "error.main", fontWeight: 600 }}
-              >
-                {topCategory?.category ? topCategory?.category : "NA"}
-              </Box>
-            </Typography>
+              <Typography variant="h6">
+                <strong>Top Category :</strong>{" "}
+                <Box
+                  component="span"
+                  sx={{ color: "error.main", fontWeight: 600 }}
+                >
+                  {topCategory?.category ? topCategory?.category : "NA"}
+                </Box>
+              </Typography>
 
-            <Typography variant="h6">
-              <strong>Top Spend :</strong> {biggestExpense ? biggestExpense : 0}
-            </Typography>
+              <Typography variant="h6">
+                <strong>Top Spend :</strong>{" "}
+                {biggestExpense ? biggestExpense : 0}
+              </Typography>
 
-            {groupId && (
-              <>
-                <Typography variant="h6">
-                  <strong>Your Contribution :</strong>{" "}
-                  {yourContribution ? yourContribution : 0}
-                </Typography>
+              {groupId && (
+                <>
+                  <Typography variant="h6">
+                    <strong>Your Contribution :</strong>{" "}
+                    {yourContribution ? yourContribution : 0}
+                  </Typography>
 
-                <Typography variant="h6">
-                  <strong>Your Expense Share :</strong>{" "}
-                  {yourShare ? yourShare : 0}
-                </Typography>
-              </>
-            )}
+                  <Typography variant="h6">
+                    <strong>Your Expense Share :</strong>{" "}
+                    {yourShare ? yourShare : 0}
+                  </Typography>
+                </>
+              )}
 
-            <Typography variant="h6">
-              <strong>Last Transaction:</strong>{" "}
-              {latestExpense
-                ? new Date(latestExpense).toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })
-                : new Date().toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
-            </Typography>
-          </CardContent>
+              <Typography variant="h6">
+                <strong>Last Transaction:</strong>{" "}
+                {latestExpense
+                  ? new Date(latestExpense).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : new Date().toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+              </Typography>
+            </CardContent>
 
-          <MultiChart
-            data={toggleChart ? groupExpenseChartData : categoryChartData}
-            outerRadius={100}
+            <Box>
+              {!groupId && (
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    settoggleChart(!toggleChart);
+                  }}
+                  sx={{
+                    textTransform: "none",
+                    backgroundColor: "#ff6467",
+                    color: "white",
+                    boxShadow: 3,
+                    fontWeight: 600,
+                    margin: {
+                      xs: "0 0 1% 15%",
+                      md: "0 0 2% 12%",
+                    },
+                  }}
+                >
+                  {"Toggle Chart"}
+                </Button>
+              )}
+              <MultiChart
+                data={toggleChart ? groupExpenseChartData : categoryChartData}
+                outerRadius={100}
+              />
+            </Box>
+          </Box>
+        </Card>
+        <Card
+          sx={{
+            padding: 2,
+            boxShadow: 13,
+            borderRadius: 1.5,
+            marginTop: 1,
+          }}
+        >
+          <ExpenseList
+            title={groupId ? "group" : "Personal"}
+            expenses={expenses}
+            handleOpenEditExpense={handleOpenEditExpense}
+            handleOpenDeleteExpense={handleOpenDeleteExpense}
           />
-        </Box>
-      </Card>
-      <Card
-        sx={{
-          padding: 2,
-          boxShadow: 13,
-          borderRadius: 1.5,
-        }}
-      >
-        <ExpenseList
-          title={groupId ? "group" : "Personal"}
-          expenses={expenses}
-          handleOpenEditExpense={handleOpenEditExpense}
-          handleOpenDeleteExpense={handleOpenDeleteExpense}
-        />
-      </Card>
+        </Card>
+      </Box>
 
       {openAddExpense && (
         <AddExpense

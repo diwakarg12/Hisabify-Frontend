@@ -26,7 +26,7 @@ const ExpenseList = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   console.log("isMobile", isMobile);
-
+  console.log("expensessss", expenses);
   //#endregion
 
   //#region Component hooks
@@ -60,7 +60,7 @@ const ExpenseList = ({
     <Box
       sx={{
         display: "flex",
-        overflowX: "hidden",
+        overflow: "hidden",
         width: "100%",
         justifyContent: "flex-start",
         gap: {
@@ -76,17 +76,16 @@ const ExpenseList = ({
             xs: "100%",
             md: "50%",
           },
-          border: "2px solid red",
           marginBottom: "1.5rem",
           "&::-webkit-scrollbar": {
             display: "none",
           },
+          overflowY: "auto",
         }}
       >
         <Box
           sx={{
             backgroundColor: "#f6f9fc",
-            border: "1px solid #ddd",
             margin: "0 auto",
             overflow: "auto",
             padding: {
