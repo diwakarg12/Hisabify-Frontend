@@ -157,7 +157,18 @@ const AddExpense = ({
 
   //#region Component renders
   return (
-    <Box sx={{ p: 2 }}>
+    <Box
+      sx={{
+        p: 2,
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        bgcolor: "rgba(0,0,0,0.5)",
+        zIndex: 999,
+      }}
+    >
       <Modal
         open={openAddExpense}
         onClose={() => setOpenAddExpense(false)}
@@ -173,7 +184,8 @@ const AddExpense = ({
               xs: "90vw",
               md: "70vw",
             },
-            height: "80vh",
+            minHeight: "auto",
+            maxHeight: "90vh",
             backgroundColor: "white",
             boxShadow: 24,
             p: {
@@ -368,7 +380,7 @@ const AddExpense = ({
               <TextField
                 label="Description"
                 multiline
-                rows={4}
+                rows={3}
                 placeholder="Start writing here..."
                 fullWidth
                 name="description"
@@ -378,7 +390,7 @@ const AddExpense = ({
 
               <Box
                 sx={{
-                  border: "1px dashed grey",
+                  border: "1px dashed red",
                   textAlign: "center",
                   cursor: "pointer",
                   display: "flex",
@@ -407,7 +419,7 @@ const AddExpense = ({
                       expense.receiptImage ? expense.receiptImage : upload_files
                     }
                     style={{
-                      height: "7.35rem",
+                      height: "6rem",
                     }}
                   />
                 </InputLabel>

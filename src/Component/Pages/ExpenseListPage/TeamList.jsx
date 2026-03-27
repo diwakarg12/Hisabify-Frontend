@@ -1,5 +1,12 @@
 //#region imports
-import { Box, Button, Card, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import React, { useState } from "react";
 import TeamListCart from "../../Common/TeamListCart/TeamListCart";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -22,6 +29,9 @@ const TeamList = () => {
   const user = useSelector((store) => store.auth.user);
   const { groups, groupLoading } = useSelector((store) => store.group);
   const groupExpenses = useSelector((store) => store.expense.groupExpenses);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [openDelete, setOpenDelete] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
@@ -123,38 +133,25 @@ const TeamList = () => {
         paddingBottom: "4rem",
       }}
     >
-      <Box
+      <Button
+        variant="outlined"
+        size={isMobile ? "small" : "large"}
+        startIcon={<GroupsIcon />}
+        onClick={() => setOpenAddGroup(true)}
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          borderBottom: "solid #d1d5db 2px",
-          padding: {
-            xs: "0.5rem 0.5rem",
-            md: "0.5rem 2rem",
-          },
+          position: "absolute",
+          right: 15,
+          top: 7,
+          textTransform: "none",
+          backgroundColor: "#ff6467",
+          color: "white",
+          boxShadow: 3,
+          fontWeight: 600,
+          zIndex: 1000,
         }}
       >
-        <Typography fontSize={{ xs: "1.25rem", md: "1.5rem" }} fontWeight={700}>
-          Your Groups
-        </Typography>
-        <Button
-          variant="outlined"
-          size="large"
-          startIcon={<GroupsIcon />}
-          onClick={() => setOpenAddGroup(true)}
-          sx={{
-            textTransform: "none",
-            backgroundColor: "#ff6467",
-            color: "white",
-            boxShadow: 3,
-            fontWeight: 600,
-            zIndex: 1000,
-          }}
-        >
-          Add Team
-        </Button>
-      </Box>
+        Add Team
+      </Button>
       {groupLoading && <FullScreenLoader />}
 
       <Card>
@@ -164,6 +161,7 @@ const TeamList = () => {
             teamDetail={teamDetail}
             handleOpenDeleteGroup={handleOpenDeleteGroup}
             handleOpenEditGroup={handleOpenEditGroup}
+            isMobile={isMobile}
           />
         ))}
       </Card>

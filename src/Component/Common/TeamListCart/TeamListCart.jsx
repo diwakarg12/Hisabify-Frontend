@@ -3,7 +3,12 @@ import { Box, Card, CardContent, Typography, IconButton } from "@mui/material";
 import React from "react";
 import MultiChart from "../Chart_Graph/MultiChart";
 import { useNavigate } from "react-router-dom";
-import { Delete, EditSquare } from "@mui/icons-material";
+import {
+  Delete,
+  EditSquare,
+  KeyboardDoubleArrowRight,
+  KeyboardDoubleArrowLeft,
+} from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import { getCategoryChartData } from "../../../helpers/getCategoryChartData";
 //#endregion
@@ -16,6 +21,7 @@ const TeamListCart = ({
   teamDetail,
   handleOpenDeleteGroup,
   handleOpenEditGroup,
+  isMobile,
 }) => {
   const {
     groupId,
@@ -31,8 +37,9 @@ const TeamListCart = ({
   //#endregion
   const navigate = useNavigate();
   const expenses = useSelector(
-    (store) => store.expense.groupExpenses[groupId] || []
+    (store) => store.expense.groupExpenses[groupId] || [],
   );
+  const cardRef = React.useRef(null);
 
   const categoryChartData = getCategoryChartData(expenses);
 
@@ -59,6 +66,27 @@ const TeamListCart = ({
   //#endregion
 
   //#region Component feature methods
+  const handleRightArrowClick = (e) => {
+    e.stopPropagation();
+
+    if (cardRef.current) {
+      cardRef.current.scrollBy({
+        left: cardRef.current.offsetWidth * 1,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const handleLeftArrowClick = (e) => {
+    e.stopPropagation();
+
+    if (cardRef.current) {
+      cardRef.current.scrollBy({
+        left: -cardRef.current.offsetWidth * 1,
+        behavior: "smooth",
+      });
+    }
+  };
   //#endregion
 
   //#region Component JSX.members
@@ -107,12 +135,14 @@ const TeamListCart = ({
       </Typography>
 
       <Card
+        ref={cardRef}
         sx={{
           display: "flex",
           flexWrap: "nowrap",
           cursor: "pointer",
           WebkitOverflowScrolling: "touch",
           boxShadow: 5,
+          position: "relative",
           marginBottom: {
             xs: 0.5,
             md: 2,
@@ -121,14 +151,34 @@ const TeamListCart = ({
             xs: "95%",
             md: "90%",
           },
-          overflow: "auto",
+          overflow: "hidden",
           scrollbarWidth: "none",
           "&::-webkit-scrollbar": {
             display: "none",
           },
         }}
-        onClick={() => navigate(`/group-expense/${groupId}`)}
+        onClick={() =>
+          navigate(`/group-expense/${groupId}`, {
+            state: { groupName: groupName },
+          })
+        }
       >
+        <Box
+          sx={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            zIndex: 2,
+            cursor: "pointer",
+          }}
+          onClick={handleRightArrowClick}
+        >
+          {isMobile && (
+            <KeyboardDoubleArrowRight
+              sx={{ fontSize: "2.5rem", color: "#e57373" }}
+            />
+          )}
+        </Box>
         <CardContent
           sx={{
             minWidth: { xs: 280, sm: 320, md: "45%" },
@@ -165,57 +215,77 @@ const TeamListCart = ({
               : "NA"}
           </Typography>
         </CardContent>
-
         <Box
           sx={{
             minWidth: { xs: 260, sm: 300, md: "40%" },
+            position: "relative",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             flexShrink: 0,
           }}
         >
-          <MultiChart data={categoryChartData} outerRadius={80} />
-        </Box>
-        <Box
-          sx={{
-            minWidth: { xs: 100, sm: 120, md: "8%" },
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 2,
-            flexShrink: 0,
-          }}
-        >
-          <IconButton
+          <Box
             sx={{
-              color: "white",
-              backgroundColor: "#e57373",
-              "&:hover": {
-                backgroundColor: "red",
-              },
+              position: "absolute",
+              top: 10,
+              left: 40,
+              zIndex: 2,
+              cursor: "pointer",
             }}
-            onClick={(e) => {
-              handleOpenDeleteGroup(e, groupId);
+            onClick={handleLeftArrowClick}
+          >
+            {isMobile && (
+              <KeyboardDoubleArrowLeft
+                sx={{ fontSize: "2.5rem", color: "#e57373" }}
+              />
+            )}
+          </Box>
+          <MultiChart
+            data={categoryChartData}
+            outerRadius={75}
+            rightMargin={-30}
+          />
+          <Box
+            sx={{
+              minWidth: { xs: 100, sm: 120, md: "8%" },
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 2,
+              flexShrink: 0,
             }}
           >
-            <Delete />
-          </IconButton>
-          <IconButton
-            sx={{
-              color: "white",
-              backgroundColor: "#e57373",
-              "&:hover": {
-                backgroundColor: "red",
-              },
-            }}
-            onClick={(e) => {
-              handleOpenEditGroup(e, groupId);
-            }}
-          >
-            <EditSquare />
-          </IconButton>
+            <IconButton
+              sx={{
+                color: "white",
+                backgroundColor: "#e57373",
+                "&:hover": {
+                  backgroundColor: "red",
+                },
+              }}
+              onClick={(e) => {
+                handleOpenDeleteGroup(e, groupId);
+              }}
+            >
+              <Delete />
+            </IconButton>
+            <IconButton
+              sx={{
+                color: "white",
+                backgroundColor: "#e57373",
+                "&:hover": {
+                  backgroundColor: "red",
+                },
+              }}
+              onClick={(e) => {
+                handleOpenEditGroup(e, groupId);
+              }}
+            >
+              <EditSquare />
+            </IconButton>
+          </Box>
         </Box>
       </Card>
     </Box>

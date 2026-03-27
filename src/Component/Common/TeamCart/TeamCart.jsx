@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import React from "react";
-import GroupAddIcon from "@mui/icons-material/GroupAdd";
+import { GroupAdd, AddCard } from "@mui/icons-material";
 import { red } from "@mui/material/colors";
 import { useNavigate } from "react-router-dom";
 
@@ -177,7 +177,7 @@ const TeamCart = ({ teamDetail, setOpenInvite, setOpenAddExpense }) => {
             <Button
               variant="outlined"
               size="small"
-              startIcon={<GroupAddIcon />}
+              startIcon={<GroupAdd />}
               onClick={(e) => setOpenInvite(e, _id)}
               sx={{ borderRadius: 3, textTransform: "none", color: red[400] }}
             >
@@ -186,7 +186,7 @@ const TeamCart = ({ teamDetail, setOpenInvite, setOpenAddExpense }) => {
             <Button
               variant="outlined"
               size="small"
-              startIcon={<GroupAddIcon />}
+              startIcon={<AddCard />}
               onClick={(e) => setOpenAddExpense(e, _id)}
               sx={{ borderRadius: 3, textTransform: "none", color: red[400] }}
             >

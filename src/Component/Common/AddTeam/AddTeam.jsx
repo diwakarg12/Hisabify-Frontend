@@ -73,12 +73,13 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
   //#region Component Api methods
   const handleUserSearch = async () => {
     try {
-      setloading;(true)
+      setloading;
+      true;
       const res = await dispatch(searchUser(email)).unwrap();
       setInvitedMembers([...invitedMembers, res.user]);
       setEmail("");
       setloading(false);
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setloading(false);
     }
@@ -130,7 +131,7 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
       dispatch(resetSearchUsers());
       setloading(false);
       onClose();
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setloading(false);
     }
@@ -152,7 +153,7 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
       });
       setloading(false);
       onClose();
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setloading(false);
     }
@@ -166,190 +167,199 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
   //#region Component renders
   return (
     <Box
-      ref={contentRef}
       sx={{
         position: "fixed",
-        top: {
-          xs: "25vh",
-          sm: "25vh",
-          md: "25vh",
-          lg: "25vh",
-        },
-        left: {
-          xs: "3vh",
-          sm: "4.75vh",
-          md: "16vh",
-          lg: "25vh",
-        },
-        width: {
-          xs: "90vw",
-          sm: "85vw",
-          md: "75vw",
-          lg: "70vw",
-        },
-        height: "60vh",
-        backgroundColor: "#F9F9F9",
-        display: "flex",
-        flexDirection: "column",
-        zIndex: 1000,
-        padding: 3,
-        // boxShadow: '0 0 20px rgba(0,0,0,0.2)',
-        boxShadow: 3,
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        bgcolor: "rgba(0,0,0,0.5)",
+        zIndex: 1001,
       }}
     >
-      {loading && <FullScreenLoader />}
       <Box
+        ref={contentRef}
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <Typography variant="h6" gutterBottom>
-          <Box
-            component="span"
-            sx={{
-              textDecoration: "underline",
-              textDecorationColor: "#F24E1E",
-            }}
-          >
-            {editableData?.groupName ? "Edit" : "Create"}
-          </Box>
-          <Box component="span">
-            {" "}
-            {editableData?.groupName ? "Team" : "New Team"}
-          </Box>
-        </Typography>
-        <Button onClick={() => onClose()} sx={{ textDecoration: "underline" }}>
-          Go BACk
-        </Button>
-      </Box>
-
-      <Box
-        sx={{
-          backgroundColor: "#FFF",
-          width: "100%",
-          height: "90vh",
-          p: "1rem",
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: {
+            xs: "90vw",
+            sm: "80vw",
+            md: "70vw",
+            lg: "60vw",
+            xl: "50vw",
+          },
+          minHeight: "auto",
+          maxHeight: "85vh",
+          overflow: "auto",
+          backgroundColor: "#F9F9F9",
           display: "flex",
           flexDirection: "column",
-          overflow: "auto",
+          zIndex: 1000,
+          p: 3,
           boxShadow: 3,
-          borderRadius: 1,
+          borderRadius: 2,
         }}
       >
-        <TextField
-          label="Group Name"
-          name="groupName"
-          value={teamDetails.groupName}
-          onChange={handleTeamInputChange}
-          placeholder="Enter Group Name"
-          variant="outlined"
-          type="text"
-          fullWidth
-          size="small"
-        />
-        <TextField
-          label="CreatedBy"
-          name="createdBy"
-          value={user.email}
-          variant="outlined"
-          size="small"
-          type="email"
-          fullWidth
-          sx={{ marginTop: 2 }}
-        />
-        {invitedMembers.length > 0 && (
-          <Stack
-            sx={{
-              margin: "0.9rem 0 0.4rem 0",
-              color: "#FFF",
-              display: "flex",
-              flexWrap: "wrap",
-            }}
-            direction="row"
-          >
-            {invitedMembers.map((member, index) => (
-              <Box
-                key={index}
-                component="span"
-                sx={{
-                  display: "flex",
-                  gap: 0.6,
-                  backgroundColor: "#F24E1E",
-                  borderRadius: 0.5,
-                  padding: "1px 2px",
-                  margin: "2px",
-                }}
-              >
-                {member && member.firstName}
-                <Box
-                  component="span"
-                  sx={{
-                    cursor: editableData ? "not-allowed" : "pointer",
-                    pointerEvents: editableData ? "none" : "auto",
-                    padding: "1px 2px",
-                    fontWeight: "bold",
-                    color: "#000",
-                  }}
-                  disabled={editableData ? true : false}
-                  onClick={() => handleRemoveInvitedUser(member._id)}
-                >
-                  X
-                </Box>
-              </Box>
-            ))}
-          </Stack>
-        )}
+        {loading && <FullScreenLoader />}
         <Box
           sx={{
             display: "flex",
-            gap: 2,
-            marginTop: invitedMembers.length > 0 ? 0 : 1.5,
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
-          <TextField
-            label="Add members"
-            size="small"
-            variant="outlined"
-            type="email"
-            fullWidth
-            value={email}
-            disabled={editableData ? true : false}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <Typography variant="h6" gutterBottom>
+            <Box
+              component="span"
+              sx={{
+                textDecoration: "underline",
+                textDecorationColor: "#F24E1E",
+              }}
+            >
+              {editableData?.groupName ? "Edit" : "Create"}
+            </Box>
+            <Box component="span">
+              {" "}
+              {editableData?.groupName ? "Team" : "New Team"}
+            </Box>
+          </Typography>
           <Button
-            variant="contained"
-            sx={{ backgroundColor: "#F24E1E" }}
-            disabled={editableData ? true : false}
-            onClick={handleUserSearch}
+            onClick={() => onClose()}
+            sx={{ textDecoration: "underline" }}
           >
-            Search
+            Go BACk
           </Button>
         </Box>
 
-        <TextField
-          label="Group Description"
-          name="description"
-          value={teamDetails.description}
-          onChange={handleTeamInputChange}
-          multiline
-          size="small"
-          rows={3}
-          fullWidth
-          variant="outlined"
-          placeholder="Enter Group Description here..."
-          sx={{ marginY: "1rem" }}
-        />
-
-        <Button
-          variant="contained"
-          size="large"
-          sx={{ backgroundColor: "#F24E1E" }}
-          onClick={editableData ? handleEditGroup : handleCreateGroup}
+        <Box
+          sx={{
+            backgroundColor: "#FFF",
+            width: "100%",
+            height: "90vh",
+            p: "1rem",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "auto",
+            boxShadow: 3,
+            borderRadius: 1,
+          }}
         >
-          {editableData ? "Edit Group" : "Create Group"}
-        </Button>
+          <TextField
+            label="Group Name"
+            name="groupName"
+            value={teamDetails.groupName}
+            onChange={handleTeamInputChange}
+            placeholder="Enter Group Name"
+            variant="outlined"
+            type="text"
+            fullWidth
+            size="small"
+          />
+          <TextField
+            label="CreatedBy"
+            name="createdBy"
+            value={user.email}
+            variant="outlined"
+            size="small"
+            type="email"
+            fullWidth
+            sx={{ marginTop: 2 }}
+          />
+          {invitedMembers.length > 0 && (
+            <Stack
+              sx={{
+                margin: "0.9rem 0 0.4rem 0",
+                color: "#FFF",
+                display: "flex",
+                flexWrap: "wrap",
+              }}
+              direction="row"
+            >
+              {invitedMembers.map((member, index) => (
+                <Box
+                  key={index}
+                  component="span"
+                  sx={{
+                    display: "flex",
+                    gap: 0.6,
+                    backgroundColor: "#F24E1E",
+                    borderRadius: 0.5,
+                    padding: "1px 2px",
+                    margin: "2px",
+                  }}
+                >
+                  {member && member.firstName}
+                  <Box
+                    component="span"
+                    sx={{
+                      cursor: editableData ? "not-allowed" : "pointer",
+                      pointerEvents: editableData ? "none" : "auto",
+                      padding: "1px 2px",
+                      fontWeight: "bold",
+                      color: "#000",
+                    }}
+                    disabled={editableData ? true : false}
+                    onClick={() => handleRemoveInvitedUser(member._id)}
+                  >
+                    X
+                  </Box>
+                </Box>
+              ))}
+            </Stack>
+          )}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              marginTop: invitedMembers.length > 0 ? 0 : 1.5,
+            }}
+          >
+            <TextField
+              label="Add members"
+              size="small"
+              variant="outlined"
+              type="email"
+              fullWidth
+              value={email}
+              disabled={editableData ? true : false}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: "#F24E1E" }}
+              disabled={editableData ? true : false}
+              onClick={handleUserSearch}
+            >
+              Search
+            </Button>
+          </Box>
+
+          <TextField
+            label="Group Description"
+            name="description"
+            value={teamDetails.description}
+            onChange={handleTeamInputChange}
+            multiline
+            size="small"
+            rows={3}
+            fullWidth
+            variant="outlined"
+            placeholder="Enter Group Description here..."
+            sx={{ marginY: "1rem" }}
+          />
+
+          <Button
+            variant="contained"
+            size="large"
+            sx={{ backgroundColor: "#F24E1E" }}
+            onClick={editableData ? handleEditGroup : handleCreateGroup}
+          >
+            {editableData ? "Edit Group" : "Create Group"}
+          </Button>
+        </Box>
       </Box>
     </Box>
   );

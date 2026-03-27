@@ -7,7 +7,7 @@ import React from "react";
 //#endregion
 
 //#region Function Component
-const MultiChart = ({ data, outerRadius }) => {
+const MultiChart = ({ data, outerRadius, rightMargin=6 }) => {
   //#region Component states
   //#endregion
 
@@ -26,7 +26,7 @@ const MultiChart = ({ data, outerRadius }) => {
 
   //#region Component use Styles
   const sizing = {
-    margin: { right: 5 },
+    margin: { right: rightMargin },
     width: 200,
     height: 200,
     // hideLegend: true,

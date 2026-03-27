@@ -137,7 +137,6 @@ const Dashboard = () => {
       {/* Dashboard Content */}
       <Box
         sx={{
-          border: "2px solid red",
           backgroundColor: "#FFF",
           display: "flex",
           flexDirection: "column",
@@ -189,8 +188,6 @@ const Dashboard = () => {
             },
             marginTop: 0,
             gap: 2,
-            // border: "solid 2px #A1A3AB",
-            border: "solid 2px red",
             overflow: "auto",
             borderRadius: 2,
           }}

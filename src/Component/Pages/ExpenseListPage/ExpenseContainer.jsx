@@ -1,6 +1,7 @@
 //#region imports
 import { Box, Button, Card, CardContent, Typography } from "@mui/material";
-import React, { useState } from "react";
+import { AddCard } from "@mui/icons-material";
+import React, { useState, useMemo } from "react";
 import MultiChart from "../../Common/Chart_Graph/MultiChart";
 import DropDownButton from "../../Common/DropDownButton/DropDownButton";
 import { useDispatch, useSelector } from "react-redux";
@@ -29,6 +30,7 @@ const ExpenseContainer = () => {
   //#region Component states
   const { groupId } = useParams();
   const dispatch = useDispatch();
+  const currentDate = new Date();
   const user = useSelector((store) => store.auth.user);
   const groups = useSelector((store) => store.group.groups);
   const group = groups?.filter((g) => g?._id === groupId);
@@ -48,15 +50,8 @@ const ExpenseContainer = () => {
   const [openDeleteExpense, setOpenDeleteExpense] = useState(false);
   const [editableData, setEditableData] = useState(null);
   const [deletableId, setEditableId] = useState(null);
-  const {
-    totalAmount,
-    topCategory,
-    biggestExpense,
-    latestExpense,
-    yourContribution,
-    yourShare,
-  } = getExpenseAnalytics(expenses, { userId: user?._id });
-  const categoryChartData = getCategoryChartData(expenses);
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
+  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const groupExpenseChartData = getGroupExpenseChartData(
     groupExpenses,
     groups,
@@ -120,6 +115,29 @@ const ExpenseContainer = () => {
   //#endregion
 
   //#region Component feature methods
+  // 🔥 Filtered expenses
+  const filteredExpenses = useMemo(() => {
+    return expenses.filter((expense) => {
+      const date = new Date(expense.date);
+
+      return (
+        date.getMonth() === selectedMonth && date.getFullYear() === selectedYear
+      );
+    });
+  }, [expenses, selectedMonth, selectedYear]);
+
+  console.log("filteredExpenses :", filteredExpenses);
+
+  const {
+    totalAmount,
+    topCategory,
+    biggestExpense,
+    latestExpense,
+    yourContribution,
+    yourShare,
+  } = getExpenseAnalytics(filteredExpenses, { userId: user?._id });
+  const categoryChartData = getCategoryChartData(filteredExpenses);
+
   //#endregion
 
   //#region Component JSX.members
@@ -135,64 +153,35 @@ const ExpenseContainer = () => {
           xs: 1,
           md: 1.5,
         },
-        height: "88vh",
+        // height: "88vh",
         "&::-webkit-scrollbar": {
           display: "none",
         },
-        overflowY: "hidden"
+        overflowY: "hidden",
       }}
     >
       {expenseLoading && <FullScreenLoader />}
-      <Card
+
+      <Button
+        variant="outlined"
+        size="medium"
+        startIcon={<AddCard />}
+        onClick={() => setOpenAddExpense(true)}
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: 2,
-          boxShadow: 13,
+          position: "absolute",
+          bottom: { xs: 60, md: 15 },
+          right: { xs: 0, md: 20 },
+          textTransform: "none",
+          backgroundColor: "#ff6467",
+          color: "white",
+          boxShadow: 3,
+          fontWeight: 600,
+          marginRight: 2,
+          width: 150,
         }}
-        flexShrink={0}
       >
-        <img
-          alt="profile"
-          src={user?.profile}
-          style={{
-            height: "3rem",
-            width: "3rem",
-          }}
-        />
-        <Typography
-          variant="h5"
-          fontSize={{
-            xs: "1rem",
-            sm: "1.5rem",
-            md: "1.75rem",
-            lg: "2rem",
-            xl: "3rem",
-          }}
-          sx={{}}
-        >
-          {groupId
-            ? `${group[0]?.groupName}'s Expense`
-            : `${user?.firstName}'s Expense`}
-        </Typography>
-        <Button
-          variant="outlined"
-          size="medium"
-          // startIcon={<GroupsIcon />}
-          onClick={() => setOpenAddExpense(true)}
-          sx={{
-            textTransform: "none",
-            backgroundColor: "#ff6467",
-            color: "white",
-            boxShadow: 3,
-            fontWeight: 600,
-            marginRight: 2,
-          }}
-        >
-          Add Expense
-        </Button>
-      </Card>
+        Add Expense
+      </Button>
 
       <Box
         flex={1}
@@ -214,6 +203,7 @@ const ExpenseContainer = () => {
             },
 
             boxShadow: 5,
+            border: "2px solid red",
           }}
         >
           {/* Buttons Pane */}
@@ -232,17 +222,19 @@ const ExpenseContainer = () => {
               },
               gap: {
                 xs: 2,
-                md: 6,
+                md: 2,
               },
 
-              padding: {
-                xs: 2,
-                md: 4,
-              },
+              padding: 1,
             }}
           >
             <CardContent>
-              <DropDownButton />
+              <DropDownButton
+                selectedMonth={selectedMonth}
+                selectedYear={selectedYear}
+                onMonthChange={setSelectedMonth}
+                onYearChange={setSelectedYear}
+              />
               {!groupId && (
                 <Typography variant="h6">
                   <strong>Monthly Income :</strong> {user?.income}
@@ -297,7 +289,13 @@ const ExpenseContainer = () => {
               </Typography>
             </CardContent>
 
-            <Box>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: groupId ? 10 : 0,
+              }}
+            >
               {!groupId && (
                 <Button
                   variant="outlined"
@@ -308,11 +306,12 @@ const ExpenseContainer = () => {
                     textTransform: "none",
                     backgroundColor: "#ff6467",
                     color: "white",
+                    width: "50%",
                     boxShadow: 3,
                     fontWeight: 600,
                     margin: {
-                      xs: "0 0 1% 15%",
-                      md: "0 0 2% 12%",
+                      xs: "0 0 1% 10%",
+                      md: "0 0 2% 8%",
                     },
                   }}
                 >
@@ -336,7 +335,7 @@ const ExpenseContainer = () => {
         >
           <ExpenseList
             title={groupId ? "group" : "Personal"}
-            expenses={expenses}
+            expenses={filteredExpenses}
             handleOpenEditExpense={handleOpenEditExpense}
             handleOpenDeleteExpense={handleOpenDeleteExpense}
           />
@@ -365,7 +364,7 @@ const ExpenseContainer = () => {
     </Box>
   );
   //#endregion
-};
+};;
 //#endregion
 
 //#region Component export

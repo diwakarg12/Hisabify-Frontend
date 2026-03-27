@@ -25,8 +25,6 @@ const ExpenseList = ({
   const [openDetailsModal, setOpenDetailsModal] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  console.log("isMobile", isMobile);
-  console.log("expensessss", expenses);
   //#endregion
 
   //#region Component hooks

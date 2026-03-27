@@ -111,7 +111,7 @@ const ExpenseCart = ({ item, index, onSelectExpense, selectedExpenseId }) => {
           direction="row"
           justifyContent="space-between"
           alignItems="center"
-          mt={1.5}
+          mt={1}
         >
           <Typography variant="caption" color="text.secondary">
             Added By:{" "}

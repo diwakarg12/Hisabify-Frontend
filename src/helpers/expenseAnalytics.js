@@ -36,8 +36,8 @@ export const getExpenseAnalytics = (expenses = [], options = {}) => {
 
     // 4️⃣ Latest Expense
     const latestExpense = expenses.reduce((latest, curr) =>
-        new Date(curr.updatedAt) > new Date(latest.updatedAt) ? curr : latest
-    ).updatedAt;
+        new Date(curr.date) > new Date(latest.date) ? curr : latest
+    ).date;
 
     //Your contributon
     const yourContribution = userId

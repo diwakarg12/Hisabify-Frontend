@@ -1,5 +1,5 @@
 //#region imports
-import { PendingActionsOutlined } from "@mui/icons-material";
+import { AddCard } from "@mui/icons-material";
 import { Box, Card, Typography, Link } from "@mui/material";
 import { red } from "@mui/material/colors";
 import React from "react";
@@ -82,7 +82,7 @@ const PersonalTracker = ({ user, setOpenAddExpense, expenses, teamCards }) => {
           gap: 1,
         }}
       >
-        <PendingActionsOutlined sx={{ color: "#A1A3AB" }} />
+        <AddCard sx={{ color: "#A1A3AB" }} />
         <Typography
           onClick={(e) => setOpenAddExpense(e, user._id)}
           sx={{
