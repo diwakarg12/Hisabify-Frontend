@@ -262,6 +262,9 @@ const AddExpense = ({
                 value={expense.date}
                 onChange={handleValueChange}
                 InputLabelProps={{ shrink: true }}
+                inputProps={{
+                  max: new Date().toISOString().split("T")[0],
+                }}
               />
             </Box>
             <Box

@@ -52,69 +52,74 @@ const CalenderDialog = ({open , onClose}) => {
   //#endregion
 
   //#region Component renders
-  return(
-    <Dialog open={open} 
-        onClose={onClose}
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      sx={{
+        "& .MuiDialog-container": {
+          justifyContent: {
+            xs: "center",
+            sm: "flex-end",
+          },
+          alignItems: "flex-start",
+        },
+        "& .MuiPaper-root": {
+          margin: {
+            xs: "65px 0 0 0",
+            sm: "65px 75px 75px 75px",
+          },
+          backgroundColor: "rgba(255, 100, 103, 1)",
+          scrollbarWidth: "none",
+          scrollbarColor: "#fff rgba(0, 0, 0, 0.1)",
+        },
+      }}
+    >
+      <DialogTitle
         sx={{
-        '& .MuiDialog-container': {
-            justifyContent: {
-              xs: 'center',
-              sm: 'flex-end',
-            },
-            alignItems: 'flex-start',
-        },
-        '& .MuiPaper-root': {
-            margin: {
-              xs: '65px 0 0 0',
-              sm: '65px 75px 75px 75px',
-            },
-            backgroundColor: 'rgba(255, 100, 103, 1)',
-            scrollbarWidth: 'none',
-            scrollbarColor: '#fff rgba(0, 0, 0, 0.1)',
-        },
-        
+          display: "flex",
+          justifyContent: "space-between",
+          fontWeight: 700,
+          fontSize: "1.5rem",
+          alignItems: "center",
+          color: "#fff",
+          padding: "0.5rem 1rem",
         }}
-        >
-        <DialogTitle sx={{
-            display:'flex',
-            justifyContent:'space-between',
-            fontWeight: 700,
-            fontSize: '1.5rem',
-            alignItems:'center',
-            color: '#fff',
-            padding: '0.5rem 1rem',
-        }}>Expense statics
-        <CloseIcon
-             onClick = {onClose} sx={{cursor:'pointer'}}/>
-        </DialogTitle>
-        <DialogContent sx={{
-            padding: '0.3rem',
-            borderRadius: '0.2rem',
-        }}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <StaticDatePicker
-              displayStaticWrapperAs="desktop"
-              value={selectedDate}
-              onChange={handleDateChange}
-              slotProps={{
-                day: (params) => ({
-                  sx: {
-                    ...(dayjs(params.day).isSame(dayjs(), 'day') && {
-                      backgroundColor: '#e0f7fa',
-                      color: '#006064',
-                    }),
-                    ...(dayjs(params.day).isSame(specialDate, 'day') && {
-                      backgroundColor: '#ffecb3',
-                      color: '#ff6f00',
-                    }),
-                    borderRadius: '30%',
-                  },
-                }),
-              }}
-            />
-          </LocalizationProvider>
-        </DialogContent>
-      </Dialog>
+      >
+        Expense statics
+        <CloseIcon onClick={onClose} sx={{ cursor: "pointer" }} />
+      </DialogTitle>
+      <DialogContent
+        sx={{
+          padding: "0.3rem",
+          borderRadius: "0.2rem",
+        }}
+      >
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <StaticDatePicker
+            displayStaticWrapperAs="desktop"
+            value={selectedDate}
+            onChange={handleDateChange}
+            disableFuture
+            slotProps={{
+              day: (params) => ({
+                sx: {
+                  ...(dayjs(params.day).isSame(dayjs(), "day") && {
+                    backgroundColor: "#e0f7fa",
+                    color: "#006064",
+                  }),
+                  ...(dayjs(params.day).isSame(specialDate, "day") && {
+                    backgroundColor: "#ffecb3",
+                    color: "#ff6f00",
+                  }),
+                  borderRadius: "30%",
+                },
+              }),
+            }}
+          />
+        </LocalizationProvider>
+      </DialogContent>
+    </Dialog>
   );
   //#endregion
 }

@@ -208,10 +208,10 @@ const Header = () => {
                     position: "absolute",
                     top: 60,
                     right: -10,
-                    p: 3,
+                    p: 2,
                     borderRadius: 3,
-                    width: 320,
-                    zIndex: 1000,
+                    width: 300,
+                    zIndex: 1001,
                     transition: "all 0.3s ease",
                   }}
                 >
