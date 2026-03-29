@@ -5,7 +5,7 @@ import { API_BASE_URL } from "../config/Api";
 
 const initialState = {
     user: null,
-    authLoading: false,
+    authLoading: true,
     error: null,
     isAuthenticated: false
 };
