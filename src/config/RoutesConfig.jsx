@@ -12,6 +12,7 @@ import Contact from "../Component/Pages/Contact/Contact";
 import Setting from "../Component/Pages/Setting/Setting";
 import NotFound from "../Component/NotFound";
 import Home from "../Component/Pages/Home/Home";
+import ResetPassword from "../Component/Common/ResetPassword/ResetPassword";
 
 //#endregion
 
@@ -62,6 +63,10 @@ const RoutesConfig = () => {
         ) : (
           <Loginsignup />
         ),
+    },
+    {
+      path: "/reset-password",
+      element: <ResetPassword />,
     },
     {
       path: "/profile",

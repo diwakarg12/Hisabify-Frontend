@@ -1,12 +1,5 @@
 //#region imports
-import {
-  Box,
-  Button,
-  Card,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { Button, Card, useMediaQuery, useTheme } from "@mui/material";
 import React, { useState } from "react";
 import TeamListCart from "../../Common/TeamListCart/TeamListCart";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -17,6 +10,7 @@ import { deleteGroup, getAllGroup } from "../../../redux/groupSlice";
 // import { getExpenses } from "../../../redux/expenseSlice";
 import AddTeam from "../../Common/AddTeam/AddTeam";
 import FullScreenLoader from "../../Common/Loader/FullScreenLoader";
+import Invite from "../../Common/Invite/Invite";
 //#endregion
 
 //#region Component make Styles
@@ -35,6 +29,8 @@ const TeamList = () => {
 
   const [openDelete, setOpenDelete] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
+  const [openInvite, setOpenInvite] = useState(false);
+
   const [openAddGroup, setOpenAddGroup] = useState(false);
   const [deletableGroupId, setDeletableGroupId] = useState(null);
   const [editableData, setEditableData] = useState(null);
@@ -66,6 +62,13 @@ const TeamList = () => {
   //#endregion
 
   //#region Component validation methods
+  const handleInviteButtonClick = (e, groupId) => {
+    e.stopPropagation();
+    setOpenInvite(true);
+
+    const group = groups.find((group) => String(group._id) === String(groupId));
+    setEditableData(group);
+  };
   //#endregion
 
   //#region Component Api methods
@@ -161,6 +164,7 @@ const TeamList = () => {
             teamDetail={teamDetail}
             handleOpenDeleteGroup={handleOpenDeleteGroup}
             handleOpenEditGroup={handleOpenEditGroup}
+            handleInviteButtonClick={handleInviteButtonClick}
             isMobile={isMobile}
           />
         ))}
@@ -186,6 +190,14 @@ const TeamList = () => {
 
       {openAddGroup && (
         <AddTeam user={user} onClose={() => setOpenAddGroup(false)} />
+      )}
+
+      {openInvite && (
+        <Invite
+          openInvite={openInvite}
+          handleClose={() => setOpenInvite(false)}
+          group={editableData}
+        />
       )}
     </Card>
   );

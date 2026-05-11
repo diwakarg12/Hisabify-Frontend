@@ -204,7 +204,7 @@ const AddExpense = ({
               alignItems: "center",
               justifyContent: "space-between",
               flexShrink: 0,
-              p: 2,
+              p: {xs: 0, sm: 2},
             }}
           >
             <Typography variant="h6" component="h2">

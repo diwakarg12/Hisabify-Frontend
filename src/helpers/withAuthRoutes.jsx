@@ -13,12 +13,3 @@ const WithAuthRoutes = ({ children }) => {
 };
 
 export default WithAuthRoutes;
-
-// fetch("https://hisabify-api.vercel.app/auth/check", {
-//   credentials: "include",
-// })
-//   .then((res) => res.json())
-//   .then((data) => {
-//     setIsAuthenticated(data.authenticated);
-//   })
-//   .catch(() => setIsAuthenticated(false));

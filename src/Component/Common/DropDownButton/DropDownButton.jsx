@@ -48,7 +48,7 @@ const DropDownButton = ({
   const years = getYears();
 
   return (
-    <Stack direction="row" spacing={2}>
+    <Stack direction="row" spacing={1}>
       {/* MONTH DROPDOWN */}
       <ButtonGroup ref={monthRef} variant="contained">
         <Button sx={{ bgcolor: "#ff6467" }}>{months[selectedMonth]}</Button>
