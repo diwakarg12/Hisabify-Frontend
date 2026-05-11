@@ -1,5 +1,12 @@
 //#region imports
-import { Box, Card, CardContent, Typography, IconButton } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  IconButton,
+  Button,
+} from "@mui/material";
 import React from "react";
 import MultiChart from "../Chart_Graph/MultiChart";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +18,7 @@ import {
 } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import { getCategoryChartData } from "../../../helpers/getCategoryChartData";
+import { red } from "@mui/material/colors";
 //#endregion
 
 //#region Component make Styles
@@ -21,6 +29,7 @@ const TeamListCart = ({
   teamDetail,
   handleOpenDeleteGroup,
   handleOpenEditGroup,
+  handleInviteButtonClick,
   isMobile,
 }) => {
   const {
@@ -181,7 +190,7 @@ const TeamListCart = ({
         </Box>
         <CardContent
           sx={{
-            minWidth: { xs: 280, sm: 320, md: "45%" },
+            minWidth: { xs: "100%", sm: "45%" },
             flexShrink: 0,
           }}
         >
@@ -214,12 +223,67 @@ const TeamListCart = ({
                 })
               : "NA"}
           </Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={(e) => {
+                handleOpenDeleteGroup(e, groupId);
+              }}
+              sx={{
+                color: red[400],
+                border: "1px solid #e57373",
+                "&:hover": {
+                  color: "#fff",
+                  backgroundColor: "#e57373",
+                },
+              }}
+            >
+              Delete
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={(e) => {
+                handleOpenEditGroup(e, groupId);
+              }}
+              sx={{
+                color: red[400],
+                border: "1px solid #e57373",
+                "&:hover": {
+                  color: "#fff",
+                  backgroundColor: "#e57373",
+                },
+              }}
+            >
+              Edit
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={(e) => {
+                handleInviteButtonClick(e, groupId);
+              }}
+              sx={{
+                color: red[400],
+                border: "1px solid #e57373",
+                "&:hover": {
+                  color: "#fff",
+                  backgroundColor: "#e57373",
+                },
+                
+              }}
+            >
+              Invite
+            </Button>
+          </Box>
         </CardContent>
         <Box
           sx={{
-            minWidth: { xs: 260, sm: 300, md: "40%" },
+            minWidth: { xs: "100%", sm: "55%" },
             position: "relative",
             display: "flex",
+            flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
             flexShrink: 0,
@@ -229,7 +293,7 @@ const TeamListCart = ({
             sx={{
               position: "absolute",
               top: 10,
-              left: 40,
+              left: 10,
               zIndex: 2,
               cursor: "pointer",
             }}
@@ -241,51 +305,12 @@ const TeamListCart = ({
               />
             )}
           </Box>
+
           <MultiChart
             data={categoryChartData}
-            outerRadius={75}
-            rightMargin={-30}
+            outerRadius={100}
+            rightMargin={5}
           />
-          <Box
-            sx={{
-              minWidth: { xs: 100, sm: 120, md: "8%" },
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: 2,
-              flexShrink: 0,
-            }}
-          >
-            <IconButton
-              sx={{
-                color: "white",
-                backgroundColor: "#e57373",
-                "&:hover": {
-                  backgroundColor: "red",
-                },
-              }}
-              onClick={(e) => {
-                handleOpenDeleteGroup(e, groupId);
-              }}
-            >
-              <Delete />
-            </IconButton>
-            <IconButton
-              sx={{
-                color: "white",
-                backgroundColor: "#e57373",
-                "&:hover": {
-                  backgroundColor: "red",
-                },
-              }}
-              onClick={(e) => {
-                handleOpenEditGroup(e, groupId);
-              }}
-            >
-              <EditSquare />
-            </IconButton>
-          </Box>
         </Box>
       </Card>
     </Box>

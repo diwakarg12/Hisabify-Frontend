@@ -61,6 +61,66 @@ export const login = createAsyncThunk('login', async (user, { rejectWithValue })
     }
 })
 
+export const sendResetOtp = createAsyncThunk(
+    'sendResetOtp',
+    async (email, { rejectWithValue }) => {
+        try {
+
+            const response = await fetch(
+                `${API_BASE_URL}/auth/send-reset-otp`,
+                {
+                    method: 'POST',
+                    headers: {
+                        "Content-type": "application/json"
+                    },
+                    body: JSON.stringify({ email })
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                return rejectWithValue(result?.message);
+            }
+
+            return result;
+
+        } catch (error) {
+            return rejectWithValue(error?.message);
+        }
+    }
+);
+
+export const verifyResetOtp = createAsyncThunk(
+    'verifyResetOtp',
+    async (data, { rejectWithValue }) => {
+        try {
+
+            const response = await fetch(
+                `${API_BASE_URL}/auth/verify-reset-otp`,
+                {
+                    method: 'POST',
+                    headers: {
+                        "Content-type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                return rejectWithValue(result?.message);
+            }
+
+            return result;
+
+        } catch (error) {
+            return rejectWithValue(error?.message);
+        }
+    }
+);
+
 export const logout = createAsyncThunk('logout', async (_, { dispatch, rejectWithValue }) => {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/logout`, {

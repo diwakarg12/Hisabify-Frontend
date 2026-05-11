@@ -62,10 +62,10 @@ const MultiChart = ({ data, outerRadius, rightMargin=6 }) => {
         },
       ]}
       legend={{
-        direction: "column", // 'row' | 'column'
+        direction: "column", 
         position: {
-          vertical: "top", // 'top' | 'middle' | 'bottom'
-          horizontal: "middle", // 'left' | 'middle' | 'right'
+          vertical: "top",
+          horizontal: "middle",
         },
       }}
       sx={{

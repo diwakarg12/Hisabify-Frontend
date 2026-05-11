@@ -19,7 +19,7 @@ import { useNavigate } from "react-router-dom";
 //#endregion
 
 //#region Function Component
-const TeamCart = ({ teamDetail, setOpenInvite, setOpenAddExpense }) => {
+const  TeamCart = ({ teamDetail, setOpenInvite, setOpenAddExpense }) => {
   const {
     _id,
     groupName,

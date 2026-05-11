@@ -1,9 +1,21 @@
 //#region imports
-import { Box, Button, Card, CardContent, Typography } from "@mui/material";
-import { AddCard } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  ClickAwayListener,
+  IconButton,
+  Paper,
+  Typography,
+} from "@mui/material";
+import { AddCard, MoreVert } from "@mui/icons-material";
 import React, { useState, useMemo } from "react";
 import MultiChart from "../../Common/Chart_Graph/MultiChart";
 import DropDownButton from "../../Common/DropDownButton/DropDownButton";
+import AddTeam from "../../Common/AddTeam/AddTeam";
+import Invite from "../../Common/Invite/Invite";
+
 import { useDispatch, useSelector } from "react-redux";
 import AddExpense from "../../Common/AddExpense/AddExpense";
 import {
@@ -17,8 +29,9 @@ import { getCategoryChartData } from "../../../helpers/getCategoryChartData";
 import ExpenseList from "./ExpenseList";
 import { useParams } from "react-router-dom";
 import DeleteModal from "../../Common/DeleteModal/DeleteModal";
-import { getGroupExpenseChartData } from "../../../helpers/getGroupExpenseChartData";
+// import { getGroupExpenseChartData } from "../../../helpers/getGroupExpenseChartData";
 import FullScreenLoader from "../../Common/Loader/FullScreenLoader";
+import { red } from "@mui/material/colors";
 
 //#endregion
 
@@ -34,6 +47,7 @@ const ExpenseContainer = () => {
   const user = useSelector((store) => store.auth.user);
   const groups = useSelector((store) => store.group.groups);
   const group = groups?.filter((g) => g?._id === groupId);
+  console.log("Groupssss", groups, group);
   const { expenses, expenseLoading } = useSelector((store) => {
     const expenseState = store.expense;
 
@@ -44,19 +58,22 @@ const ExpenseContainer = () => {
       expenseLoading: expenseState.expenseLoading,
     };
   });
-  const groupExpenses = useSelector((store) => store?.expense?.groupExpenses);
-  const [toggleChart, settoggleChart] = useState(false);
+  // const groupExpenses = useSelector((store) => store?.expense?.groupExpenses);
+  // const [toggleChart, settoggleChart] = useState(false);
   const [openAddExpense, setOpenAddExpense] = useState(false);
   const [openDeleteExpense, setOpenDeleteExpense] = useState(false);
   const [editableData, setEditableData] = useState(null);
   const [deletableId, setEditableId] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
-  const groupExpenseChartData = getGroupExpenseChartData(
-    groupExpenses,
-    groups,
-    user?._id,
-  );
+  const [openMoreButtons, setOpenMoreButtons] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openInvite, setOpenInvite] = useState(false);
+  // const groupExpenseChartData = getGroupExpenseChartData(
+  //   groupExpenses,
+  //   groups,
+  //   user?._id,
+  // );
 
   //#endregion
 
@@ -111,6 +128,21 @@ const ExpenseContainer = () => {
         groupId: groupId || null,
       }),
     ).unwrap();
+  };
+
+  const handleInviteButtonClick = (e, groupId) => {
+    e.stopPropagation();
+    setOpenInvite(true);
+
+    const group = groups.find((group) => String(group._id) === String(groupId));
+    setEditableData(group);
+  };
+
+  const handleOpenEditGroup = (e, id) => {
+    const group = groups.find((group) => group?._id === id);
+    setEditableData(group);
+    e.stopPropagation();
+    setOpenEdit(true);
   };
   //#endregion
 
@@ -203,7 +235,6 @@ const ExpenseContainer = () => {
             },
 
             boxShadow: 5,
-            border: "2px solid red",
           }}
         >
           {/* Buttons Pane */}
@@ -229,12 +260,88 @@ const ExpenseContainer = () => {
             }}
           >
             <CardContent>
-              <DropDownButton
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
-                onMonthChange={setSelectedMonth}
-                onYearChange={setSelectedYear}
-              />
+              <Box sx={{ display: "flex", gap: 1, position: "relative" }}>
+                <DropDownButton
+                  selectedMonth={selectedMonth}
+                  selectedYear={selectedYear}
+                  onMonthChange={setSelectedMonth}
+                  onYearChange={setSelectedYear}
+                />
+                {groupId && (
+                  <IconButton
+                    sx={{
+                      borderRadius: 1,
+                      color: "#fff",
+                      backgroundColor: "#ff6469",
+                      "&:hover": {
+                        backgroundColor: red[400],
+                      },
+                    }}
+                    onClick={() => setOpenMoreButtons(true)}
+                  >
+                    <MoreVert />
+                  </IconButton>
+                )}
+                {openMoreButtons && (
+                  <ClickAwayListener
+                    onClickAway={() => setOpenMoreButtons(false)}
+                  >
+                    <Paper
+                      elevation={6}
+                      sx={{
+                        position: "absolute",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 1,
+                        top: 40,
+                        left: { xs: 245, sm: 280 },
+                        p: 1,
+                        borderRadius: 1,
+                        // width: 70,
+                        zIndex: 1001,
+                        transition: "all 0.3s ease",
+                      }}
+                    >
+                      {/* <Grid container spacing={1}> */}
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={(e) => {
+                          handleOpenEditGroup(e, groupId);
+                        }}
+                        sx={{
+                          color: red[400],
+                          border: "1px solid #e57373",
+                          "&:hover": {
+                            color: "#fff",
+                            backgroundColor: "#e57373",
+                          },
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={(e) => {
+                          handleInviteButtonClick(e, groupId);
+                        }}
+                        sx={{
+                          color: red[400],
+                          border: "1px solid #e57373",
+                          "&:hover": {
+                            color: "#fff",
+                            backgroundColor: "#e57373",
+                          },
+                        }}
+                      >
+                        Invite
+                      </Button>
+                      {/* </Grid> */}
+                    </Paper>
+                  </ClickAwayListener>
+                )}
+              </Box>
               {!groupId && (
                 <Typography variant="h6">
                   <strong>Monthly Income :</strong> {user?.income}
@@ -293,10 +400,30 @@ const ExpenseContainer = () => {
               sx={{
                 display: "flex",
                 flexDirection: "column",
-                gap: groupId ? 10 : 0,
               }}
             >
-              {!groupId && (
+              {/* {groupId ? (
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    settoggleChart(!toggleChart);
+                  }}
+                  sx={{
+                    textTransform: "none",
+                    backgroundColor: "#ff6467",
+                    color: "white",
+                    width: "50%",
+                    boxShadow: 3,
+                    fontWeight: 600,
+                    margin: {
+                      xs: "0 0 1% 10%",
+                      md: "0 0 2% 8%",
+                    },
+                  }}
+                >
+                  {"Add Dummy"}
+                </Button>
+              ) : (
                 <Button
                   variant="outlined"
                   onClick={() => {
@@ -317,9 +444,10 @@ const ExpenseContainer = () => {
                 >
                   {"Toggle Chart"}
                 </Button>
-              )}
+              )} */}
               <MultiChart
-                data={toggleChart ? groupExpenseChartData : categoryChartData}
+                // data={toggleChart ? groupExpenseChartData : categoryChartData}
+                data={categoryChartData}
                 outerRadius={100}
               />
             </Box>
@@ -361,10 +489,26 @@ const ExpenseContainer = () => {
           title={"Expense"}
         />
       )}
+
+      {openEdit && (
+        <AddTeam
+          onClose={() => setOpenEdit(false)}
+          user={user}
+          editableData={editableData}
+        />
+      )}
+
+      {openInvite && (
+        <Invite
+          openInvite={openInvite}
+          handleClose={() => setOpenInvite(false)}
+          group={editableData}
+        />
+      )}
     </Box>
   );
   //#endregion
-};;
+};
 //#endregion
 
 //#region Component export

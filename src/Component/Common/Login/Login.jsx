@@ -13,12 +13,19 @@ import {
   IconButton,
   Paper,
 } from "@mui/material";
-import { Person, Facebook, Google, Twitter, Visibility,
-  VisibilityOff, Lock } from "@mui/icons-material";
+import {
+  Person,
+  Facebook,
+  Google,
+  Twitter,
+  Visibility,
+  VisibilityOff,
+  Lock,
+} from "@mui/icons-material";
 import loginImage from "../../../assets/Login/login.svg";
 import FullScreenLoader from "../Loader/FullScreenLoader";
 import { FaGithub, FaApple } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../../redux/authSlice";
 import { toast } from "react-toastify";
@@ -190,6 +197,20 @@ const Login = ({ isLogin, setIsLogin }) => {
           >
             {authLoading ? "Logging in..." : "Login"}
           </Button>
+          <Typography>
+            Forgot Password?{" "}
+            <Link
+              to={"/reset-password"}
+              style={{
+                color: "#3f51b5",
+                textDecoration: "underline",
+                cursor: "pointer",
+                fontWeight: 500,
+              }}
+            >
+              Reset Here
+            </Link>
+          </Typography>
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -233,7 +254,7 @@ const Login = ({ isLogin, setIsLogin }) => {
           </Stack>
         </Box>
         <Typography variant="body2" align="center" sx={{ mb: 2 }}>
-          Don't have an account?
+          Don't have an account?{" "}
           <Typography
             component="span"
             variant="body2"
