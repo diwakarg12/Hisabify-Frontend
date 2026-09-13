@@ -25,9 +25,15 @@ export const calculateUserBalances = (
   let youOweTotal = 0;
   let monthlySpent = 0;
 
-  // 1. Calculate Personal Spending in Target Month
+  // 1. Calculate Personal Spending in Target Month (excluding lending & borrowing)
   personalExpenses.forEach((exp) => {
     if (!exp.date || exp.isDeleted) return;
+    const isLendCategory = exp.category === 'lentMoney' || exp.category === 'borrowedMoney';
+    const isLendText =
+      (exp.description || '').toLowerCase().includes('lent') ||
+      (exp.description || '').toLowerCase().includes('borrowed');
+    if (isLendCategory || isLendText) return;
+
     const d = new Date(exp.date);
     if (d.getMonth() === targetMonth && d.getFullYear() === targetYear) {
       monthlySpent += Number(exp.amount || 0);

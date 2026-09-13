@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getAllGroup } from '../../../redux/groupSlice';
 import { getExpenses, deleteExpense } from '../../../redux/expenseSlice';
-import { formatMoney, CATEGORY_COLORS } from '../../../helpers/formatters';
+import { formatMoney, CATEGORY_COLORS, formatRelativeDate } from '../../../helpers/formatters';
 import { calculateUserBalances } from '../../../helpers/balanceCalculator';
 import Card from '../../Common/Primitives/Card';
 import Button from '../../Common/Primitives/Button';
@@ -65,6 +65,12 @@ export const Dashboard = () => {
 
     personalExpenses.forEach((exp) => {
       if (!exp.date || exp.isDeleted) return;
+      const isLendCategory = exp.category === 'lentMoney' || exp.category === 'borrowedMoney';
+      const isLendText =
+        (exp.description || '').toLowerCase().includes('lent') ||
+        (exp.description || '').toLowerCase().includes('borrowed');
+      if (isLendCategory || isLendText) return;
+
       const d = new Date(exp.date);
       if (d.getMonth() === selectedMonth && d.getFullYear() === selectedYear) {
         const cat = exp.category || 'other';
@@ -87,24 +93,51 @@ export const Dashboard = () => {
     return sorted.slice(0, 3);
   };
 
-  // Filter personal expenses for lending & borrowing records in selected month/year
-  const lendBorrowRecords = personalExpenses.filter((exp) => {
-    if (!exp || exp.isDeleted || !exp.date) return false;
-    const d = new Date(exp.date);
-    const matchDate = d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
-    const isLendCategory = exp.category === 'lentMoney' || exp.category === 'borrowedMoney';
-    const isLendText =
-      (exp.description || '').toLowerCase().startsWith('lent to') ||
-      (exp.description || '').toLowerCase().startsWith('borrowed from');
-    return matchDate && (isLendCategory || isLendText);
-  });
+  // Clean parser for Person Name and Note/Description
+  const parseLendBorrowRecord = (rec) => {
+    const isLent =
+      rec.category === 'lentMoney' ||
+      (rec.description || '').toLowerCase().startsWith('lent') ||
+      (rec.description || '').toLowerCase().includes('lent to');
+    let raw = rec.description || '';
+
+    // Strip legacy prefixes if present
+    raw = raw.replace(/^Lent to\s+/i, '').replace(/^Borrowed from\s+/i, '').replace(/^Lent\s+/i, '').replace(/^Borrowed\s+/i, '');
+
+    let personName = raw;
+    let note = '';
+
+    if (raw.includes(' (')) {
+      const parts = raw.split(' (');
+      personName = parts[0];
+      note = parts.slice(1).join(' (').replace(/\)$/, '');
+    } else if (raw.includes(' - ')) {
+      const parts = raw.split(' - ');
+      personName = parts[0];
+      note = parts.slice(1).join(' - ');
+    }
+
+    return { isLent, personName: personName.trim() || 'Person', note: note.trim() };
+  };
+
+  // Retrieve ALL active lending & borrowing records (sorted newest first)
+  const lendBorrowRecords = personalExpenses
+    .filter((exp) => {
+      if (!exp || exp.isDeleted) return false;
+      const isLendCategory = exp.category === 'lentMoney' || exp.category === 'borrowedMoney';
+      const isLendText =
+        (exp.description || '').toLowerCase().includes('lent') ||
+        (exp.description || '').toLowerCase().includes('borrowed');
+      return isLendCategory || isLendText;
+    })
+    .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
   const totalLentAmount = lendBorrowRecords
-    .filter((e) => e.category === 'lentMoney' || (e.description || '').toLowerCase().startsWith('lent to'))
+    .filter((e) => e.category === 'lentMoney' || (e.description || '').toLowerCase().includes('lent'))
     .reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
 
   const totalBorrowedAmount = lendBorrowRecords
-    .filter((e) => e.category === 'borrowedMoney' || (e.description || '').toLowerCase().startsWith('borrowed from'))
+    .filter((e) => e.category === 'borrowedMoney' || (e.description || '').toLowerCase().includes('borrowed'))
     .reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
 
   const top3Categories = getPersonalCategoryBreakdown();
@@ -341,15 +374,14 @@ export const Dashboard = () => {
                                   </span>
                                 </div>
                                 <span
-                                  className={`font-semibold tabular-nums text-right ${
-                                    mb.amount > 0 ? 'text-[var(--positive)]' : mb.amount < 0 ? 'text-[var(--negative)]' : 'text-[var(--text-muted)]'
-                                  }`}
+                                  className={`font-semibold tabular-nums text-right ${mb.amount > 0 ? 'text-[var(--positive)]' : mb.amount < 0 ? 'text-[var(--negative)]' : 'text-[var(--text-muted)]'
+                                    }`}
                                 >
                                   {mb.amount > 0
                                     ? `will get ${formatMoney(mb.amount)}`
                                     : mb.amount < 0
-                                    ? `has to give ${formatMoney(Math.abs(mb.amount))}`
-                                    : 'All clear'}
+                                      ? `has to give ${formatMoney(Math.abs(mb.amount))}`
+                                      : 'All clear'}
                                 </span>
                               </div>
                             ))
@@ -406,6 +438,12 @@ export const Dashboard = () => {
                     {formatMoney(
                       personalExpenses.reduce((acc, curr) => {
                         if (!curr.date || curr.isDeleted) return acc;
+                        const isLendCategory = curr.category === 'lentMoney' || curr.category === 'borrowedMoney';
+                        const isLendText =
+                          (curr.description || '').toLowerCase().includes('lent') ||
+                          (curr.description || '').toLowerCase().includes('borrowed');
+                        if (isLendCategory || isLendText) return acc;
+
                         const d = new Date(curr.date);
                         if (d.getMonth() === selectedMonth && d.getFullYear() === selectedYear) {
                           return acc + Number(curr.amount || 0);
@@ -492,12 +530,12 @@ export const Dashboard = () => {
                     <FaHandHoldingUsd className="text-[var(--brand)]" /> Direct Loans Ledger
                   </h4>
                   <span className="text-[11px] text-[var(--brand)] font-semibold">
-                    {MONTHS[selectedMonth]} {selectedYear}
+                    All Active ({lendBorrowRecords.length})
                   </span>
                 </div>
 
                 {/* Summary totals bar */}
-                <div className="grid grid-cols-2 gap-2 p-3 bg-[var(--surface-2)] rounded-xl border border-[var(--border)] text-xs">
+                <div className="grid grid-cols-2 gap-2 p-3 bg-[var(--surface-2)] rounded-xl border border-[var(--border)] text-xs mb-3">
                   <div className="border-r border-[var(--border)] pr-2">
                     <span className="text-[var(--text-secondary)] block text-[10px] font-semibold uppercase">Total Lent</span>
                     <span className="font-extrabold text-[var(--positive)] tabular-nums text-sm">
@@ -515,47 +553,55 @@ export const Dashboard = () => {
                 {/* Records List */}
                 {lendBorrowRecords.length === 0 ? (
                   <p className="text-xs text-[var(--text-muted)] py-3 text-center">
-                    No lending or borrowing records logged for {MONTHS[selectedMonth]} {selectedYear}.
+                    No active lending or borrowing records logged yet.
                   </p>
                 ) : (
-                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                  <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
                     {lendBorrowRecords.map((rec) => {
-                      const isLent =
-                        rec.category === 'lentMoney' || (rec.description || '').toLowerCase().startsWith('lent to');
+                      const { isLent, personName, note } = parseLendBorrowRecord(rec);
                       return (
                         <div
                           key={rec._id}
-                          className="flex items-center justify-between p-2.5 bg-[var(--surface-2)]/70 rounded-xl border border-[var(--border)]/70 text-xs hover:border-[var(--brand)]/40 transition-colors"
+                          className="p-3.5 bg-[var(--surface-2)]/70 rounded-xl border border-[var(--border)] space-y-2 hover:border-[var(--brand)]/40 transition-colors shadow-sm"
                         >
-                          <div className="min-w-0 flex-1 pr-2">
-                            <div className="flex items-center gap-1.5 mb-0.5">
-                              <Badge variant={isLent ? 'positive' : 'negative'} size="sm">
+                          {/* Top Row: Badge + Person Name + Amount + Delete */}
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Badge variant={isLent ? 'positive' : 'negative'} size="sm" className="shrink-0 font-bold">
                                 {isLent ? 'LENT' : 'BORROWED'}
                               </Badge>
-                              <span className="font-semibold text-[var(--text-primary)] truncate">
-                                {rec.description}
+                              <span className="font-bold text-sm text-[var(--text-primary)] truncate">
+                                {personName}
                               </span>
                             </div>
-                            <span className="text-[10px] text-[var(--text-muted)] block">
-                              Date: {rec.date}
-                            </span>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className={`font-extrabold text-sm tabular-nums ${isLent ? 'text-[var(--positive)]' : 'text-[var(--negative)]'}`}>
+                                {isLent ? '+' : '-'}{formatMoney(rec.amount)}
+                              </span>
+                              <button
+                                onClick={async () => {
+                                  if (window.confirm(`Delete record for '${personName}'?`)) {
+                                    await dispatch(deleteExpense({ expenseId: rec._id, isPersonal: true, groupId: null }));
+                                  }
+                                }}
+                                className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--negative)] hover:bg-[var(--negative-bg)] transition-colors"
+                                title="Delete record"
+                                aria-label="Delete record"
+                              >
+                                <FaTrashAlt className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className={`font-bold tabular-nums ${isLent ? 'text-[var(--positive)]' : 'text-[var(--negative)]'}`}>
-                              {isLent ? '+' : '-'}{formatMoney(rec.amount)}
+
+                          {/* Subtitle Row: Description (Note) & Date */}
+                          <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] pt-1.5 border-t border-[var(--border)]/40">
+                            <span className="truncate pr-2 font-medium">
+                              {note ? note : 'No description'}
                             </span>
-                            <button
-                              onClick={async () => {
-                                if (window.confirm(`Delete record '${rec.description}'?`)) {
-                                  await dispatch(deleteExpense({ expenseId: rec._id, isPersonal: true, groupId: null }));
-                                }
-                              }}
-                              className="text-[var(--text-muted)] hover:text-[var(--negative)] p-1 transition-colors"
-                              title="Delete record"
-                              aria-label="Delete record"
-                            >
-                              <FaTrashAlt className="w-3 h-3" />
-                            </button>
+                            <span className="shrink-0 text-[11px] font-semibold text-[var(--text-muted)]">
+                              {formatRelativeDate(rec.date)}
+                            </span>
                           </div>
                         </div>
                       );

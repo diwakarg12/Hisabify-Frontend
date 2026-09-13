@@ -52,9 +52,9 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
     const numericAmount = parseFloat(amount);
 
     const isLent = type === 'lent';
-    const formattedDesc = isLent
-      ? `Lent to ${personName.trim()}${note.trim() ? ` (${note.trim()})` : ''}`
-      : `Borrowed from ${personName.trim()}${note.trim() ? ` (${note.trim()})` : ''}`;
+    const formattedDesc = note.trim()
+      ? `${personName.trim()} (${note.trim()})`
+      : personName.trim();
 
     const payload = {
       amount: numericAmount,
