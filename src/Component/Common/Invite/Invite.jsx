@@ -7,9 +7,7 @@ import { getSentRequests, sendInvitation } from "../../../redux/requestSlice";
 import { searchUser } from "../../../redux/groupSlice";
 import FullScreenLoader from "../Loader/FullScreenLoader";
 import { toast } from "react-toastify";
-//#endregion
-
-const API_BASE_URL = "http://localhost:3000";
+import { API_BASE_URL } from "../../../config/Api";
 
 //#region Function Component
 const Invite = ({ openInvite, handleClose, group }) => {

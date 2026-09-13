@@ -1,355 +1,136 @@
-/* eslint-disable no-unused-vars */
+import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../../../redux/authSlice';
+import { getReceivedRequests } from '../../../redux/requestSlice';
+import Logo from '../Primitives/Logo';
+import Button from '../Primitives/Button';
+import RequestDailog from '../Request/RequestDailog';
+import NotificationDialog from '../Notification/NotificationDialog';
+import { FaBell, FaUserPlus, FaSignOutAlt, FaMoon, FaSun, FaChartPie } from 'react-icons/fa';
 
-//#region imports
-import React from "react";
-import Logo from "../../../assets/logo.png";
-import {
-  NotificationsOutlined,
-  CalendarMonthOutlined,
-  GroupAddOutlined,
-  Menu,
-  Close,
-  Logout,
-} from "@mui/icons-material";
-import Avatar from "@mui/material/Avatar";
-import { red } from "@mui/material/colors";
-import {
-  Paper,
-  Grid,
-  Box,
-  Typography,
-  IconButton,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
-import RequestDailog from "../Request/RequestDailog";
-import NotificationDialog from "../Notification/NotificationDialog";
-import CalenderDialog from "../Calender/CalenderDialog";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { Button } from "@mui/material";
-import { getReceivedRequests } from "../../../redux/requestSlice";
-import { logout } from "../../../redux/authSlice";
-import { toast } from "react-toastify";
-//#endregion
-
-//#region Component make Styles
-//#endregion
-
-//#region Function Component
-const Header = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
-  const location = useLocation();
-  //#region Component states
-  const [currentDate, setCurrentDate] = React.useState("");
-  const [openDialog, setOpenDialog] = React.useState(false);
-  const [openNotfication, setOpenNotification] = React.useState(false);
-  const [openCalender, setOpenCalender] = React.useState(false);
-  const [hamburderClick, setHamburgerClick] = React.useState(false);
+export const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const [openRequests, setOpenRequests] = useState(false);
+  const [openNotifications, setOpenNotifications] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
 
-  //#endregion
-
-  //#region Component hooks
-
-  React.useEffect(() => {
-    // Anything in here is fired on component update.
-    const now = new Date();
-    const formatted = now.toLocaleDateString("en-us", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-    setCurrentDate(formatted);
-  }, []);
-  //#endregion
-
-  // #region Component use Styles
-  //#endregion
-
-  //#region Component validation methods
-  const getHeaderTitle = () => {
-    const path = location.pathname;
-
-    if (path === "/myexpense") {
-      return `${user?.firstName}'s Expense`;
-    } else if (path === "/teamlist") {
-      return "Your Groups";
-    } else if (path.startsWith("/group-expense")) {
-      return `${location.state?.groupName || "Group"} Expense`;
+  const toggleDarkMode = () => {
+    const nextDark = !isDarkMode;
+    setIsDarkMode(nextDark);
+    if (nextDark) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
     } else {
-      return "";
+      document.documentElement.classList.remove('dark');
+      document.documentElement.setAttribute('data-theme', 'light');
     }
   };
-  //#endregion
 
-  //#region Component Api methods
-  const handleRequestDialog = async () => {
-    setOpenDialog(true);
-    const res = await dispatch(getReceivedRequests()).unwrap();
+  const handleLogout = async () => {
+    await dispatch(logout()).unwrap();
+    navigate('/');
   };
 
-  const handleLogoutClick = async () => {
-    const response = await dispatch(logout()).unwrap();
-    navigate("/");
-    toast.success(response.message, { theme: "dark" });
-  };
-  //#endregion
-
-  //#region Component feature methods
-  const handleDialogClose = () => {
-    setOpenDialog(false);
-  };
-
-  const handleNotificationClick = () => {
-    setOpenNotification(true);
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path === '/dashboard') return 'Dashboard';
+    if (path === '/myexpense') return 'Personal expenses';
+    if (path === '/teamlist') return 'Group expenses';
+    if (path.startsWith('/group-expense')) return 'Group expenses';
+    if (path === '/setting') return 'Settings';
+    if (path === '/contact') return 'Contact us';
+    if (path === '/profile') return 'Profile';
+    return '';
   };
 
-  const handleNotificationClose = () => {
-    setOpenNotification(false);
-  };
-
-  const handleCalenderClick = () => {
-    setOpenCalender(true);
-  };
-
-  const handleCalenderClose = () => {
-    setOpenCalender(false);
-  };
-
-  const handleLoginClick = () => {
-    navigate("/login");
-  };
-
-  const open = Boolean(openNotfication);
-  const id = open ? "simple-popover" : undefined;
-  //#endregion
-
-  //#region Component JSX.members
-  const [dayPart, datePart, yearPart] = currentDate.split(", ") || [];
-
-  // Convert MM/DD/YYYY → DD/MM/YYYY manually
-  let formattedDate = "";
-  if (datePart) {
-    const [month, day] = datePart.split(" ");
-    formattedDate = `${day.padStart(2, "0")}-${month.padStart(
-      2,
-      "0",
-    )}-${yearPart}`;
-  }
-
-  //#endregion
-
-  //#region Component renders
   return (
-    <div className="flex flex-row justify-between items-center bg-zinc-50 h-16 shadow-sm px-4">
-      <Link to={"/"} className="flex items-center space-x-2">
-        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-          <img
-            src={Logo}
-            alt="logo"
-            className="w-12 h-12 object-contain cursor-pointer"
-          />
-        </div>
-        {!isMobile && (
-          <div className="font-medium text-xl">
-            <span className="text-red-400">Hisabi</span>
-            <span className="text-black">FY</span>
-          </div>
-        )}
+    <header className="h-16 bg-[var(--surface-1)] border-b border-[var(--border)] px-4 md:px-6 flex items-center justify-between shadow-sm sticky top-0 z-40">
+      {/* Brand Logo - ALWAYS links to / (Home page) */}
+      <Link to="/" className="flex items-center" title="HisabiFY Home">
+        <Logo size="md" />
       </Link>
 
-      <Box sx={{ flex: 1, textAlign: "center" }}>
-        <Typography variant={isMobile ? "h5":"h4"}>{getHeaderTitle()}</Typography>
-      </Box>
+      {/* Center Page Title */}
+      <div className="hidden sm:block text-center flex-1">
+        <h1 className="text-base font-semibold text-[var(--text-primary)]">{getPageTitle()}</h1>
+      </div>
 
-      <div className="flex items-center space-x-6">
-        <div className="text-right hidden md:block">
-          <div className="text-sm text-black"> {dayPart} </div>
-          <div className="text-xs text-blue-400">{formattedDate} </div>
-        </div>
+      {/* Right Controls */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Dark Mode Toggle */}
+        <button
+          onClick={toggleDarkMode}
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--surface-2)] transition-colors"
+          aria-label="Toggle dark mode"
+        >
+          {isDarkMode ? <FaSun className="w-4 h-4 text-amber-400" /> : <FaMoon className="w-4 h-4" />}
+        </button>
 
         {isAuthenticated ? (
-          isMobile ? (
-            <Box sx={{ position: "relative" }}>
-              {hamburderClick ? (
-                <IconButton
-                  onClick={() => setHamburgerClick((prev) => !prev)}
-                  sx={{
-                    bgcolor: "#eee",
-                    borderRadius: 2,
-                    boxShadow: 1,
-                  }}
-                >
-                  <Close sx={{ fontSize: "2rem" }} />
-                </IconButton>
-              ) : (
-                <IconButton
-                  onClick={() => setHamburgerClick((prev) => !prev)}
-                  sx={{
-                    bgcolor: "#eee",
-                    borderRadius: 2,
-                    boxShadow: 1,
-                  }}
-                >
-                  <Menu sx={{ fontSize: "2rem" }} />
-                </IconButton>
-              )}
-              {hamburderClick && (
-                <Paper
-                  elevation={6}
-                  sx={{
-                    position: "absolute",
-                    top: 60,
-                    right: -10,
-                    p: 2,
-                    borderRadius: 3,
-                    width: 300,
-                    zIndex: 1001,
-                    transition: "all 0.3s ease",
-                  }}
-                >
-                  <Grid container spacing={2}>
-                    <div className="w-10 h-10 rounded bg-red-400 flex items-center justify-center">
-                      <GroupAddOutlined
-                        className=" text-white"
-                        fontSize="medium"
-                        cursor="pointer"
-                        onClick={handleRequestDialog}
-                      />
-                      <RequestDailog
-                        open={openDialog}
-                        onClose={handleDialogClose}
-                      />
-                    </div>
-                    <div className="w-10 h-10 rounded bg-red-400 flex items-center justify-center">
-                      <NotificationsOutlined
-                        className="text-white"
-                        fontSize="medium"
-                        cursor="pointer"
-                        onClick={handleNotificationClick}
-                      />
-                      <NotificationDialog
-                        open={open}
-                        onClose={handleNotificationClose}
-                      />
-                    </div>
-                    <div className="w-10 h-10 rounded bg-red-400 flex items-center justify-center">
-                      <CalendarMonthOutlined
-                        className="text-white"
-                        fontSize="medium"
-                        cursor="pointer"
-                        onClick={handleCalenderClick}
-                      />
-                      <CalenderDialog
-                        open={openCalender}
-                        onClose={handleCalenderClose}
-                      />
-                    </div>
-                    <Link
-                      className="w-10 h-10 rounded flex items-center justify-center cursor-pointer "
-                      to="/profile"
-                    >
-                      <Avatar
-                        alt="R"
-                        src={user?.profile}
-                        sx={{
-                          bgcolor: red[400],
-                          width: 40,
-                          height: 40,
-                          border: "2px solid red",
-                        }}
-                      />
-                    </Link>
-                    <div className="w-10 h-10 rounded bg-red-400 flex items-center justify-center">
-                      <Logout
-                        className="text-white"
-                        fontSize="medium"
-                        cursor="pointer"
-                        onClick={handleLogoutClick}
-                      />
-                    </div>
-                  </Grid>
-                </Paper>
-              )}
-            </Box>
-          ) : (
-            <div className="flex space-x-2">
-              <div className="w-8 h-8 rounded bg-red-400 flex items-center justify-center">
-                <GroupAddOutlined
-                  className=" text-white"
-                  fontSize="medium"
-                  cursor="pointer"
-                  onClick={handleRequestDialog}
-                />
-                <RequestDailog open={openDialog} onClose={handleDialogClose} />
-              </div>
-              <div className="w-8 h-8 rounded bg-red-400 flex items-center justify-center">
-                <NotificationsOutlined
-                  className="text-white"
-                  fontSize="medium"
-                  cursor="pointer"
-                  onClick={handleNotificationClick}
-                />
-                <NotificationDialog
-                  open={open}
-                  onClose={handleNotificationClose}
-                />
-              </div>
-              <div className="w-8 h-8 rounded bg-red-400 flex items-center justify-center">
-                <CalendarMonthOutlined
-                  className="text-white"
-                  fontSize="medium"
-                  cursor="pointer"
-                  onClick={handleCalenderClick}
-                />
-                <CalenderDialog
-                  open={openCalender}
-                  onClose={handleCalenderClose}
-                />
-              </div>
-              <Link
-                className="w-8 h-8 rounded flex items-center justify-center cursor-pointer"
-                to="/profile"
-              >
-                <Avatar
-                  alt="R"
-                  src={user?.profile}
-                  sx={{ bgcolor: red[400], width: 40, height: 40 }}
-                />
-              </Link>
-            </div>
-          )
-        ) : (
-          <div>
-            <Button
-              variant="contained"
-              fullWidth
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                bgcolor: "#ff7171",
-                "&:hover": { bgcolor: "#ff5252" },
+          <>
+            {/* Invitations / Requests */}
+            <button
+              onClick={() => {
+                setOpenRequests(true);
+                dispatch(getReceivedRequests());
               }}
-              onClick={handleLoginClick}
+              className="w-9 h-9 rounded-lg bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-primary)] flex items-center justify-center hover:border-[var(--brand)] transition-all"
+              title="Group invitations"
             >
-              Login
+              <FaUserPlus className="w-4 h-4" />
+            </button>
+            <RequestDailog open={openRequests} onClose={() => setOpenRequests(false)} />
+
+            {/* Notifications */}
+            <button
+              onClick={() => setOpenNotifications(true)}
+              className="w-9 h-9 rounded-lg bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-primary)] flex items-center justify-center hover:border-[var(--brand)] transition-all"
+              title="Notifications"
+            >
+              <FaBell className="w-4 h-4" />
+            </button>
+            <NotificationDialog open={openNotifications} onClose={() => setOpenNotifications(false)} />
+
+            {/* Profile Avatar */}
+            <Link
+              to="/profile"
+              className="w-9 h-9 rounded-full border-2 border-[var(--brand)] overflow-hidden shadow-sm flex items-center justify-center bg-[var(--surface-2)] text-[var(--brand)] font-bold text-sm hover:opacity-90"
+              title="Profile"
+            >
+              {user?.profile ? (
+                <img src={user.profile} alt={user.firstName} className="w-full h-full object-cover" />
+              ) : (
+                user?.firstName?.[0] || 'U'
+              )}
+            </Link>
+
+            {/* Logout button desktop */}
+            <button
+              onClick={handleLogout}
+              className="hidden md:flex w-9 h-9 rounded-lg bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-secondary)] items-center justify-center hover:text-[var(--negative)] hover:border-[var(--negative)] transition-all"
+              title="Log out"
+            >
+              <FaSignOutAlt className="w-4 h-4" />
+            </button>
+          </>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="secondary" onClick={() => navigate('/login')}>
+              Log in
+            </Button>
+            <Button size="sm" variant="primary" onClick={() => navigate('/login')}>
+              Get started
             </Button>
           </div>
         )}
       </div>
-    </div>
+    </header>
   );
-  //#endregion
 };
-//#endregion
 
-//#region Component export
 export default Header;
-//#endregion

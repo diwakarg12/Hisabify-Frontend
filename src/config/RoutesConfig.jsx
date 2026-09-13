@@ -1,7 +1,7 @@
 //#region imports
 import React from "react";
 import Loginsignup from "../Component/Pages/LoginSignup/Loginsignup";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "../Component/Pages/LandingPage/LandingPage";
 import ProfilePage from "../Component/Pages/ProfilePage/ProfilePage";
 import Dashboard from "../Component/Pages/Dashboard/Dashboard";

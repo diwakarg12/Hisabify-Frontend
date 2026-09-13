@@ -1,302 +1,170 @@
-//#region imports
-import React from "react";
-import {
-  Box,
-  TextField,
-  Typography,
-  InputAdornment,
-  FormControlLabel,
-  Checkbox,
-  Button,
-  Divider,
-  Stack,
-  IconButton,
-  Paper,
-} from "@mui/material";
-import {
-  Person,
-  Facebook,
-  Google,
-  Twitter,
-  Visibility,
-  VisibilityOff,
-  Lock,
-} from "@mui/icons-material";
-import loginImage from "../../../assets/Login/login.svg";
-import FullScreenLoader from "../Loader/FullScreenLoader";
-import { FaGithub, FaApple } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { login } from "../../../redux/authSlice";
-import { toast } from "react-toastify";
-//#endregion
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { login } from '../../../redux/authSlice';
+import Button from '../Primitives/Button';
+import Input from '../Primitives/Input';
+import { FaUser, FaLock, FaEye, FaEyeSlash, FaGoogle, FaGithub, FaApple } from 'react-icons/fa';
 
-//#region Component make Styles
-//#endregion
-
-//#region Function Component
-const Login = ({ isLogin, setIsLogin }) => {
-  //#region Component states
+export const Login = ({ setIsLogin }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user, isAuthenticated, authLoading } = useSelector(
-    (state) => state.auth,
-  );
-  const [form, setForm] = React.useState({
-    email: "",
-    password: "",
-  });
-  const [rememberMe, setRememberMe] = React.useState(false);
-  const [showPassword, setShowPassword] = React.useState(false);
-  //#endregion
 
-  //#region Component hooks
-  React.useEffect(() => {
+  const { isAuthenticated, user, authLoading } = useSelector((state) => state.auth);
+
+  const [form, setForm] = useState({
+    email: '',
+    password: '',
+  });
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
     if (isAuthenticated && user) {
-      navigate("/");
+      navigate('/dashboard');
     }
   }, [isAuthenticated, user, navigate]);
 
-  //#endregion
-
-  //#region Component use Styles
-  //#endregion
-
-  //#region Component validation methods
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setErrorMsg('');
   };
-  //#endregion
 
-  //#region Component Api methods
-  const handleLoginClick = async () => {
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.email.trim() || !form.password.trim()) {
+      setErrorMsg('Enter your email/phone and password');
+      return;
+    }
+
     try {
       await dispatch(login(form)).unwrap();
-      toast.success("Login Sucessful !");
-      navigate("/");
-    } catch (error) {
-      toast.error("Email or Password is not correct", error?.message);
+      navigate('/dashboard');
+    } catch (err) {
+      setErrorMsg(err?.message || 'Email or password is not correct');
     }
-    // if(rememberMe){
-    //     sessionStorage.setItem('user', JSON.stringify(response.user));
-    // }
   };
-  //#endregion
 
-  //#region Component feature methods
-  //#endregion
-
-  //#region Component JSX.members
-  //#endregion
-
-  //#region Component renders
   return (
-    <Paper
-      elevation={3}
-      sx={{
-        display: "flex",
-        flexDirection: {
-          xs: "column",
-          md: "row",
-        },
-        borderRadius: 3,
-        height: "90vh",
-        width: "100vw",
-      }}
-    >
-      {authLoading && <FullScreenLoader />}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          p: 6,
-          justifyContent: "center",
-        }}
-      >
-        <Typography
-          variant="h4"
-          component="h1"
-          fontWeight="bold"
-          gutterBottom
-          align="start"
-        >
-          Sign In
-        </Typography>
+    <form onSubmit={handleLoginSubmit} className="space-y-4 w-full">
+      <div>
+        <h2 className="text-xl font-bold text-[var(--text-primary)]">Sign in to HisabiFY</h2>
+        <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+          Enter your registered email or phone number to continue.
+        </p>
+      </div>
 
-        <Stack spacing={2} sx={{ mb: 2 }}>
-          <TextField
-            fullWidth
-            placeholder="Enter Phone/Email"
-            variant="outlined"
-            name="email"
-            value={form.email}
-            onChange={handleFormChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Person sx={{ color: "#000" }} />
-                </InputAdornment>
-              ),
-            }}
+      {errorMsg && (
+        <div className="p-3 rounded-lg bg-[var(--negative-bg)] border border-[var(--negative)]/30 text-xs font-medium text-[var(--negative)]">
+          {errorMsg}
+        </div>
+      )}
+
+      {/* Email / Phone Field */}
+      <Input
+        label="Email or Phone number"
+        name="email"
+        type="text"
+        placeholder="Enter email or phone"
+        value={form.email}
+        onChange={handleChange}
+        leftIcon={FaUser}
+        required
+        autoFocus
+      />
+
+      {/* Password Field */}
+      <Input
+        label="Password"
+        name="password"
+        type={showPassword ? 'text' : 'password'}
+        placeholder="Enter password"
+        value={form.password}
+        onChange={handleChange}
+        leftIcon={FaLock}
+        rightElement={
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus:outline-none"
+            aria-label="Toggle password visibility"
+          >
+            {showPassword ? <FaEyeSlash className="w-4 h-4" /> : <FaEye className="w-4 h-4" />}
+          </button>
+        }
+        required
+      />
+
+      {/* Remember Me & Reset Link */}
+      <div className="flex items-center justify-between text-xs pt-1">
+        <label className="flex items-center gap-2 cursor-pointer text-[var(--text-secondary)]">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="rounded border-[var(--border)] text-[var(--brand)] focus:ring-[var(--brand)]"
           />
+          <span>Remember me</span>
+        </label>
 
-          <TextField
-            fullWidth
-            type={showPassword ? "text" : "password"}
-            placeholder="Enter Password"
-            variant="outlined"
-            name="password"
-            value={form.password}
-            onChange={handleFormChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock sx={{ color: "#000" }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Stack>
+        <Link to="/reset-password" className="text-[var(--brand)] font-semibold hover:underline">
+          Forgot password?
+        </Link>
+      </div>
 
-        <FormControlLabel
-          control={<Checkbox />}
-          label="Remember Me"
-          sx={{ mb: 2 }}
-          checked={rememberMe}
-          onChange={(e) => setRememberMe(e.target.checked)}
-        />
-
-        <Box>
-          <Button
-            variant="contained"
-            fullWidth
-            disabled={authLoading}
-            sx={{
-              mb: 2,
-              py: 1,
-              bgcolor: "#ff7171",
-              "&:hover": { bgcolor: "#ff5252" },
-            }}
-            onClick={handleLoginClick}
-          >
-            {authLoading ? "Logging in..." : "Login"}
-          </Button>
-          <Typography>
-            Forgot Password?{" "}
-            <Link
-              to={"/reset-password"}
-              style={{
-                color: "#3f51b5",
-                textDecoration: "underline",
-                cursor: "pointer",
-                fontWeight: 500,
-              }}
-            >
-              Reset Here
-            </Link>
-          </Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <Divider sx={{ flex: 1 }} />
-          <Typography variant="body2" sx={{ px: 2 }}>
-            Or
-          </Typography>
-          <Divider sx={{ flex: 1 }} />
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mb: 2,
-          }}
+      {/* Submit Button */}
+      <div className="pt-2">
+        <Button
+          type="submit"
+          variant="primary"
+          fullWidth
+          isLoading={authLoading}
         >
-          <Stack
-            direction="row"
-            sx={{
-              justifyContent: "space-between",
-              alignItems: "baseline",
-              width: "70%",
-            }}
-          >
-            <IconButton sx={{ color: "#4285F4" }}>
-              <Google sx={{ fontSize: 32 }} />
-            </IconButton>
-            <IconButton sx={{ color: "#000" }}>
-              <FaApple size={35} />
-            </IconButton>
-            <IconButton sx={{ color: "#1877F2" }}>
-              <Facebook sx={{ fontSize: 32 }} />
-            </IconButton>
-            <IconButton sx={{ color: "#000" }}>
-              <FaGithub size={32} />
-            </IconButton>
-            <IconButton sx={{ color: "#1DA1F2" }}>
-              <Twitter sx={{ fontSize: 32 }} />
-            </IconButton>
-          </Stack>
-        </Box>
-        <Typography variant="body2" align="center" sx={{ mb: 2 }}>
-          Don't have an account?{" "}
-          <Typography
-            component="span"
-            variant="body2"
-            color="primary"
-            sx={{
-              cursor: "pointer",
-              textDecoration: "underline",
-              color: "#3f51b5",
-            }}
-            onClick={() => setIsLogin(!isLogin)}
-          >
-            Create One
-          </Typography>
-        </Typography>
-      </Box>
+          Sign in
+        </Button>
+      </div>
 
-      {/* Image thing  */}
-      <Box
-        sx={{
-          display: {
-            xs: "none",
-            md: "flex",
-          },
-          justifyContent: "center",
-          alignItems: "center",
-          flex: 1,
-          p: 6,
-        }}
-      >
-        <Box
-          component="img"
-          src={loginImage}
-          alt="Login"
-          sx={{ maxWidth: "100%", height: "auto" }}
-        ></Box>
-      </Box>
-    </Paper>
+      {/* Social Login Options */}
+      <div className="pt-3 border-t border-[var(--border)] text-center space-y-3">
+        <span className="text-xs text-[var(--text-muted)]">Or sign in with</span>
+        <div className="flex justify-center gap-3">
+          <button
+            type="button"
+            className="w-10 h-10 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-center text-[var(--text-primary)] hover:border-[var(--brand)] transition-colors"
+            title="Google"
+          >
+            <FaGoogle className="w-4 h-4 text-blue-500" />
+          </button>
+          <button
+            type="button"
+            className="w-10 h-10 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-center text-[var(--text-primary)] hover:border-[var(--brand)] transition-colors"
+            title="Apple"
+          >
+            <FaApple className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            className="w-10 h-10 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-center text-[var(--text-primary)] hover:border-[var(--brand)] transition-colors"
+            title="GitHub"
+          >
+            <FaGithub className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      <p className="text-xs text-center text-[var(--text-secondary)] pt-1">
+        Don't have an account?{' '}
+        <button
+          type="button"
+          onClick={() => setIsLogin(false)}
+          className="text-[var(--brand)] font-bold hover:underline"
+        >
+          Create account
+        </button>
+      </p>
+    </form>
   );
-  //#endregion
 };
-//#endregion
 
-//#region Component export
 export default Login;
-//#endregion

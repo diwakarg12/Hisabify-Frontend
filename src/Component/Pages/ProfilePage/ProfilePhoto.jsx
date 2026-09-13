@@ -39,7 +39,7 @@ const ProfilePhoto = ({ profile, setUserData }) => {
   };
 
   return (
-    <Box sx={{ position: "relative", width: 100 }}>
+    <Box sx={{ position: "relative", width: 100, mx: "auto", display: "flex", justifyContent: "center", alignItems: "center" }}>
       <Avatar
         src={profile}
         alt="Profile"
@@ -47,6 +47,8 @@ const ProfilePhoto = ({ profile, setUserData }) => {
           width: { xs: 80, sm: 100 },
           height: { xs: 80, sm: 100 },
           cursor: "pointer",
+          border: "3px solid var(--brand)",
+          boxShadow: "var(--shadow-3d)",
         }}
         onClick={handleAvatarClick}
       />

@@ -1,74 +1,42 @@
-//#region imports
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { updateProfile, updateEmail, updatePhone } from '../../../redux/authSlice';
+import Card from '../../Common/Primitives/Card';
+import Button from '../../Common/Primitives/Button';
+import Input from '../../Common/Primitives/Input';
+import ProfilePhoto from './ProfilePhoto';
 import {
-  Avatar,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-} from "@mui/material";
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { blue } from "@mui/material/colors";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { EditSquare, SaveAs } from "@mui/icons-material";
-import { useDispatch, useSelector } from "react-redux";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import {
-  updateEmail,
-  updatePhone,
-  updateProfile,
-} from "../../../redux/authSlice";
-import { toast } from "react-toastify";
-import ProfilePhoto from "./ProfilePhoto";
-dayjs.extend(utc);
-//#endregion
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaBriefcase,
+  FaMoneyBillWave,
+  FaPen,
+  FaSave,
+  FaTimes,
+} from 'react-icons/fa';
 
-//#region Component make Styles
-//#endregion
-
-//#region Function Component
-const ProfilePage = () => {
-  //#region Component states
+export const ProfilePage = () => {
   const user = useSelector((store) => store.auth.user);
-  const [editable, setEditable] = useState(false);
-  const [userData, setUserData] = useState(user);
-  const [emailUpdate, setEmailUpdate] = useState(false);
-  const [phoneUpdate, setPhoneUpdate] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  //#endregion
-  //#region Component hooks
-  React.useEffect(() => {
-    // Anything in here is fired on component mount.
-    return () => {
-      // Anything in here is fired on component unmount.
-    };
-  }, []);
 
-  React.useEffect(() => {
-    // Anything in here is fired on component update.
-  });
-  //#endregion
+  const [editable, setEditable] = useState(false);
+  const [userData, setUserData] = useState(user || {});
+  const [emailUpdate, setEmailUpdate] = useState(false);
+  const [phoneUpdate, setPhoneUpdate] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [msg, setMsg] = useState('');
 
-  //#region Component use Styles
-  //#endregion
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUserData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  //#region Component validation methods
-  //#endregion
-
-  //#region Component Api methods
   const handleProfileUpdate = async () => {
-    const userProfile = {
+    setIsSubmitting(true);
+    const payload = {
       firstName: userData.firstName,
       lastName: userData.lastName,
       dob: userData.dob,
@@ -77,459 +45,253 @@ const ProfilePage = () => {
       income: userData.income,
       profile: userData.profile,
     };
-    const response = await dispatch(updateProfile(userProfile)).unwrap();
-    if (!response.error) {
-      toast.success(response.message, {
-        position: "top-center",
-        theme: "dark",
-      });
-      navigate("/dashboard");
-    } else {
-      toast.error(response.error, {
-        position: "top-center",
-        theme: "dark",
-      });
+
+    try {
+      await dispatch(updateProfile(payload)).unwrap();
+      setIsSubmitting(false);
+      setEditable(false);
+      setMsg('Profile updated successfully');
+      setTimeout(() => setMsg(''), 3000);
+    } catch (err) {
+      setIsSubmitting(false);
+      setMsg('Could not update profile. Check connection.');
     }
   };
-  //#endregion
 
-  //#region Component feature methods
-  const handleEdit = () => {
-    setEditable((prev) => !prev);
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUserData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleEmailUpdate = async () => {
-    const response = await dispatch(updateEmail(userData.email)).unwrap();
-    if (!response.error) {
-      toast.success(response.message, {
-        position: "top-center",
-        theme: "dark",
-      });
-    } else {
-      toast.error(response.error, {
-        position: "top-center",
-        theme: "dark",
-      });
+  const handleEmailSave = async () => {
+    try {
+      await dispatch(updateEmail(userData.email)).unwrap();
+      setEmailUpdate(false);
+    } catch (err) {
+      // Toast handles error feedback
     }
-    setEmailUpdate((prev) => !prev);
   };
 
-  const handlePhoneUpdate = async () => {
-    const response = await dispatch(updatePhone(userData.phone)).unwrap();
-    if (!response.error) {
-      toast.success(response.message, {
-        position: "top-center",
-        theme: "dark",
-      });
-    } else {
-      toast.error(response.error, {
-        position: "top-center",
-        theme: "dark",
-      });
+  const handlePhoneSave = async () => {
+    try {
+      await dispatch(updatePhone(userData.phone)).unwrap();
+      setPhoneUpdate(false);
+    } catch (err) {
+      // Toast handles error feedback
     }
-    setPhoneUpdate((prev) => !prev);
   };
 
-  //#endregion
-
-  //#region Component JSX.members
-  //#endregion
-
-  //#region Component renders
   return (
-    <Box
-      sx={{
-        padding: 2,
-        width: "100%",
-        backgroundColor: "#f5f5f5",
-        borderRadius: 1,
-        boxShadow: 1,
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography
-          variant="h4"
-          sx={{
-            fontSize: {
-              xs: "1.5rem",
-              sm: "2rem",
-              md: "2.5rem",
-              lg: "3rem",
-            },
-          }}
-        >
-          Profile Information
-        </Typography>
-        <Link to="/home">
-          <Typography
-            sx={{
-              textDecoration: "underline",
-              ":hover": {
-                cursor: "pointer",
-                color: blue[500],
-              },
-            }}
-          >
-            Go Back
-          </Typography>
-        </Link>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: {
-            xs: 2,
-            md: 3,
-          },
-          marginTop: 2,
-          padding: 2,
-        }}
-      >
-        <ProfilePhoto profile={userData.profile} setUserData={setUserData} />
-        <Box>
-          <Typography
-            sx={{
-              fontSize: {
-                xs: "1.3rem",
-                sm: "1.5rem",
-              },
-              fontWeight: "bold",
-              paddingBottom: "-0.5rem",
-            }}
-          >
-            {`${userData.firstName} ${userData.lastName}`}
-          </Typography>
-          <Typography
-            sx={{
-              fontSize: "0.9rem",
-            }}
-          >
-            {userData.email}
-          </Typography>
-        </Box>
-      </Box>
+    <div className="space-y-6 max-w-4xl mx-auto pb-12">
+      {/* Header Alignment */}
+      <div className="flex items-center justify-between gap-3 pb-1">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] leading-tight">
+            Profile settings
+          </h2>
+          <p className="text-xs md:text-sm text-[var(--text-secondary)] truncate">
+            Manage your personal profile and account credentials
+          </p>
+        </div>
 
-      <Box
-        sx={{
-          display: {
-            xs: "block",
-            md: "flex",
-          },
-          gap: {
-            xs: 0,
-            md: 4,
-          },
-        }}
-      >
-        <Card
-          sx={{
-            backgroundColor: "#f5f7f7",
-            borderTopLeftRadius: 1,
-            borderTopRightRadius: 1,
-            borderBottomLeftRadius: {
-              xs: 0,
-              md: 1,
-            },
-            borderBottomRightRadius: {
-              xs: 0,
-              md: 1,
-            },
-            boxShadow: 1,
-            height: "100%",
-            width: {
-              xs: "100%",
-              md: "50%",
-            },
-          }}
-        >
-          <CardContent>
-            {/* FirstName  */}
-            <TextField
-              id="outlined-basic"
-              label="First Name"
-              name="firstName"
-              value={userData.firstName}
-              onChange={handleChange}
-              variant="outlined"
-              disabled={!editable}
-              type="text"
-              sx={{
-                width: "100%",
-                marginBottom: 2,
-              }}
-            />
-
-            {/* LastName */}
-            <TextField
-              id="outlined-basic"
-              label="Last Name"
-              name="lastName"
-              value={userData.lastName}
-              onChange={handleChange}
-              variant="outlined"
-              disabled={!editable}
-              type="text"
-              sx={{
-                width: "100%",
-                marginBottom: 2,
-              }}
-            />
-
-            {/* Email  */}
-            <Box sx={{ position: "relative", display: "flex" }}>
-              <TextField
-                id="outlined-basic"
-                label="Email"
-                name="email"
-                value={userData.email}
-                onChange={handleChange}
-                variant="outlined"
-                disabled={!emailUpdate}
-                type="email"
-                sx={{
-                  width: "100%",
-                  marginBottom: 2,
-                }}
-              />
-              <Button
-                sx={{ position: "absolute", top: "0.4rem", right: "0.2rem" }}
-              >
-                {emailUpdate ? (
-                  <SaveAs
-                    onClick={handleEmailUpdate}
-                    sx={{ fontSize: "2rem", color: "#ff6467" }}
-                  />
-                ) : (
-                  <EditSquare
-                    onClick={() => setEmailUpdate((prev) => !prev)}
-                    sx={{ fontSize: "2rem", color: "#ff6467" }}
-                  />
-                )}
-              </Button>
-            </Box>
-
-            <Box sx={{ position: "relative", display: "flex" }}>
-              <TextField
-                id="outlined-basic"
-                label="Phone"
-                name="phone"
-                value={userData.phone}
-                onChange={handleChange}
-                variant="outlined"
-                disabled={!phoneUpdate}
-                type="text"
-                sx={{
-                  width: "100%",
-                  marginBottom: {
-                    xs: -3,
-                    md: 3,
-                  },
-                  "& input[type=number]": {
-                    MozAppearance: "textfield", // Firefox
-                  },
-                  "& input[type=number]::-webkit-inner-spin-button": {
-                    WebkitAppearance: "none",
-                    margin: 0,
-                  },
-                }}
-              />
-              <Button
-                sx={{ position: "absolute", top: "0.4rem", right: "0.2rem" }}
-              >
-                {phoneUpdate ? (
-                  <SaveAs
-                    onClick={handlePhoneUpdate}
-                    sx={{ fontSize: "2rem", color: "#ff6467" }}
-                  />
-                ) : (
-                  <EditSquare
-                    onClick={() => setPhoneUpdate((prev) => !prev)}
-                    sx={{ fontSize: "2rem", color: "#ff6467" }}
-                  />
-                )}
-              </Button>
-            </Box>
-          </CardContent>
-        </Card>
-        <Card
-          sx={{
-            backgroundColor: "#f5f5f7",
-            borderTopLeftRadius: {
-              xs: 0,
-              md: 1,
-            },
-            borderTopRightRadius: {
-              xs: 0,
-              md: 1,
-            },
-            borderBottomLeftRadius: 1,
-            borderBottomRightRadius: 1,
-            boxShadow: 1,
-            height: "100%",
-            width: {
-              xs: "100%",
-              md: "50%",
-            },
-          }}
-        >
-          <CardContent>
-            {/* Occupation */}
-            <TextField
-              id="outlined-basic"
-              label="Occupation"
-              name="occupation"
-              value={userData.occupation}
-              onChange={handleChange}
-              variant="outlined"
-              disabled={!editable}
-              type="text"
-              sx={{
-                width: "100%",
-                marginBottom: 2,
-              }}
-            />
-            {/* Income */}
-            <TextField
-              id="outlined-basic"
-              label="Income"
-              name="income"
-              value={userData.income}
-              onChange={handleChange}
-              variant="outlined"
-              disabled={!editable}
-              type="number"
-              sx={{
-                width: "100%",
-                marginBottom: 2,
-                "& input[type=number]": {
-                  MozAppearance: "textfield", // Firefox
-                },
-                "& input[type=number]::-webkit-inner-spin-button": {
-                  WebkitAppearance: "none",
-                  margin: 0,
-                },
-              }}
-            />
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: {
-                  xs: "column",
-                  md: "row",
-                },
-                width: "100%",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 3,
-              }}
+        {editable ? (
+          <div className="flex items-center gap-2 shrink-0">
+            {/* <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setEditable(false)}
+              icon={FaTimes}
+              className="whitespace-nowrap"
             >
-              {/* DOB  */}
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DemoContainer
-                  components={["DatePicker"]}
-                  sx={{
-                    width: {
-                      xs: "100%",
-                      md: "70%",
-                      lg: "50%",
-                    },
-                    marginBottom: {
-                      xs: 0,
-                      md: 1,
-                    },
-                  }}
-                >
-                  <DatePicker
-                    value={dayjs.utc(userData.dob)}
-                    label="Date of Birth"
-                    sx={{
-                      width: "100%",
-                    }}
-                    disabled={!editable}
-                    onChange={(newValue) => {
-                      setUserData((prev) => ({
-                        ...prev,
-                        dob: newValue.toDate(),
-                      }));
-                    }}
-                  />
-                </DemoContainer>
-              </LocalizationProvider>
-
-              {/* Gender  */}
-              <FormControl
-                sx={{
-                  width: {
-                    xs: "100%",
-                    md: "50%",
-                  },
-                }}
-              >
-                <InputLabel id="gender">Gender</InputLabel>
-                <Select
-                  labelId="gender"
-                  id="gender"
-                  name="gender"
-                  value={userData.gender}
-                  label="Gender"
-                  onChange={handleChange}
-                  disabled={!editable}
-                >
-                  <MenuItem value={"male"}>Male</MenuItem>
-                  <MenuItem value={"female"}>Female</MenuItem>
-                  <MenuItem value={"others"}>Others</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
-
-            {/* Buttons  */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginY: 2,
-                width: "100%",
-                gap: 3,
-              }}
+              Cancel
+            </Button> */}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleProfileUpdate}
+              isLoading={isSubmitting}
+              icon={FaSave}
+              className="whitespace-nowrap"
             >
-              <button
-                onClick={handleEdit}
-                className="bg-red-400 text-white font-semibold py-3 rounded hover:bg-red-600 w-1/2 cursor-pointer"
-              >
-                Edit
-              </button>
-              <button
-                onClick={handleProfileUpdate}
-                className="bg-green-600 text-white font-semibold py-3 rounded hover:bg-green-700 w-1/2 cursor-pointer"
-              >
-                Save
-              </button>
-            </Box>
-          </CardContent>
+              Save profile
+            </Button>
+          </div>
+        ) : (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setEditable(true)}
+            icon={FaPen}
+            className="shrink-0 whitespace-nowrap"
+          >
+            Edit profile
+          </Button>
+        )}
+      </div>
+
+      {msg && (
+        <div className="p-3.5 rounded-xl bg-[var(--positive-bg)] border border-[var(--positive)]/30 text-xs font-semibold text-[var(--positive)] animate-fadeIn">
+          {msg}
+        </div>
+      )}
+
+      {/* Main Profile Info Header Card - Centered Photo, Name, Email */}
+      <Card className="p-6 sm:p-8">
+        <div className="flex flex-col items-center justify-center text-center space-y-3 w-full">
+          <div className="flex justify-center items-center w-full">
+            <ProfilePhoto profile={userData.profile} setUserData={setUserData} />
+          </div>
+          <div className="space-y-1 text-center w-full flex flex-col items-center">
+            <h3 className="text-2xl font-extrabold text-[var(--text-primary)] text-center">
+              {userData.firstName} {userData.lastName}
+            </h3>
+            <p className="text-sm font-medium text-[var(--text-secondary)] text-center">{userData.email}</p>
+            <span className="inline-block px-3.5 py-1 rounded-full bg-[var(--brand-light)] text-[var(--brand)] text-xs font-bold text-center mt-2 shadow-sm">
+              Active account
+            </span>
+          </div>
+        </div>
+      </Card>
+
+      {/* Grid of Profile Form Fields */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Basic Details Card */}
+        <Card className="space-y-4">
+          <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider pb-2 border-b border-[var(--border)]">
+            Personal details
+          </h4>
+
+          <Input
+            label="First name"
+            name="firstName"
+            value={userData.firstName || ''}
+            onChange={handleChange}
+            disabled={!editable}
+            leftIcon={FaUser}
+          />
+
+          <Input
+            label="Last name"
+            name="lastName"
+            value={userData.lastName || ''}
+            onChange={handleChange}
+            disabled={!editable}
+          />
+
+          {/* Email field with standalone inline save */}
+          <div className="relative">
+            <Input
+              label="Email address"
+              name="email"
+              value={userData.email || ''}
+              onChange={handleChange}
+              disabled={!emailUpdate}
+              leftIcon={FaEnvelope}
+              rightElement={
+                <button
+                  type="button"
+                  onClick={emailUpdate ? handleEmailSave : () => setEmailUpdate(true)}
+                  className="text-xs font-bold text-[var(--brand)] hover:underline px-1 py-0.5"
+                >
+                  {emailUpdate ? 'Save' : 'Update'}
+                </button>
+              }
+            />
+          </div>
+
+          {/* Phone field with standalone inline save */}
+          <div className="relative">
+            <Input
+              label="Phone number"
+              name="phone"
+              value={userData.phone || ''}
+              onChange={handleChange}
+              disabled={!phoneUpdate}
+              leftIcon={FaPhone}
+              rightElement={
+                <button
+                  type="button"
+                  onClick={phoneUpdate ? handlePhoneSave : () => setPhoneUpdate(true)}
+                  className="text-xs font-bold text-[var(--brand)] hover:underline px-1 py-0.5"
+                >
+                  {phoneUpdate ? 'Save' : 'Update'}
+                </button>
+              }
+            />
+          </div>
         </Card>
-      </Box>
-    </Box>
+
+        {/* Work & Financial Details Card */}
+        <Card className="space-y-4">
+          <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider pb-2 border-b border-[var(--border)]">
+            Work & Financial info
+          </h4>
+
+          <Input
+            label="Occupation"
+            name="occupation"
+            value={userData.occupation || ''}
+            onChange={handleChange}
+            disabled={!editable}
+            leftIcon={FaBriefcase}
+            placeholder="Software Engineer"
+          />
+
+          <Input
+            label="Monthly income (₹)"
+            name="income"
+            type="number"
+            inputMode="decimal"
+            value={userData.income || ''}
+            onChange={handleChange}
+            disabled={!editable}
+            leftIcon={FaMoneyBillWave}
+            placeholder="50000"
+          />
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--text-primary)] mb-1 block">
+                Gender
+              </label>
+              <select
+                name="gender"
+                value={userData.gender || 'male'}
+                onChange={handleChange}
+                disabled={!editable}
+                className="tactile-input w-full h-11 px-3 text-xs sm:text-sm font-medium"
+              >
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-[var(--text-primary)] mb-1 block">
+                Date of birth
+              </label>
+              <input
+                type="date"
+                name="dob"
+                value={userData.dob ? new Date(userData.dob).toISOString().split('T')[0] : ''}
+                onChange={handleChange}
+                disabled={!editable}
+                className="tactile-input w-full h-11 px-3 text-xs font-medium"
+              />
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Bottom Save Profile Button */}
+      {editable && (
+        <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border)] animate-fadeIn">
+          <Button variant="secondary" onClick={() => setEditable(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleProfileUpdate} isLoading={isSubmitting} icon={FaSave}>
+            Save profile
+          </Button>
+        </div>
+      )}
+    </div>
   );
-  //#endregion
 };
-//#endregion
 
-//#region Component export
 export default ProfilePage;
-//#endregion

@@ -1,64 +1,46 @@
-import React from "react";
-import Header from "../../Common/Header/Header.jsx";
-import SideNav from "../../Common/SideNavBar/SideNav.jsx";
-import { Box, useMediaQuery, useTheme } from "@mui/material";
+import React, { useState } from 'react';
+import Header from '../../Common/Header/Header.jsx';
+import SideNav from '../../Common/SideNavBar/SideNav.jsx';
+import AddExpenseModal from '../ExpenseListPage/AddExpenseModal.jsx';
+import { FaPlus } from 'react-icons/fa';
 
 const LandingPage = ({ children }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
 
   return (
-    <Box sx={{ overflow: "hidden", height: isMobile ? "103vh" : "100vh" }}>
-      <Header />
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          flex: 1,
-        }}
-      >
-        {/* Desktop SideNav */}
-        {!isMobile && (
-          <Box sx={{ flexShrink: 0 }}>
-            <SideNav />
-          </Box>
-        )}
+    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-[var(--bg-page)] text-[var(--text-primary)] font-sans">
+      {/* Fixed Header */}
+      <div className="h-16 shrink-0 z-40">
+        <Header />
+      </div>
 
-        {/* Main Content */}
-        <Box
-          sx={{
-            flex: 1,
-            p: {
-              xs: 0.5,
-              sm: 1,
-            },
-            overflowY: "auto",
-            height: "calc(100vh - 64px)",
-            paddingBottom: isMobile ? "56px" : 1,
-          }}
-        >
-          {children}
-        </Box>
+      {/* Main Layout Container - Fixed Height */}
+      <div className="flex flex-1 h-[calc(100vh-4rem)] overflow-hidden relative">
+        {/* Fixed Desktop Sidebar */}
+        <div className="hidden md:block h-full shrink-0 border-r border-[var(--border)] bg-[var(--surface-1)]">
+          <SideNav onOpenAddExpense={() => setIsAddExpenseOpen(true)} />
+        </div>
 
-        {/* Mobile Bottom Nav */}
-        {isMobile && (
-          <Box
-            sx={{
-              position: "fixed",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: "56px",
-              backgroundColor: theme.palette.background.paper,
-              borderTop: `1px solid ${theme.palette.divider}`,
-              zIndex: theme.zIndex.appBar,
-            }}
-          >
-            <SideNav isMobile />
-          </Box>
-        )}
-      </Box>
-    </Box>
+        {/* Center Content Scroll Area Only */}
+        <main className="flex-1 h-full overflow-y-auto p-4 md:p-6 pb-20 md:pb-6 w-full">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
+        </main>
+
+
+        {/* Mobile Bottom Navigation */}
+        <div className="md:hidden">
+          <SideNav isMobile onOpenAddExpense={() => setIsAddExpenseOpen(true)} />
+        </div>
+      </div>
+
+      {/* Global Add Expense Modal */}
+      <AddExpenseModal
+        isOpen={isAddExpenseOpen}
+        onClose={() => setIsAddExpenseOpen(false)}
+      />
+    </div>
   );
 };
 

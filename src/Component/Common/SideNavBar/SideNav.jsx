@@ -1,128 +1,111 @@
-import React from "react";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import ReceiptIcon from "@mui/icons-material/ReceiptLong";
-import GroupsIcon from "@mui/icons-material/Groups";
-import SettingsIcon from "@mui/icons-material/Settings";
-import HelpIcon from "@mui/icons-material/Help";
-import ContactMailSharpIcon from "@mui/icons-material/ContactMailSharp";
-import LogoutIcon from "@mui/icons-material/Logout";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { logout, checkAuth } from "../../../redux/authSlice";
-import { toast } from "react-toastify";
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { FaChartPie, FaReceipt, FaUsers, FaCog, FaPlus, FaUser } from 'react-icons/fa';
 
-const menuItems = [
-  { name: "Dashboard", icon: <DashboardIcon />, link: "/dashboard" },
-  { name: "My Expense", icon: <ReceiptIcon />, link: "/myexpense" },
-  { name: "Team Expense", icon: <GroupsIcon />, link: "/teamlist" },
-  { name: "Settings", icon: <SettingsIcon />, link: "/setting" },
-  { name: "Contact Us", icon: <ContactMailSharpIcon />, link: "/contact" },
+const NAV_ITEMS = [
+  { name: 'Dashboard', icon: FaChartPie, link: '/dashboard' },
+  { name: 'Group expenses', icon: FaUsers, link: '/teamlist' },
+  { name: 'Personal expenses', icon: FaReceipt, link: '/myexpense' },
+  { name: 'Settings', icon: FaCog, link: '/setting' },
 ];
 
-const SideNav = ({ isMobile = false }) => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { isAuthenticated } = useSelector((state) => state.auth);
+export const SideNav = ({ isMobile = false, onOpenAddExpense }) => {
   const location = useLocation();
-  const [isExpanded, setIsExpanded] = React.useState(false);
 
-  React.useEffect(() => {
-    dispatch(checkAuth());
-  }, [dispatch]);
-
-  const handleLogoutClick = async () => {
-    const response = await dispatch(logout()).unwrap();
-    navigate("/");
-    toast.success(response.message, { theme: "dark" });
-  };
-
-  // ========== 🟦 Mobile Bottom Navigation ========== //
+  // Mobile Bottom Tab Bar (Section 8)
   if (isMobile) {
     return (
-      <div className="h-full w-full bg-red-400 text-white flex justify-around items-center">
-        {menuItems.map((item) => (
-          <Link key={item.link} to={item.link}>
-            <div
-              className={`flex flex-col items-center justify-center ${
-                location.pathname === item.link
-                  ? "text-red-200"
-                  : "hover:text-red-300"
-              }`}
-            >
-              {item.icon}
-            </div>
-          </Link>
-        ))}
-      </div>
+      <nav className="fixed bottom-0 left-0 right-0 h-16 bg-[var(--surface-1)] border-t border-[var(--border)] z-40 flex items-center justify-around px-2 shadow-[var(--shadow-floating)]">
+        <Link
+          to="/dashboard"
+          className={`flex flex-col items-center justify-center w-12 h-12 rounded-lg transition-colors ${
+            location.pathname === '/dashboard' ? 'text-[var(--brand)] font-bold' : 'text-[var(--text-secondary)]'
+          }`}
+        >
+          <FaChartPie className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5">Home</span>
+        </Link>
+
+        <Link
+          to="/teamlist"
+          className={`flex flex-col items-center justify-center w-12 h-12 rounded-lg transition-colors ${
+            location.pathname === '/teamlist' ? 'text-[var(--brand)] font-bold' : 'text-[var(--text-secondary)]'
+          }`}
+        >
+          <FaUsers className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5">Groups</span>
+        </Link>
+
+        {/* Center Prominent Add Expense FAB */}
+        <button
+          onClick={onOpenAddExpense}
+          className="w-12 h-12 rounded-full bg-gradient-to-br from-[#269685] to-[#176054] text-white flex items-center justify-center shadow-[0_6px_14px_rgba(31,122,108,0.5)] border border-teal-700 -translate-y-3 active:scale-95 transition-transform"
+          aria-label="Add expense"
+        >
+          <FaPlus className="w-5 h-5" />
+        </button>
+
+        <Link
+          to="/myexpense"
+          className={`flex flex-col items-center justify-center w-12 h-12 rounded-lg transition-colors ${
+            location.pathname === '/myexpense' ? 'text-[var(--brand)] font-bold' : 'text-[var(--text-secondary)]'
+          }`}
+        >
+          <FaReceipt className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5">Expenses</span>
+        </Link>
+
+        <Link
+          to="/profile"
+          className={`flex flex-col items-center justify-center w-12 h-12 rounded-lg transition-colors ${
+            location.pathname === '/profile' ? 'text-[var(--brand)] font-bold' : 'text-[var(--text-secondary)]'
+          }`}
+        >
+          <FaUser className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5">Profile</span>
+        </Link>
+      </nav>
     );
   }
 
-  // ========== 🟥 Desktop Sidebar ========== //
+  // Desktop Neutral Sidebar
   return (
-    <div
-      className={`h-[calc(100vh-4rem)] bg-red-400 text-white flex flex-col transition-all duration-300 ease-in-out ${
-        isExpanded ? "w-64" : "w-16"
-      }`}
-      onMouseEnter={() => setIsExpanded(true)}
-      onMouseLeave={() => setIsExpanded(false)}
-    >
-      <div className="flex-grow py-4">
-        {menuItems.map((item) => (
-          <Link
-            to={item.link}
-            key={item.link}
-            className={`flex items-center px-3 py-3 mx-2 my-1 rounded cursor-pointer group ${
-              location.pathname === item.link
-                ? "bg-white bg-opacity-20"
-                : "hover:bg-white hover:bg-opacity-20"
-            }`}
-          >
-            <div
-              className={`flex justify-center items-center ${
-                location.pathname === item.link
-                  ? "text-red-400"
-                  : "text-white group-hover:text-red-400"
-              }`}
+    <aside className="w-64 h-[calc(100vh-4rem)] bg-[var(--surface-1)] border-r border-[var(--border)] flex flex-col p-3 gap-1 shrink-0">
+      <div className="flex-1 space-y-1 py-2">
+        {NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.link;
+          return (
+            <Link
+              key={item.link}
+              to={item.link}
+              className={`
+                flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150
+                ${
+                  isActive
+                    ? 'bg-[var(--brand-light)] text-[var(--brand)] border border-[var(--brand)]/20 shadow-sm'
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)]'
+                }
+              `}
             >
-              {item.icon}
-            </div>
-            <span
-              className={`ml-3 whitespace-nowrap transition-opacity duration-200 ${
-                location.pathname === item.link
-                  ? "text-red-400"
-                  : "text-white group-hover:text-red-400"
-              } ${
-                isExpanded ? "opacity-100" : "opacity-0 w-0 overflow-hidden"
-              }`}
-            >
-              {item.name}
-            </span>
-          </Link>
-        ))}
+              <Icon className={`w-4 h-4 ${isActive ? 'text-[var(--brand)]' : 'text-[var(--text-secondary)]'}`} />
+              <span>{item.name}</span>
+            </Link>
+          );
+        })}
       </div>
 
-      {/* Logout Section */}
-      {isAuthenticated && (
-        <div className="mt-auto mb-6">
-          <div className="border-t border-red-300 my-2 mx-2"></div>
-          <div
-            onClick={handleLogoutClick}
-            className="flex items-center px-3 py-3 mx-2 rounded cursor-pointer group hover:bg-white hover:bg-opacity-20"
-          >
-            <div className="text-white flex justify-center items-center group-hover:text-red-400">
-              <LogoutIcon />
-            </div>
-            <span
-              className={`ml-3 whitespace-nowrap text-white group-hover:text-red-400 ${
-                isExpanded ? "opacity-100" : "opacity-0 w-0 overflow-hidden"
-              } transition-opacity duration-200`}
-            >
-              Logout
-            </span>
-          </div>
-        </div>
-      )}
-    </div>
+      {/* Desktop Quick Add Expense Button */}
+      <div className="pt-3 border-t border-[var(--border)]">
+        <button
+          onClick={onOpenAddExpense}
+          className="tactile-btn tactile-btn-primary w-full flex items-center justify-center gap-2"
+        >
+          <FaPlus className="w-4 h-4" />
+          <span>Add expense</span>
+        </button>
+      </div>
+    </aside>
   );
 };
 

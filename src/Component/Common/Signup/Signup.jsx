@@ -1,439 +1,206 @@
-//#region imports
-import React, { useState } from "react";
-import {
-  Box,
-  Paper,
-  Typography,
-  IconButton,
-  Stack,
-  Divider,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  InputAdornment,
-  TextField,
-  InputLabel,
-  MenuItem,
-  FormControl,
-  Select,
-  OutlinedInput,
-} from "@mui/material";
-import {
-  Person,
-  Lock,
-  Phone,
-  Email,
-  HttpsOutlined,
-  Visibility,
-  VisibilityOff,
-} from "@mui/icons-material";
-import signupImage from "../../../assets/Login/signup.svg";
-import { FaGithub, FaApple } from "react-icons/fa";
-import { Google, Facebook, Twitter } from "@mui/icons-material";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs from "dayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { register } from '../../../redux/authSlice';
+import Button from '../Primitives/Button';
+import Input from '../Primitives/Input';
+import { FaUser, FaPhone, FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 
-import { useDispatch } from "react-redux";
-import { register } from "../../../redux/authSlice";
-import { useNavigate } from "react-router-dom";
-import FullScreenLoader from "../Loader/FullScreenLoader";
-
-//#endregion
-
-//#region Component make Styles
-//#endregion
-
-//#region Function Component
-const Signup = ({ isLogin, setIsLogin }) => {
-  //#region Component states
-  const dispatch = useDispatch();
+export const Signup = ({ setIsLogin }) => {
   const navigate = useNavigate();
-  const [agree, setAgree] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [confirmPassword, setConfirmPassword] = React.useState("");
+  const dispatch = useDispatch();
+
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = React.useState({
-    firstName: "",
-    lastName: "",
-    phone: "",
-    email: "",
-    gender: "",
-    dob: null,
-    password: "",
+  const [showPassword, setShowPassword] = useState(false);
+  const [agree, setAgree] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const [form, setForm] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    gender: 'male',
+    dob: '',
+    password: '',
   });
-  //#endregion
 
-  //#region Component hooks
-  React.useEffect(() => {
-    // Anything in here is fired on component mount.
-    return () => {
-      // Anything in here is fired on component unmount.
-    };
-  }, []);
-
-  React.useEffect(() => {
-    // Anything in here is fired on component update.
-  });
-  //#endregion
-
-  //#region Component use Styles
-  //#endregion
-
-  //#region Component validation methods
-  const handleSignupFormChange = (e) => {
-    const { name, value } = e.target;
-
-    setUser((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setErrorMsg('');
   };
-  //#endregion
 
-  //#region Component Api methods
-  //#endregion
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!agree) {
+      setErrorMsg('Please agree to Terms and Conditions');
+      return;
+    }
 
-  //#region Component feature methods
-  const handleRegisterClick = async () => {
+    if (!form.firstName || !form.lastName || !form.email || !form.phone || !form.password) {
+      setErrorMsg('Please fill in all required fields');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg('');
+
     try {
-      setLoading(true);
-      const formattedUser = {
-        ...user,
-      };
-      const response = await dispatch(register(formattedUser)).unwrap();
-      if (!response.error) {
-        navigate("/");
-      } else {
-        console.log("Error:", response?.error?.message);
-      }
-      setLoading;
-      false;
-      // eslint-disable-next-line no-unused-vars
-    } catch (error) {
+      const response = await dispatch(register(form)).unwrap();
       setLoading(false);
+      if (response && !response.error) {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setLoading(false);
+      setErrorMsg(err?.message || 'Could not register account. Please check inputs.');
     }
   };
-  //#endregion
 
-  //#region Component JSX.members
-  //#endregion
-
-  //#region Component renders
   return (
-    <Paper
-      elevation={8}
-      sx={{
-        display: "flex",
-        borderRadius: 3,
-        width: "100vw",
-        m: "auto",
-      }}
-    >
-      {loading && <FullScreenLoader />}
-      {/* Image in Sign Up Component  */}
-      <Box
-        sx={{
-          display: {
-            xs: "none",
-            md: "flex",
-          },
-          justifyContent: "center",
-          alignItems: "center",
-          flex: 1,
-          p: 6,
-        }}
-      >
-        <Box
-          component="img"
-          src={signupImage}
-          alt="Login"
-          sx={{ maxWidth: "100%", height: "auto" }}
-        ></Box>
-      </Box>
-      {/* Form section */}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          p: {
-            xs: 3,
-            sm: 6,
-          },
-          justifyContent: "center",
-        }}
-      >
-        <Typography
-          variant="h4"
-          component="h1"
-          fontWeight="bold"
-          gutterBottom
-          align="start"
-        >
-          Sign Up
-        </Typography>
+    <form onSubmit={handleSubmit} className="space-y-3 w-full max-h-[75vh] overflow-y-auto pr-1">
+      <div>
+        <h2 className="text-xl font-bold text-[var(--text-primary)]">Create your account</h2>
+        <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+          Start splitting expenses with friends in seconds.
+        </p>
+      </div>
 
-        <Stack spacing={2} sx={{ mb: 2 }}>
-          <TextField
-            fullWidth
-            placeholder="Enter First Name"
-            name="firstName"
-            value={user.firstName}
-            onChange={handleSignupFormChange}
-            variant="outlined"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Person sx={{ color: "#000" }} />
-                </InputAdornment>
-              ),
-            }}
-          />
+      {errorMsg && (
+        <div className="p-3 rounded-lg bg-[var(--negative-bg)] border border-[var(--negative)]/30 text-xs font-medium text-[var(--negative)]">
+          {errorMsg}
+        </div>
+      )}
 
-          <TextField
-            fullWidth
-            placeholder="Enter Last Name"
-            variant="outlined"
-            name="lastName"
-            value={user.lastName}
-            onChange={handleSignupFormChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Person sx={{ color: "#000" }} />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <TextField
-            fullWidth
-            placeholder="Enter Phone"
-            variant="outlined"
-            name="phone"
-            value={user.phone}
-            onChange={handleSignupFormChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Phone sx={{ color: "#000" }} />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <TextField
-            fullWidth
-            placeholder="Enter Email"
-            variant="outlined"
-            name="email"
-            value={user.email}
-            onChange={handleSignupFormChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Email sx={{ color: "#000" }} />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <Box sx={{ minWidth: 120 }}>
-            <FormControl sx={{ width: "100%" }}>
-              <Select
-                name="gender"
-                value={user.gender}
-                onChange={handleSignupFormChange}
-                displayEmpty
-                input={
-                  <OutlinedInput
-                    startAdornment={
-                      <InputAdornment position="start">
-                        <Person sx={{ color: "#000" }} />
-                      </InputAdornment>
-                    }
-                  />
-                }
-                inputProps={{ "aria-label": "Without label" }}
-                renderValue={(selected) => {
-                  if (!selected) {
-                    return "Gender";
-                  }
-                  return selected;
-                }}
-              >
-                <MenuItem disabled value="">
-                  <em>Gender</em>
-                </MenuItem>
-                <MenuItem value="male">Male</MenuItem>
-
-                <MenuItem value="female">Female</MenuItem>
-                <MenuItem value="other">Other</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-
-          <Box>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                sx={{ width: "100%" }}
-                enableAccessibleFieldDOMStructure={false}
-                name="dob"
-                value={user.dob ? dayjs(user.dob) : null}
-                onChange={(newValue) => {
-                  setUser((prev) => ({
-                    ...prev,
-                    dob: newValue ? newValue.toDate() : null,
-                  }));
-                }}
-                slots={{
-                  textField: (props) => (
-                    <TextField {...props} placeholder="Enter Date of Birth" />
-                  ),
-                }}
-              />
-            </LocalizationProvider>
-          </Box>
-
-          <TextField
-            fullWidth
-            placeholder="Enter Password"
-            variant="outlined"
-            id="outlined-basic"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            value={user.password}
-            onChange={handleSignupFormChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock sx={{ color: "#000" }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <TextField
-            fullWidth
-            placeholder="Enter confirm Password"
-            variant="outlined"
-            name="confirmPassword"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <HttpsOutlined sx={{ color: "#000" }} />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Stack>
-
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={agree}
-              onChange={(e) => setAgree(e.target.checked)}
-            />
-          }
-          label="I agree to the Terms and Conditions"
-          sx={{ mb: 2 }}
+      {/* Name Fields */}
+      <div className="grid grid-cols-2 gap-3">
+        <Input
+          label="First name"
+          name="firstName"
+          placeholder="First name"
+          value={form.firstName}
+          onChange={handleChange}
+          leftIcon={FaUser}
+          required
         />
+        <Input
+          label="Last name"
+          name="lastName"
+          placeholder="Last name"
+          value={form.lastName}
+          onChange={handleChange}
+          required
+        />
+      </div>
 
-        <Box>
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={handleRegisterClick}
-            disabled={!agree}
-            sx={{
-              mb: 2,
-              py: 1,
-              bgcolor: "#ff7171",
-              "&:hover": { bgcolor: "#ff5252" },
-            }}
+      {/* Phone & Email */}
+      <Input
+        label="Phone number"
+        name="phone"
+        type="tel"
+        placeholder="Phone number"
+        value={form.phone}
+        onChange={handleChange}
+        leftIcon={FaPhone}
+        required
+      />
+
+      <Input
+        label="Email address"
+        name="email"
+        type="email"
+        placeholder="name@example.com"
+        value={form.email}
+        onChange={handleChange}
+        leftIcon={FaEnvelope}
+        required
+      />
+
+      {/* Gender & DOB */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs font-semibold text-[var(--text-primary)] mb-1 block">
+            Gender
+          </label>
+          <select
+            name="gender"
+            value={form.gender}
+            onChange={handleChange}
+            className="tactile-input w-full h-11 px-3 text-sm"
           >
-            Register
-          </Button>
-        </Box>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
 
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <Divider sx={{ flex: 1 }} />
-          <Typography variant="body2" sx={{ px: 2 }}>
-            Or
-          </Typography>
-          <Divider sx={{ flex: 1 }} />
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mb: 2,
-          }}
+        <div>
+          <label className="text-xs font-semibold text-[var(--text-primary)] mb-1 block">
+            Date of birth
+          </label>
+          <input
+            type="date"
+            name="dob"
+            value={form.dob}
+            onChange={handleChange}
+            className="tactile-input w-full h-11 px-3 text-xs"
+          />
+        </div>
+      </div>
+
+      {/* Password */}
+      <Input
+        label="Password"
+        name="password"
+        type={showPassword ? 'text' : 'password'}
+        placeholder="Password"
+        value={form.password}
+        onChange={handleChange}
+        leftIcon={FaLock}
+        rightElement={
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus:outline-none"
+          >
+            {showPassword ? <FaEyeSlash className="w-4 h-4" /> : <FaEye className="w-4 h-4" />}
+          </button>
+        }
+        required
+      />
+
+      {/* Terms Checkbox */}
+      <div className="pt-1">
+        <label className="flex items-start gap-2 cursor-pointer text-xs text-[var(--text-secondary)]">
+          <input
+            type="checkbox"
+            checked={agree}
+            onChange={(e) => setAgree(e.target.checked)}
+            className="mt-0.5 rounded border-[var(--border)] text-[var(--brand)] focus:ring-[var(--brand)]"
+          />
+          <span>I agree to the Terms of Service & Privacy Policy</span>
+        </label>
+      </div>
+
+      {/* Submit Button */}
+      <div className="pt-2">
+        <Button type="submit" variant="primary" fullWidth isLoading={loading}>
+          Create account
+        </Button>
+      </div>
+
+      <p className="text-xs text-center text-[var(--text-secondary)] pt-1">
+        Already have an account?{' '}
+        <button
+          type="button"
+          onClick={() => setIsLogin(true)}
+          className="text-[var(--brand)] font-bold hover:underline"
         >
-          {/* <Typography variant="body1" sx={{}}>Login with</Typography> */}
-          <Stack
-            direction="row"
-            sx={{
-              justifyContent: "space-between",
-              alignItems: "baseline",
-              width: "70%",
-            }}
-          >
-            <IconButton sx={{ color: "#4285F4" }}>
-              <Google sx={{ fontSize: 32 }} />
-            </IconButton>
-            <IconButton sx={{ color: "#000" }}>
-              <FaApple size={35} />
-            </IconButton>
-            <IconButton sx={{ color: "#1877F2" }}>
-              <Facebook sx={{ fontSize: 32 }} />
-            </IconButton>
-            <IconButton sx={{ color: "#000" }}>
-              <FaGithub size={32} />
-            </IconButton>
-            <IconButton sx={{ color: "#1DA1F2" }}>
-              <Twitter sx={{ fontSize: 32 }} />
-            </IconButton>
-          </Stack>
-        </Box>
-        <Typography variant="body2" align="center" sx={{ mb: 2 }}>
-          Already have an account?
-          <Typography
-            component="span"
-            variant="body2"
-            color="primary"
-            sx={{
-              cursor: "pointer",
-              textDecoration: "underline",
-              color: "#3f51b5",
-              ml: 1,
-            }}
-            onClick={() => setIsLogin(!isLogin)}
-          >
-            Sign In
-          </Typography>
-        </Typography>
-      </Box>
-    </Paper>
+          Sign in
+        </button>
+      </p>
+    </form>
   );
-  //#endregion
 };
-//#endregion
 
-//#region Component export
 export default Signup;
-//#endregion

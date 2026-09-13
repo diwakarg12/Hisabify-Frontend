@@ -1,84 +1,62 @@
-//#region imports
+import React, { useState, useMemo, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { getExpenses, deleteExpense } from '../../../redux/expenseSlice';
+import { formatMoney, formatRelativeDate, CATEGORY_COLORS } from '../../../helpers/formatters';
+import Card from '../../Common/Primitives/Card';
+import Button from '../../Common/Primitives/Button';
+import Badge from '../../Common/Primitives/Badge';
+import Input from '../../Common/Primitives/Input';
+import EmptyState from '../../Common/Primitives/EmptyState';
+import AddExpenseModal from './AddExpenseModal';
+import SettleUpModal from './SettleUpModal';
 import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  ClickAwayListener,
-  IconButton,
-  Paper,
-  Typography,
-} from "@mui/material";
-import { AddCard, MoreVert } from "@mui/icons-material";
-import React, { useState, useMemo } from "react";
-import MultiChart from "../../Common/Chart_Graph/MultiChart";
-import DropDownButton from "../../Common/DropDownButton/DropDownButton";
-import AddTeam from "../../Common/AddTeam/AddTeam";
-import Invite from "../../Common/Invite/Invite";
+  FaSearch,
+  FaPlus,
+  FaReceipt,
+  FaTrashAlt,
+  FaTimes,
+  FaUser,
+  FaCalendarAlt,
+  FaImage,
+  FaShoppingBasket,
+  FaUtensils,
+  FaCar,
+  FaBolt,
+  FaHeartbeat,
+  FaGamepad,
+  FaShoppingBag,
+  FaGraduationCap,
+  FaHome,
+  FaHandHoldingUsd,
+} from 'react-icons/fa';
 
-import { useDispatch, useSelector } from "react-redux";
-import AddExpense from "../../Common/AddExpense/AddExpense";
-import {
-  addExpense,
-  deleteExpense,
-  editExpense,
-  getExpenses,
-} from "../../../redux/expenseSlice";
-import { getExpenseAnalytics } from "../../../helpers/expenseAnalytics";
-import { getCategoryChartData } from "../../../helpers/getCategoryChartData";
-import ExpenseList from "./ExpenseList";
-import { useParams } from "react-router-dom";
-import DeleteModal from "../../Common/DeleteModal/DeleteModal";
-// import { getGroupExpenseChartData } from "../../../helpers/getGroupExpenseChartData";
-import FullScreenLoader from "../../Common/Loader/FullScreenLoader";
-import { red } from "@mui/material/colors";
-
-//#endregion
-
-//#region Component make Styles
-//#endregion
-
-//#region Function Component
-const ExpenseContainer = () => {
-  //#region Component states
+export const ExpenseContainer = () => {
   const { groupId } = useParams();
   const dispatch = useDispatch();
-  const currentDate = new Date();
-  const user = useSelector((store) => store.auth.user);
-  const groups = useSelector((store) => store.group.groups);
-  const group = groups?.filter((g) => g?._id === groupId);
-  console.log("Groupssss", groups, group);
-  const { expenses, expenseLoading } = useSelector((store) => {
-    const expenseState = store.expense;
 
+  const { user } = useSelector((state) => state.auth);
+  const { groups = [] } = useSelector((state) => state.group);
+  const { expenses = [], groupExpenses = {}, expenseLoading } = useSelector((state) => {
     return {
-      expenses: groupId
-        ? expenseState.groupExpenses[groupId] || []
-        : expenseState.personalExpenses || [],
-      expenseLoading: expenseState.expenseLoading,
+      expenses: groupId ? state.expense.groupExpenses[groupId] || [] : state.expense.personalExpenses || [],
+      expenseLoading: state.expense.expenseLoading,
+      groupExpenses: state.expense.groupExpenses,
     };
   });
-  // const groupExpenses = useSelector((store) => store?.expense?.groupExpenses);
-  // const [toggleChart, settoggleChart] = useState(false);
-  const [openAddExpense, setOpenAddExpense] = useState(false);
-  const [openDeleteExpense, setOpenDeleteExpense] = useState(false);
-  const [editableData, setEditableData] = useState(null);
-  const [deletableId, setEditableId] = useState(null);
-  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
-  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
-  const [openMoreButtons, setOpenMoreButtons] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
-  const [openInvite, setOpenInvite] = useState(false);
-  // const groupExpenseChartData = getGroupExpenseChartData(
-  //   groupExpenses,
-  //   groups,
-  //   user?._id,
-  // );
 
-  //#endregion
+  const group = groups.find((g) => String(g._id) === String(groupId));
 
-  //#region Component hooks
-  React.useEffect(() => {
+  const [selectedExpense, setSelectedExpense] = useState(null);
+  const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [isSettleOpen, setIsSettleOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
     if (groupId) {
       dispatch(getExpenses(groupId));
     } else {
@@ -86,431 +64,437 @@ const ExpenseContainer = () => {
     }
   }, [groupId, dispatch]);
 
-  //#endregion
+  useEffect(() => {
+    if (expenses.length > 0 && !selectedExpense) {
+      setSelectedExpense(expenses[0]);
+    }
+  }, [expenses, selectedExpense]);
 
-  //#region Component use Styles
-  //#endregion
+  // Filtered Expenses (Month, Year, Search, Category)
+  const filteredExpenses = useMemo(() => {
+    return expenses.filter((item) => {
+      if (!item || item.isDeleted) return false;
+      const d = item.date ? new Date(item.date) : new Date();
 
-  //#region Component validation methods
-  //#endregion
+      const matchMonth = d.getMonth() === Number(selectedMonth);
+      const matchYear = d.getFullYear() === Number(selectedYear);
 
-  //#region Component Api methods
-  const handleAddExpense = async (data, isEdit, expenseId) => {
-    if (isEdit) {
-      await dispatch(editExpense({ data, expenseId })).unwrap();
-    } else {
-      if (groupId) {
-        await dispatch(addExpense({ data: data, groupId: groupId })).unwrap();
-      } else {
-        await dispatch(addExpense({ data: data })).unwrap();
-      }
+      const matchSearch =
+        !searchQuery.trim() ||
+        (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (item.category && item.category.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      const matchCategory =
+        selectedCategory === 'all' ||
+        (item.category && item.category.toLowerCase() === selectedCategory.toLowerCase());
+
+      return matchMonth && matchYear && matchSearch && matchCategory;
+    });
+  }, [expenses, selectedMonth, selectedYear, searchQuery, selectedCategory]);
+
+  // Group by sticky dates
+  const groupedByDate = useMemo(() => {
+    const map = {};
+    filteredExpenses.forEach((exp) => {
+      const relDate = formatRelativeDate(exp.date);
+      if (!map[relDate]) map[relDate] = [];
+      map[relDate].push(exp);
+    });
+    return map;
+  }, [filteredExpenses]);
+
+  const totalPeriodSpend = filteredExpenses.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+
+  const handleDelete = async (expense) => {
+    if (window.confirm(`Delete '${expense.description}'? This can't be undone.`)) {
+      await dispatch(
+        deleteExpense({
+          expenseId: expense._id,
+          isPersonal: expense.isPersonal,
+          groupId: groupId || null,
+        })
+      ).unwrap();
+      setSelectedExpense(null);
+      setIsMobileDetailOpen(false);
     }
   };
 
-  const handleOpenEditExpense = async (id) => {
-    const expense = expenses.find((expense) => expense._id === id);
-    setEditableData(expense);
-    setOpenAddExpense(true);
+  const handleExpenseClick = (item) => {
+    setSelectedExpense(item);
+    // On mobile screens, open detail popup modal
+    if (window.innerWidth < 1024) {
+      setIsMobileDetailOpen(true);
+    }
   };
 
-  const handleOpenDeleteExpense = (id) => {
-    setEditableId(id);
-    setOpenDeleteExpense(true);
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const getCategoryIcon = (catKey) => {
+    const c = (catKey || '').toLowerCase();
+    if (c === 'groceries') return FaShoppingBasket;
+    if (c === 'fooddining' || c === 'food & dining') return FaUtensils;
+    if (c === 'transport') return FaCar;
+    if (c === 'utilities') return FaBolt;
+    if (c === 'health') return FaHeartbeat;
+    if (c === 'entertainment') return FaGamepad;
+    if (c === 'shopping') return FaShoppingBag;
+    if (c === 'education') return FaGraduationCap;
+    if (c === 'rent') return FaHome;
+    if (c.includes('lent') || c.includes('lend') || c.includes('friend')) return FaHandHoldingUsd;
+    return FaReceipt;
   };
 
-  const handleDeleteExpense = async () => {
-    setOpenDeleteExpense(false);
-    await dispatch(
-      deleteExpense({
-        expenseId: deletableId,
-        isPersonal: expenses.find((expense) => expense?._id === deletableId)
-          ?.isPersonal,
-        groupId: groupId || null,
-      }),
-    ).unwrap();
-  };
-
-  const handleInviteButtonClick = (e, groupId) => {
-    e.stopPropagation();
-    setOpenInvite(true);
-
-    const group = groups.find((group) => String(group._id) === String(groupId));
-    setEditableData(group);
-  };
-
-  const handleOpenEditGroup = (e, id) => {
-    const group = groups.find((group) => group?._id === id);
-    setEditableData(group);
-    e.stopPropagation();
-    setOpenEdit(true);
-  };
-  //#endregion
-
-  //#region Component feature methods
-  // 🔥 Filtered expenses
-  const filteredExpenses = useMemo(() => {
-    return expenses.filter((expense) => {
-      const date = new Date(expense.date);
-
+  // Reusable Expense Detail Content Component
+  const DetailContent = ({ expense, onCloseMobile }) => {
+    if (!expense) {
       return (
-        date.getMonth() === selectedMonth && date.getFullYear() === selectedYear
+        <Card className="text-center py-10 text-[var(--text-secondary)]">
+          Select an expense from the list to view details.
+        </Card>
       );
-    });
-  }, [expenses, selectedMonth, selectedYear]);
+    }
 
-  console.log("filteredExpenses :", filteredExpenses);
+    return (
+      <Card className="space-y-4 shadow-[var(--shadow-3d)]">
+        {/* Header with Title & Action Buttons */}
+        <div className="flex items-start justify-between pb-3 border-b border-[var(--border)]">
+          <div>
+            <Badge variant="category" categoryName={expense.category}>
+              {expense.category}
+            </Badge>
+            <h3 className="text-lg font-bold text-[var(--text-primary)] mt-1.5 leading-snug">
+              {expense.description}
+            </h3>
+          </div>
 
-  const {
-    totalAmount,
-    topCategory,
-    biggestExpense,
-    latestExpense,
-    yourContribution,
-    yourShare,
-  } = getExpenseAnalytics(filteredExpenses, { userId: user?._id });
-  const categoryChartData = getCategoryChartData(filteredExpenses);
-
-  //#endregion
-
-  //#region Component JSX.members
-  //#endregion
-
-  //#region Component renders
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: {
-          xs: 1,
-          md: 1.5,
-        },
-        // height: "88vh",
-        "&::-webkit-scrollbar": {
-          display: "none",
-        },
-        overflowY: "hidden",
-      }}
-    >
-      {expenseLoading && <FullScreenLoader />}
-
-      <Button
-        variant="outlined"
-        size="medium"
-        startIcon={<AddCard />}
-        onClick={() => setOpenAddExpense(true)}
-        sx={{
-          position: "absolute",
-          bottom: { xs: 60, md: 15 },
-          right: { xs: 0, md: 20 },
-          textTransform: "none",
-          backgroundColor: "#ff6467",
-          color: "white",
-          boxShadow: 3,
-          fontWeight: 600,
-          marginRight: 2,
-          width: 150,
-        }}
-      >
-        Add Expense
-      </Button>
-
-      <Box
-        flex={1}
-        overflow="auto"
-        sx={{
-          "&::-webkit-scrollbar": {
-            display: "none",
-          },
-        }}
-      >
-        <Card
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: {
-              xs: "center",
-              md: "start",
-              lg: "center",
-            },
-
-            boxShadow: 5,
-          }}
-        >
-          {/* Buttons Pane */}
-
-          <Box
-            sx={{
-              display: "flex",
-              width: {
-                xs: "100%",
-                md: "95%",
-              },
-              justifyContent: "space-between",
-              flexDirection: {
-                xs: "column",
-                md: "row",
-              },
-              gap: {
-                xs: 2,
-                md: 2,
-              },
-
-              padding: 1,
-            }}
-          >
-            <CardContent>
-              <Box sx={{ display: "flex", gap: 1, position: "relative" }}>
-                <DropDownButton
-                  selectedMonth={selectedMonth}
-                  selectedYear={selectedYear}
-                  onMonthChange={setSelectedMonth}
-                  onYearChange={setSelectedYear}
-                />
-                {groupId && (
-                  <IconButton
-                    sx={{
-                      borderRadius: 1,
-                      color: "#fff",
-                      backgroundColor: "#ff6469",
-                      "&:hover": {
-                        backgroundColor: red[400],
-                      },
-                    }}
-                    onClick={() => setOpenMoreButtons(true)}
-                  >
-                    <MoreVert />
-                  </IconButton>
-                )}
-                {openMoreButtons && (
-                  <ClickAwayListener
-                    onClickAway={() => setOpenMoreButtons(false)}
-                  >
-                    <Paper
-                      elevation={6}
-                      sx={{
-                        position: "absolute",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 1,
-                        top: 40,
-                        left: { xs: 245, sm: 280 },
-                        p: 1,
-                        borderRadius: 1,
-                        // width: 70,
-                        zIndex: 1001,
-                        transition: "all 0.3s ease",
-                      }}
-                    >
-                      {/* <Grid container spacing={1}> */}
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={(e) => {
-                          handleOpenEditGroup(e, groupId);
-                        }}
-                        sx={{
-                          color: red[400],
-                          border: "1px solid #e57373",
-                          "&:hover": {
-                            color: "#fff",
-                            backgroundColor: "#e57373",
-                          },
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={(e) => {
-                          handleInviteButtonClick(e, groupId);
-                        }}
-                        sx={{
-                          color: red[400],
-                          border: "1px solid #e57373",
-                          "&:hover": {
-                            color: "#fff",
-                            backgroundColor: "#e57373",
-                          },
-                        }}
-                      >
-                        Invite
-                      </Button>
-                      {/* </Grid> */}
-                    </Paper>
-                  </ClickAwayListener>
-                )}
-              </Box>
-              {!groupId && (
-                <Typography variant="h6">
-                  <strong>Monthly Income :</strong> {user?.income}
-                </Typography>
-              )}
-              <Typography variant="h6">
-                <strong>Total Spend :</strong> {totalAmount ? totalAmount : 0}
-              </Typography>
-
-              <Typography variant="h6">
-                <strong>Top Category :</strong>{" "}
-                <Box
-                  component="span"
-                  sx={{ color: "error.main", fontWeight: 600 }}
-                >
-                  {topCategory?.category ? topCategory?.category : "NA"}
-                </Box>
-              </Typography>
-
-              <Typography variant="h6">
-                <strong>Top Spend :</strong>{" "}
-                {biggestExpense ? biggestExpense : 0}
-              </Typography>
-
-              {groupId && (
-                <>
-                  <Typography variant="h6">
-                    <strong>Your Contribution :</strong>{" "}
-                    {yourContribution ? yourContribution : 0}
-                  </Typography>
-
-                  <Typography variant="h6">
-                    <strong>Your Expense Share :</strong>{" "}
-                    {yourShare ? yourShare : 0}
-                  </Typography>
-                </>
-              )}
-
-              <Typography variant="h6">
-                <strong>Last Transaction:</strong>{" "}
-                {latestExpense
-                  ? new Date(latestExpense).toLocaleDateString("en-GB", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })
-                  : new Date().toLocaleDateString("en-GB", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}
-              </Typography>
-            </CardContent>
-
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-              }}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => handleDelete(expense)}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--negative)] hover:bg-[var(--negative-bg)] transition-colors"
+              title="Delete expense"
+              aria-label="Delete expense"
             >
-              {/* {groupId ? (
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    settoggleChart(!toggleChart);
-                  }}
-                  sx={{
-                    textTransform: "none",
-                    backgroundColor: "#ff6467",
-                    color: "white",
-                    width: "50%",
-                    boxShadow: 3,
-                    fontWeight: 600,
-                    margin: {
-                      xs: "0 0 1% 10%",
-                      md: "0 0 2% 8%",
-                    },
-                  }}
-                >
-                  {"Add Dummy"}
-                </Button>
-              ) : (
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    settoggleChart(!toggleChart);
-                  }}
-                  sx={{
-                    textTransform: "none",
-                    backgroundColor: "#ff6467",
-                    color: "white",
-                    width: "50%",
-                    boxShadow: 3,
-                    fontWeight: 600,
-                    margin: {
-                      xs: "0 0 1% 10%",
-                      md: "0 0 2% 8%",
-                    },
-                  }}
-                >
-                  {"Toggle Chart"}
-                </Button>
-              )} */}
-              <MultiChart
-                // data={toggleChart ? groupExpenseChartData : categoryChartData}
-                data={categoryChartData}
-                outerRadius={100}
-              />
-            </Box>
-          </Box>
-        </Card>
-        <Card
-          sx={{
-            padding: 2,
-            boxShadow: 13,
-            borderRadius: 1.5,
-            marginTop: 1,
-          }}
+              <FaTrashAlt className="w-4 h-4" />
+            </button>
+
+            {onCloseMobile && (
+              <button
+                onClick={onCloseMobile}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--surface-2)] transition-colors"
+                aria-label="Close detail modal"
+              >
+                <FaTimes className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Amount Banner */}
+        <div className="p-4 bg-[var(--surface-2)] rounded-xl border border-[var(--border)] text-center">
+          <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase">
+            Total amount
+          </span>
+          <div className="text-3xl font-extrabold text-[var(--brand)] tabular-nums mt-1">
+            {formatMoney(expense.amount, 'INR', 'en-IN', true)}
+          </div>
+        </div>
+
+        {/* Details Breakdown */}
+        <div className="space-y-3 text-sm">
+          <div className="flex justify-between py-1 border-b border-[var(--border)]/50">
+            <span className="text-[var(--text-secondary)]">Paid by</span>
+            <span className="font-semibold text-[var(--text-primary)]">
+              {expense.createdBy?._id === user?._id
+                ? 'You'
+                : `${expense.createdBy?.firstName || ''} ${expense.createdBy?.lastName || ''}`}
+            </span>
+          </div>
+
+          <div className="flex justify-between py-1 border-b border-[var(--border)]/50">
+            <span className="text-[var(--text-secondary)]">Date</span>
+            <span className="font-semibold text-[var(--text-primary)]">
+              {formatRelativeDate(expense.date)}
+            </span>
+          </div>
+
+          {/* Split Info Breakdown per person */}
+          {expense.splitInfo?.splits?.length > 0 && (
+            <div className="pt-2">
+              <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider block mb-2">
+                Split breakdown
+              </span>
+              <div className="bg-[var(--surface-2)] p-3 rounded-lg space-y-1.5 text-xs">
+                {expense.splitInfo.splits.map((s, idx) => (
+                  <div key={idx} className="flex justify-between items-center">
+                    <span className="text-[var(--text-primary)] font-medium">
+                      {s.user
+                        ? s.user._id === user?._id
+                          ? 'You'
+                          : `${s.user.firstName} ${s.user.lastName || ''}`
+                        : s.name || 'Guest'}
+                    </span>
+                    <span className="font-semibold text-[var(--text-primary)] tabular-nums">
+                      {formatMoney(s.splittedAmount, 'INR', 'en-IN', true)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Receipt Photo Preview if present */}
+          {expense.receiptImage && (
+            <div className="pt-2">
+              <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider block mb-2">
+                Receipt
+              </span>
+              <div className="rounded-xl overflow-hidden border border-[var(--border)] max-h-48">
+                <img
+                  src={expense.receiptImage}
+                  alt="Receipt"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </Card>
+    );
+  };
+
+  return (
+    <div className="space-y-5">
+      {/* Header Title */}
+      <div>
+        <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">
+          {groupId ? group?.groupName || 'Group expenses' : 'Personal expenses'}
+        </h2>
+        <p className="text-xs md:text-sm text-[var(--text-secondary)]">
+          {groupId ? 'Shared expenses & split details' : 'Track and manage your personal spending'}
+        </p>
+      </div>
+
+      {/* Row 1: Month Selection, Year Selection, and Settle Up Button taking full width */}
+      <div className={`grid ${groupId ? 'grid-cols-3' : 'grid-cols-2'} gap-2 w-full`}>
+        <select
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(Number(e.target.value))}
+          className="tactile-input w-full h-11 px-3 text-xs sm:text-sm font-medium"
         >
-          <ExpenseList
-            title={groupId ? "group" : "Personal"}
-            expenses={filteredExpenses}
-            handleOpenEditExpense={handleOpenEditExpense}
-            handleOpenDeleteExpense={handleOpenDeleteExpense}
-          />
-        </Card>
-      </Box>
+          {months.map((m, idx) => (
+            <option key={idx} value={idx}>
+              {m}
+            </option>
+          ))}
+        </select>
 
-      {openAddExpense && (
-        <AddExpense
-          openAddExpense={openAddExpense}
-          setOpenAddExpense={setOpenAddExpense}
-          data={groupId ? group[0].members : [user]}
-          flag={groupId ? "group" : "personal"}
-          handleAddExpense={handleAddExpense}
-          editableData={editableData}
+        <select
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(Number(e.target.value))}
+          className="tactile-input w-full h-11 px-3 text-xs sm:text-sm font-medium"
+        >
+          {[2024, 2025, 2026, 2027].map((y) => (
+            <option key={y} value={y}>
+              {y}
+            </option>
+          ))}
+        </select>
+
+        {groupId && (
+          <Button size="sm" variant="secondary" fullWidth onClick={() => setIsSettleOpen(true)} className="h-11">
+            Settle up
+          </Button>
+        )}
+      </div>
+
+      {/* Row 2: Search Description or Category */}
+      <Input
+        placeholder="Search description or category..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        leftIcon={FaSearch}
+        className="w-full"
+      />
+
+      {/* Row 3: Category Filter (60% width) + Add Expense Button (40% width) - Exact Matching Height */}
+      <div className="flex items-center gap-2 w-full">
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="tactile-input h-11 px-3 text-xs sm:text-sm font-medium w-[60%] shrink-0 border border-[var(--border)] rounded-lg box-border"
+        >
+          <option value="all">All categories</option>
+          <option value="groceries">Groceries</option>
+          <option value="foodDining">Food & Dining</option>
+          <option value="transport">Transport</option>
+          <option value="utilities">Utilities</option>
+          <option value="health">Health</option>
+          <option value="entertainment">Entertainment</option>
+          <option value="shopping">Shopping</option>
+          <option value="education">Education</option>
+          <option value="rent">Rent</option>
+          <option value="other">Other</option>
+        </select>
+
+        <Button
+          size="sm"
+          variant="primary"
+          onClick={() => setIsAddExpenseOpen(true)}
+          icon={FaPlus}
+          className="w-[40%] shrink-0 whitespace-nowrap h-11 text-xs sm:text-sm font-semibold"
+        >
+          Add expense
+        </Button>
+      </div>
+
+      {/* Total Period Spend Card with baseline text alignment & explicit duration indicator */}
+      <Card className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-8 border-l-4 border-l-[var(--brand)] shadow-[var(--shadow-3d)]">
+        <div>
+          <span className="text-xs sm:text-sm font-extrabold text-[var(--text-secondary)] uppercase tracking-wider block">
+            Total spent in this period
+          </span>
+          <span className="text-xs font-semibold text-[var(--brand)] mt-0.5 block">
+            Duration: {months[selectedMonth]} {selectedYear}
+          </span>
+        </div>
+        <span className="text-2xl md:text-3xl font-black text-[var(--text-primary)] tabular-nums">
+          {formatMoney(totalPeriodSpend)}
+        </span>
+      </Card>
+
+      {/* Main Content Split Pane */}
+      {filteredExpenses.length === 0 ? (
+        <EmptyState
+          title="No expenses found"
+          description="No transactions logged for the selected period or filters."
+          actionLabel="Add expense"
+          onAction={() => setIsAddExpenseOpen(true)}
+          icon={FaReceipt}
         />
-      )}
-      {openDeleteExpense && (
-        <DeleteModal
-          openDelete={openDeleteExpense}
-          setOpenDelete={setOpenDeleteExpense}
-          deletableId={deletableId}
-          handleDelete={handleDeleteExpense}
-          title={"Expense"}
-        />
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Pane: Sticky Date Grouped List */}
+          <div className="col-span-1 lg:col-span-7 space-y-4 max-h-[calc(100vh-14rem)] overflow-y-auto pr-1">
+            {Object.entries(groupedByDate).map(([dateLabel, items]) => (
+              <div key={dateLabel} className="space-y-2.5">
+                {/* Sticky Date Header */}
+                <div className="sticky top-0 z-10 bg-[var(--bg-page)]/95 backdrop-blur-sm py-1.5 font-semibold text-xs text-[var(--text-secondary)] border-b border-[var(--border)] uppercase tracking-wider flex items-center gap-2">
+                  <FaCalendarAlt className="w-3.5 h-3.5 text-[var(--brand)]" />
+                  <span>{dateLabel}</span>
+                </div>
+
+                <div className="space-y-2.5">
+                  {items.map((item) => {
+                    const isSelected = selectedExpense?._id === item._id;
+                    const payerName =
+                      item.createdBy?._id === user?._id
+                        ? 'You'
+                        : `${item.createdBy?.firstName || 'Member'}`;
+
+                    const CatIcon = getCategoryIcon(item.category);
+                    const catColor = CATEGORY_COLORS[item.category] || CATEGORY_COLORS.other;
+
+                    return (
+                      <div
+                        key={item._id}
+                        onClick={() => handleExpenseClick(item)}
+                        className={`
+                          tactile-card p-3.5 sm:p-4 flex items-center justify-between gap-3.5 cursor-pointer transition-all duration-150 rounded-xl
+                          ${isSelected ? 'border-2 border-[var(--brand)] shadow-md bg-[var(--surface-1)] ring-2 ring-[var(--brand)]/15' : 'hover:border-[var(--border-strong)] hover:translate-y-[-1px]'}
+                        `}
+                      >
+                        {/* Redesigned Category Icon Badge Tile */}
+                        <div
+                          className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-inner"
+                          style={{
+                            backgroundColor: `${catColor}20`,
+                            color: catColor,
+                            border: `1px solid ${catColor}40`,
+                          }}
+                        >
+                          <CatIcon className="w-5 h-5" />
+                        </div>
+
+                        {/* Title & Metadata Details */}
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <h4 className="font-bold text-sm text-[var(--text-primary)] truncate leading-tight">
+                            {item.description}
+                          </h4>
+                          <div className="flex items-center gap-2 flex-wrap text-xs text-[var(--text-secondary)]">
+                            <span className="capitalize font-semibold text-[var(--text-primary)] bg-[var(--surface-2)] px-2 py-0.5 rounded-md border border-[var(--border)] text-[11px]">
+                              {item.category || 'Other'}
+                            </span>
+                            <span>•</span>
+                            <span>Paid by <strong className="text-[var(--text-primary)] font-semibold">{payerName}</strong></span>
+                            {item.receiptImage && (
+                              <span className="text-emerald-500 flex items-center gap-1 text-[11px] font-medium ml-1">
+                                <FaImage className="w-3 h-3" /> Receipt
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Right-aligned Tabular Monetary Figure */}
+                        <div className="text-right shrink-0">
+                          <span className="font-extrabold text-base sm:text-lg text-[var(--text-primary)] tabular-nums block">
+                            {formatMoney(item.amount)}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Right Pane Desktop Only: Sticky Detail Card (5 Cols) */}
+          <div className="hidden lg:block lg:col-span-5 sticky top-2 self-start">
+            <DetailContent expense={selectedExpense} />
+          </div>
+        </div>
       )}
 
-      {openEdit && (
-        <AddTeam
-          onClose={() => setOpenEdit(false)}
-          user={user}
-          editableData={editableData}
-        />
+      {/* Mobile Detail Popup Modal (Appears when tapping an expense on phone screens) */}
+      {isMobileDetailOpen && selectedExpense && (
+        <div
+          className="lg:hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setIsMobileDetailOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl shadow-[var(--shadow-floating)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <DetailContent
+              expense={selectedExpense}
+              onCloseMobile={() => setIsMobileDetailOpen(false)}
+            />
+          </div>
+        </div>
       )}
 
-      {openInvite && (
-        <Invite
-          openInvite={openInvite}
-          handleClose={() => setOpenInvite(false)}
-          group={editableData}
+      {/* Global Add Expense Modal */}
+      <AddExpenseModal
+        isOpen={isAddExpenseOpen}
+        onClose={() => setIsAddExpenseOpen(false)}
+        defaultGroupId={groupId}
+      />
+
+      {/* Settle Up Modal */}
+      {isSettleOpen && (
+        <SettleUpModal
+          isOpen={isSettleOpen}
+          onClose={() => setIsSettleOpen(false)}
+          groupId={groupId}
         />
       )}
-    </Box>
+    </div>
   );
-  //#endregion
 };
-//#endregion
 
-//#region Component export
 export default ExpenseContainer;
-//#endregion

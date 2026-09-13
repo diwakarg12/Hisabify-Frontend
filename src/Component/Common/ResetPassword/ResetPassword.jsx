@@ -1,313 +1,325 @@
-//#region imports
-import React from "react";
-import {
-  Box,
-  Container,
-  TextField,
-  Typography,
-  InputAdornment,
-  Button,
-  Stack,
-  IconButton,
-  Paper,
-} from "@mui/material";
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { sendResetOtp, verifyResetOtp } from '../../../redux/authSlice';
+import Logo from '../Primitives/Logo';
+import Button from '../Primitives/Button';
+import Input from '../Primitives/Input';
+import { FaEnvelope, FaLock, FaKey, FaEye, FaEyeSlash, FaArrowLeft, FaCheckCircle, FaShieldAlt } from 'react-icons/fa';
 
-import {
-  Email,
-  Lock,
-  Visibility,
-  VisibilityOff,
-  Password,
-} from "@mui/icons-material";
-import bgImage from "../../../assets/Login/background.svg";
-import loginImage from "../../../assets/Login/login.svg";
-import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import { sendResetOtp, verifyResetOtp } from "../../../redux/authSlice";
-import { toast } from "react-toastify";
-import FullScreenLoader from "../Loader/FullScreenLoader";
-//#endregion
-
-const ResetPassword = () => {
-  //#region hooks
+export const ResetPassword = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const { authLoading } = useSelector((state) => state.auth);
-  //#endregion
 
-  //#region states
-  const [otpSent, setOtpSent] = React.useState(false);
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [form, setForm] = React.useState({
-    email: "",
-    otp: "",
-    newPassword: "",
-    confirmPassword: "",
+  const [otpSent, setOtpSent] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [form, setForm] = useState({
+    email: '',
+    otp: '',
+    newPassword: '',
+    confirmPassword: '',
   });
-  //#endregion
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
-  //#region handlers
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleChange = (e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setErrorMsg('');
+    setSuccessMsg('');
   };
 
-  const handleSendOtp = async () => {
+  const handleSendOtp = async (e) => {
+    if (e) e.preventDefault();
+    if (!form.email.trim()) {
+      setErrorMsg('Please enter your registered email address');
+      return;
+    }
+
     try {
-      if (!form.email) {
-        return toast.error("Email is required");
-      }
-
-      await dispatch(sendResetOtp(form.email)).unwrap();
-
-      toast.success("OTP sent successfully");
-
+      setErrorMsg('');
+      await dispatch(sendResetOtp(form.email.trim())).unwrap();
       setOtpSent(true);
-    } catch (error) {
-      toast.error(error);
+      setSuccessMsg('A 6-digit OTP code has been sent to your email.');
+    } catch (err) {
+      setErrorMsg(typeof err === 'string' ? err : err?.message || 'Could not send OTP. Please check your email.');
     }
   };
 
-  const handleResetPassword = async () => {
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (!form.otp.trim() || !form.newPassword || !form.confirmPassword) {
+      setErrorMsg('Please fill in all fields');
+      return;
+    }
+
+    if (form.newPassword !== form.confirmPassword) {
+      setErrorMsg('Passwords do not match');
+      return;
+    }
+
+    if (form.newPassword.length < 6) {
+      setErrorMsg('Password should be at least 6 characters long');
+      return;
+    }
+
     try {
-      if (!form.otp || !form.newPassword || !form.confirmPassword) {
-        return toast.error("All fields are required");
-      }
-
-      if (form.newPassword !== form.confirmPassword) {
-        return toast.error("Passwords do not match");
-      }
-
+      setErrorMsg('');
       await dispatch(
         verifyResetOtp({
-          email: form.email,
-          otp: form.otp,
+          email: form.email.trim(),
+          otp: form.otp.trim(),
           newPassword: form.newPassword,
-        }),
+        })
       ).unwrap();
 
-      toast.success("Password updated successfully");
-    } catch (error) {
-      toast.error(error);
+      setSuccessMsg('Password updated successfully! Redirecting to sign in...');
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
+    } catch (err) {
+      setErrorMsg(typeof err === 'string' ? err : err?.message || 'Invalid or expired OTP code.');
     }
   };
-  //#endregion
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#FF6767",
-        backgroundImage: `url(${bgImage})`,
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center",
-        backgroundSize: "cover",
-        overflow: "hidden",
-      }}
-    >
-      <Container
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "90vh",
-          overflow: "auto",
-          "&::-webkit-scrollbar": {
-            display: "none",
-          },
-        }}
-      >
-        <Paper
-          elevation={3}
-          sx={{
-            display: "flex",
-            flexDirection: {
-              xs: "column",
-              md: "row",
-            },
-            borderRadius: 3,
-            height: "90vh",
-            width: "100vw",
-          }}
-        >
-          {authLoading && <FullScreenLoader />}
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] flex flex-col justify-center items-center p-4 md:p-8 relative overflow-hidden font-sans">
+      {/* Background Subtle Depth Blobs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-[var(--brand)]/10 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-[var(--brand)]/5 blur-3xl pointer-events-none" />
 
-          {/* LEFT */}
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              flex: 1,
-              p: 6,
-              justifyContent: "center",
-            }}
-          >
-            <Typography
-              variant="h4"
-              component="h1"
-              fontWeight="bold"
-              gutterBottom
-              align="start"
+      {/* Top Logo */}
+      <div className="mb-6 z-10">
+        <Link to="/">
+          <Logo size="lg" />
+        </Link>
+      </div>
+
+      {/* Main Card Container */}
+      <div className="w-full max-w-4xl bg-[var(--surface-1)] border border-[var(--border)] rounded-2xl shadow-[var(--shadow-floating)] overflow-hidden z-10 flex flex-col md:flex-row">
+        {/* Left Side: Form Controls */}
+        <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center">
+          <div className="mb-6">
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--brand)] transition-colors mb-3"
             >
-              Reset Password
-            </Typography>
+              <FaArrowLeft className="w-3 h-3" /> Back to sign in
+            </Link>
+            <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">
+              {otpSent ? 'Reset your password' : 'Forgot password?'}
+            </h2>
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
+              {otpSent
+                ? 'Enter the OTP sent to your email along with your new password.'
+                : 'No worries! Enter your registered email and we will send you an OTP.'}
+            </p>
+          </div>
 
-            <Stack spacing={2} sx={{ mb: 2 }}>
-              {/* EMAIL */}
-              <TextField
-                fullWidth
-                placeholder="Enter Email"
-                variant="outlined"
+          {/* Feedback Banners */}
+          {errorMsg && (
+            <div className="mb-4 p-3 rounded-xl bg-[var(--negative-bg)] border border-[var(--negative)]/30 text-xs font-medium text-[var(--negative)]">
+              {errorMsg}
+            </div>
+          )}
+
+          {successMsg && (
+            <div className="mb-4 p-3 rounded-xl bg-[var(--positive-bg)] border border-[var(--positive)]/30 text-xs font-medium text-[var(--positive)] flex items-center gap-2">
+              <FaCheckCircle className="w-4 h-4 shrink-0 text-[var(--positive)]" />
+              <span>{successMsg}</span>
+            </div>
+          )}
+
+          {!otpSent ? (
+            /* STEP 1: Request OTP Form */
+            <form onSubmit={handleSendOtp} className="space-y-4">
+              <Input
+                label="Registered email address"
                 name="email"
+                type="email"
+                placeholder="name@example.com"
                 value={form.email}
-                onChange={handleFormChange}
-                disabled={otpSent}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Email sx={{ color: "#000" }} />
-                    </InputAdornment>
-                  ),
-                }}
+                onChange={handleChange}
+                leftIcon={FaEnvelope}
+                required
+                autoFocus
               />
 
-              {/* SEND OTP BUTTON */}
-              {!otpSent && (
-                <Button
-                  variant="contained"
-                  onClick={handleSendOtp}
-                  sx={{
-                    py: 1,
-                    bgcolor: "#ff7171",
-                    "&:hover": {
-                      bgcolor: "#ff5252",
-                    },
-                  }}
-                >
-                  Send OTP
-                </Button>
-              )}
-
-              {/* OTP SECTION */}
-              {otpSent && (
-                <>
-                  <TextField
-                    fullWidth
-                    placeholder="Enter OTP"
-                    variant="outlined"
-                    name="otp"
-                    value={form.otp}
-                    onChange={handleFormChange}
-                  />
-
-                  <TextField
-                    fullWidth
-                    type={showPassword ? "text" : "password"}
-                    placeholder="New Password"
-                    variant="outlined"
-                    name="newPassword"
-                    value={form.newPassword}
-                    onChange={handleFormChange}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Password sx={{ color: "#000" }} />
-                        </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => setShowPassword((prev) => !prev)}
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-
-                  <TextField
-                    fullWidth
-                    type="text"
-                    placeholder="Confirm New Password"
-                    variant="outlined"
-                    name="confirmPassword"
-                    value={form.confirmPassword}
-                    onChange={handleFormChange}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Lock sx={{ color: "#000" }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-
-                  <Button
-                    variant="contained"
-                    onClick={handleResetPassword}
-                    sx={{
-                      py: 1,
-                      bgcolor: "#ff7171",
-                      "&:hover": {
-                        bgcolor: "#ff5252",
-                      },
-                    }}
-                  >
-                    Update Password
-                  </Button>
-                </>
-              )}
-            </Stack>
-            <Typography>
-              Remember Password ?{" "}
-              <Link
-                to={"/login"}
-                style={{
-                  color: "#3f51b5",
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                  fontWeight: 500,
-                }}
+              <Button
+                type="submit"
+                variant="primary"
+                fullWidth
+                isLoading={authLoading}
               >
-                Login Here
-              </Link>
-            </Typography>
-          </Box>
+                Send OTP
+              </Button>
+            </form>
+          ) : (
+            /* STEP 2: Enter OTP & New Password Form */
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              {/* Email (Readonly) */}
+              <Input
+                label="Email"
+                name="email"
+                type="email"
+                value={form.email}
+                disabled
+                leftIcon={FaEnvelope}
+              />
 
-          {/* RIGHT IMAGE */}
-          <Box
-            sx={{
-              display: {
-                xs: "none",
-                md: "flex",
-              },
-              justifyContent: "center",
-              alignItems: "center",
-              flex: 1,
-              p: 6,
-            }}
-          >
-            <Box
-              component="img"
-              src={loginImage}
-              alt="Reset Password"
-              sx={{
-                maxWidth: "100%",
-                height: "auto",
-              }}
-            />
-          </Box>
-        </Paper>
-      </Container>
-    </Box>
+              {/* OTP Field */}
+              <Input
+                label="OTP Verification code"
+                name="otp"
+                type="text"
+                placeholder="Enter 6-digit OTP"
+                value={form.otp}
+                onChange={handleChange}
+                leftIcon={FaKey}
+                required
+                autoFocus
+              />
+
+              {/* New Password */}
+              <Input
+                label="New password"
+                name="newPassword"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="At least 6 characters"
+                value={form.newPassword}
+                onChange={handleChange}
+                leftIcon={FaLock}
+                rightElement={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus:outline-none"
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPassword ? <FaEyeSlash className="w-4 h-4" /> : <FaEye className="w-4 h-4" />}
+                  </button>
+                }
+                required
+              />
+
+              {/* Confirm Password */}
+              <Input
+                label="Confirm new password"
+                name="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder="Re-enter new password"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                leftIcon={FaLock}
+                rightElement={
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus:outline-none"
+                    aria-label="Toggle password visibility"
+                  >
+                    {showConfirmPassword ? <FaEyeSlash className="w-4 h-4" /> : <FaEye className="w-4 h-4" />}
+                  </button>
+                }
+                required
+              />
+
+              <div className="pt-2 space-y-2">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  fullWidth
+                  isLoading={authLoading}
+                >
+                  Update password
+                </Button>
+
+                <div className="flex justify-between items-center text-xs pt-2">
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    className="text-[var(--brand)] font-semibold hover:underline"
+                    disabled={authLoading}
+                  >
+                    Resend OTP
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOtpSent(false);
+                      setErrorMsg('');
+                      setSuccessMsg('');
+                    }}
+                    className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  >
+                    Change email
+                  </button>
+                </div>
+              </div>
+            </form>
+          )}
+        </div>
+
+        {/* Right Side: Security & Progress Marketing Panel */}
+        <div className="hidden md:flex w-1/2 bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-1)] border-l border-[var(--border)] p-10 flex-col justify-between items-center text-center">
+          <div className="space-y-3 mt-4">
+            <div className="w-14 h-14 rounded-2xl bg-[var(--brand-light)] text-[var(--brand)] flex items-center justify-center mx-auto shadow-sm">
+              <FaShieldAlt className="w-7 h-7" />
+            </div>
+            <h3 className="text-2xl font-extrabold text-[var(--text-primary)]">
+              Secure Account Recovery
+            </h3>
+            <p className="text-xs text-[var(--text-secondary)] max-w-xs leading-relaxed">
+              We protect your account with single-use OTP codes sent directly to your registered inbox.
+            </p>
+          </div>
+
+          {/* 2-Step Progress Indicator Card */}
+          <div className="w-full p-5 rounded-2xl bg-[var(--surface-1)] border border-[var(--border)] shadow-[var(--shadow-3d)] my-6 space-y-4 text-left">
+            <div className="flex items-center gap-3">
+              <div
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                  otpSent
+                    ? 'bg-[var(--positive-bg)] text-[var(--positive)] border border-[var(--positive)]/30'
+                    : 'bg-[var(--brand)] text-white'
+                }`}
+              >
+                {otpSent ? '✓' : '1'}
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold text-[var(--text-primary)]">Step 1: Request OTP</h4>
+                <p className="text-[11px] text-[var(--text-secondary)]">Enter email address to receive code</p>
+              </div>
+            </div>
+
+            <div className="h-px bg-[var(--border)] my-1 ml-3" />
+
+            <div className="flex items-center gap-3">
+              <div
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                  otpSent
+                    ? 'bg-[var(--brand)] text-white'
+                    : 'bg-[var(--surface-2)] text-[var(--text-muted)] border border-[var(--border)]'
+                }`}
+              >
+                2
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold text-[var(--text-primary)]">Step 2: Set New Password</h4>
+                <p className="text-[11px] text-[var(--text-secondary)]">Verify OTP code & confirm new password</p>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-xs text-[var(--text-muted)]">
+            HisabiFY Account Security System
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
 
