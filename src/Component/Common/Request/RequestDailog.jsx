@@ -1,125 +1,65 @@
-//#region imports
-import React from "react";
-import { Dialog, DialogTitle, List, ListItem, Typography } from "@mui/material";
-import RequestTile from "./RequestTile";
-import CloseIcon from "@mui/icons-material/Close";
-import { useDispatch, useSelector } from "react-redux";
-import { reviewReceivedRequest } from "../../../redux/requestSlice";
-import { getAllGroup } from "../../../redux/groupSlice";
-//#endregion
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { reviewReceivedRequest } from '../../../redux/requestSlice';
+import { getAllGroup } from '../../../redux/groupSlice';
+import RequestTile from './RequestTile';
+import { FaTimes, FaUserPlus } from 'react-icons/fa';
 
-//#region Component make Styles
-//#endregion
-
-//#region Function Component
-const RequestDailog = ({ open, onClose }) => {
-  //#region Component states
-  const requests = useSelector((store) => store.request.receivedRequest);
-  const dateObj = new Date(requests[0]?.updatedAt);
+export const RequestDailog = ({ open, onClose }) => {
   const dispatch = useDispatch();
+  const requests = useSelector((store) => store.request.receivedRequest || []);
 
-  //#endregion
+  if (!open) return null;
 
-  // #region Component hooks
-
-  //#endregion
-
-  //#region Component use Styles
-  //#endregion
-
-  //#region Component validation methods
-  //#endregion
-
-  //#region Component Api methods
   const handleRequestAction = async (status, requestId, groupId) => {
-    await dispatch(
-      reviewReceivedRequest({ status, requestId, groupId })
-    ).unwrap();
+    await dispatch(reviewReceivedRequest({ status, requestId, groupId })).unwrap();
     await dispatch(getAllGroup()).unwrap();
   };
-  //#endregion
 
-  //#region Component feature methods
-  //#endregion
-
-  //#region Component JSX.members
-  //#endregion
-
-  //#region Component renders
   return (
-    <Dialog
-      maxWidth={"xs"}
-      open={open}
-      onClose={onClose}
-      sx={{
-        "& .MuiDialog-container": {
-          justifyContent: {
-            xs: "center",
-            sm: "flex-end",
-          },
-          alignItems: "flex-start",
-        },
-        "& .MuiPaper-root": {
-          margin: {
-            xs: "60px 0px",
-            sm: "60px 150px",
-          },
-          maxHeight: "70vh",
-          backgroundColor: "rgba(255, 100, 103, 1)",
-          scrollbarWidth: "none",
-          scrollbarColor: "#fff rgba(0, 0, 0, 0.1)",
-        },
-      }}
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center sm:justify-end p-4 pt-16 sm:pr-12 bg-black/50 backdrop-blur-xs animate-fadeIn"
+      role="dialog"
+      aria-modal="true"
     >
-      <DialogTitle
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          fontWeight: 700,
-          fontSize: "1.8rem",
-          alignItems: "center",
-          color: "#fff",
-        }}
-      >
-        Requests
-        <CloseIcon onClick={onClose} sx={{ cursor: "pointer" }} />
-      </DialogTitle>
-      <List sx={{ pt: 0 }}>
-        {requests && requests.length !== 0 ? (
-          requests.map((request, index) => (
-            <ListItem
-              disablePadding
-              key={`${request._id}-${index}`}
-              sx={{ padding: "0.1rem 0.5rem" }}
-            >
+      <div className="w-full max-w-sm bg-[var(--surface-1)] border border-[var(--border)] rounded-2xl shadow-[var(--shadow-floating)] overflow-hidden">
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between bg-[var(--surface-2)]">
+          <div className="flex items-center gap-2">
+            <FaUserPlus className="w-4 h-4 text-[var(--brand)]" />
+            <h3 className="text-sm font-bold text-[var(--text-primary)]">Group invitations</h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--surface-1)] transition-colors"
+            aria-label="Close invitations"
+          >
+            <FaTimes className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* List Body */}
+        <div className="p-4 max-h-80 overflow-y-auto space-y-3">
+          {requests && requests.length > 0 ? (
+            requests.map((request, index) => (
               <RequestTile
+                key={request._id || index}
                 request={request}
-                dateObj={dateObj}
                 handleRequestAction={handleRequestAction}
               />
-            </ListItem>
-          ))
-        ) : (
-          <ListItem disablePadding sx={{ padding: "0.1rem 0.5rem" }}>
-            <Typography
-              sx={{
-                padding: "1rem 3rem",
-                fontSize: 22,
-                backgroundColor: "#fff",
-                borderRadius: 1,
-              }}
-            >
-              No Request Found
-            </Typography>
-          </ListItem>
-        )}
-      </List>
-    </Dialog>
+            ))
+          ) : (
+            <div className="text-center py-8 space-y-2">
+              <div className="w-10 h-10 rounded-full bg-[var(--surface-2)] text-[var(--text-muted)] flex items-center justify-center mx-auto">
+                <FaUserPlus className="w-5 h-5" />
+              </div>
+              <p className="text-xs font-medium text-[var(--text-secondary)]">No pending invitations</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
-  //#endregion
 };
-//#endregion
 
-//#region Component export
 export default RequestDailog;
-//#endregion

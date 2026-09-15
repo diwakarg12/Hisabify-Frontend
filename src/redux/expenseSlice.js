@@ -13,26 +13,23 @@ const initialState = {
 
 export const getExpenses = createAsyncThunk(
     'expense/getExpenses',
-    async (groupId, { rejectWithValue }) => {
-        // const state = getState();
-
-        // // 🛑 GUARD: prevent duplicate fetch
-        // if (!groupId && state.expense.personalExpenses.length > 0) {
-        //     return rejectWithValue('Personal expenses already fetched');
-        // }
-
-        // if (groupId && state.expense.groupExpenses[groupId]) {
-        //     return rejectWithValue('Group expenses already fetched');
-        // }
+    async (payload, { rejectWithValue }) => {
+        const groupId = typeof payload === 'object' ? payload?.groupId : payload;
+        const isBackground = typeof payload === 'object' ? payload?.isBackground : false;
 
         try {
             const url = groupId
                 ? `${API_BASE_URL}/expense/getAllExpense/${groupId}`
                 : `${API_BASE_URL}/expense/getAllExpense`;
 
+            const headers = { "Content-type": "application/json" };
+            if (isBackground) {
+                headers["x-background-sync"] = "true";
+            }
+
             const response = await fetch(url, {
                 method: 'GET',
-                headers: { "Content-type": "application/json" },
+                headers,
                 credentials: "include"
             });
 

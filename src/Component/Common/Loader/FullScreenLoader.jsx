@@ -1,69 +1,40 @@
-//#region imports
 import React from "react";
-import Loader from "react-js-loader";
+import CircularProgress from "@mui/material/CircularProgress";
 
-//#endregion
+const FullScreenLoader = ({ show = true, message = "Please wait..." }) => {
+  if (!show) return null;
 
-//#region Component make Styles
-//#endregion
-
-//#region Function Component
-const FullScreenLoader = () => {
-  //#region Component states
-
-  //#endregion
-
-  //#region Component hooks
-  React.useEffect(() => {
-    // Anything in here is fired on component mount.
-
-    return () => {
-      // Anything in here is fired on component unmount.
-    };
-  }, []);
-  //#endregion
-
-  //#region Component use Styles
-  //#endregion
-
-  //#region Component validation methods
-  //#endregion
-
-  //#region Component Api methods
-
-  //#endregion
-
-  //#region Component feature methods
-
-  //#endregion
-
-  //#region Component JSX.members
-
-  //#endregion
-
-  //#region Component renders
   return (
     <div
+      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-black/40 animate-fadeIn"
       style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        background: "transparent",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 9999,
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
       }}
     >
-      <Loader type="ping-cube" bgColor="#f44336" size={100} />
+      <div className="bg-[var(--surface,#FFFFFF)] dark:bg-[#0F172A] border border-[var(--border,#E2E8F0)] dark:border-[#1E293B] p-6 sm:p-8 rounded-2xl shadow-2xl flex flex-col items-center space-y-4 max-w-xs mx-4 text-center transform scale-100 transition-all">
+        {/* Brand Teal Spinner */}
+        <div className="relative flex items-center justify-center p-2">
+          <CircularProgress
+            size={48}
+            thickness={4}
+            sx={{
+              color: "#1F7A6C",
+            }}
+          />
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-base font-extrabold text-[var(--text-primary,#0F172A)] dark:text-white">
+            {message}
+          </p>
+          <p className="text-xs font-medium text-[var(--text-secondary,#64748B)] dark:text-slate-400">
+            Processing your action...
+          </p>
+        </div>
+      </div>
     </div>
   );
-  //#endregion
 };
-//#endregion
 
-//#region Component export
 export default FullScreenLoader;
-//#endregion

@@ -1,0 +1,16 @@
+{
+  "short_name": "HisabiFY",
+  "name": "HisabiFY - Expense Tracker & Bill Splitter",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0F1115",
+  "theme_color": "#1F7A6C",
+  "display": "standalone",
+  "orientation": "portrait"
+}
