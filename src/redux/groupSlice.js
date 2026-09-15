@@ -12,14 +12,14 @@ const initialState = {
 
 export const searchUser = createAsyncThunk(
     'searchuser',
-    async (email, { rejectWithValue }) => {
-        if (!email) {
-            return rejectWithValue("Email is required");
+    async (query, { rejectWithValue }) => {
+        if (!query || !query.trim()) {
+            return rejectWithValue("Search query is required");
         }
 
         try {
             const response = await fetch(
-                `${API_BASE_URL}/group/searchUser/${email}`,
+                `${API_BASE_URL}/group/searchUser/${encodeURIComponent(query.trim())}`,
                 {
                     method: 'GET',
                     headers: { "Content-type": "application/json" },
@@ -30,7 +30,7 @@ export const searchUser = createAsyncThunk(
             const result = await response.json();
 
             if (!response.ok) {
-                toast.error(result?.message);
+                toast.error(result?.message || "Search failed");
                 return rejectWithValue(result?.message);
             }
 

@@ -1,83 +1,86 @@
-//#region imports
-import { Avatar, Box, Typography } from "@mui/material";
+import { Avatar, Box, Typography, Chip, Button } from "@mui/material";
 import React from "react";
-//#endregion
+import StarIcon from "@mui/icons-material/Star";
+import PersonIcon from "@mui/icons-material/Person";
 
-//#region Component make Styles
-//#endregion
-
-//#region Function Component
 const Members = ({ user, index, memberTab, owner }) => {
-  //#region Component states
-  //#endregion
+  const isOwner = user._id === owner;
 
-  //#region Component hooks
-  //#endregion
-
-  //#region Component use Styles
-  //#endregion
-
-  //#region Component validation methods
-  //#endregion
-
-  //#region Component Api methods
-  //#endregion
-
-  //#region Component feature methods
-  const handleCancelClick = () => {
-    console.log("cancel clicked");
-  };
-  //#endregion
-
-  //#region Component JSX.members
-
-  //#endregion
-
-  //#region Component renders
   return (
     <Box
-      key={index}
-      display="flex"
-      alignItems="center"
-      justifyContent="space-between"
-      mt={2}
+      key={user._id || index}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        py: 1.5,
+        px: 2,
+        my: 1,
+        borderRadius: "12px",
+        bgcolor: "#FFFFFF",
+        border: "1px solid #F1F5F9",
+        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
+        transition: "all 0.2s ease-in-out",
+        "&:hover": {
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06)",
+          borderColor: "#E2E8F0",
+        },
+      }}
     >
-      <Box display="flex" alignItems="center">
-        <Avatar src={user.profile} sx={{ mr: { xs: 1, sm: 2 } }} />
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Avatar
+          src={user.profile}
+          sx={{
+            width: 40,
+            height: 40,
+            bgcolor: isOwner ? "#1F7A6C" : "#3B82F6",
+            fontSize: 16,
+            fontWeight: 700,
+          }}
+        >
+          {user.firstName ? user.firstName.charAt(0) : "U"}
+        </Avatar>
         <Box>
-          <Typography>{user.firstName + " " + user.lastName}</Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="subtitle2" fontWeight={600} color="text.primary" sx={{ lineHeight: 1.2 }}>
+            {user.firstName} {user.lastName || ""}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
             {user.email}
           </Typography>
         </Box>
       </Box>
 
       {memberTab ? (
-        <Typography
+        <Chip
+          icon={isOwner ? <StarIcon style={{ fontSize: 14 }} /> : <PersonIcon style={{ fontSize: 14 }} />}
+          label={isOwner ? "Owner" : "Member"}
+          size="small"
           sx={{
-            border: "1.5px solid #E57373",
-            padding: { xs: "0.5rem 1.25rem", sm: "0.5rem 2rem" },
+            borderRadius: "8px",
+            fontWeight: 600,
+            fontSize: "0.75rem",
+            px: 1,
+            ...(isOwner
+              ? { bgcolor: "#E6F4F1", color: "#1F7A6C", border: "1px solid #B2E2D9" }
+              : { bgcolor: "#F1F5F9", color: "#475569", border: "1px solid #E2E8F0" }),
           }}
-        >
-          {user._id === owner ? "Owner" : "Member"}
-        </Typography>
+        />
       ) : (
-        <Typography
+        <Chip
+          label="Pending Request"
+          size="small"
           sx={{
-            border: "1.5px solid #E57373",
-            padding: { xs: "0.5rem 1.25rem", sm: "0.5rem 2rem" },
+            borderRadius: "8px",
+            fontWeight: 600,
+            fontSize: "0.75rem",
+            bgcolor: "#FEF3C7",
+            color: "#D97706",
+            border: "1px solid #FDE68A",
           }}
-          onClick={handleCancelClick}
-        >
-          Cancel
-        </Typography>
+        />
       )}
     </Box>
   );
-  //#endregion
 };
-//#endregion
 
-//#region Component export
 export default Members;
-//#endregion

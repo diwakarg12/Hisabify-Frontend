@@ -1,62 +1,59 @@
 //#region imports
-import React, { useRef, useState } from "react";
-import { Box, Typography, TextField, Button, Stack } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Avatar,
+  IconButton,
+  Chip,
+  Paper,
+  CircularProgress,
+  InputAdornment,
+  Fade,
+  Modal,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import CheckIcon from "@mui/icons-material/Check";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
+import EditIcon from "@mui/icons-material/Edit";
 import { useDispatch } from "react-redux";
 import {
   createGroup,
   searchUser,
   updateGroup,
+  resetSearchUsers,
 } from "../../../redux/groupSlice";
-import { resetSearchUsers } from "../../../redux/groupSlice";
 import { sendInvitation } from "../../../redux/requestSlice";
 import FullScreenLoader from "../Loader/FullScreenLoader";
-// import { sendInvitation } from "../../../redux/requestSlice";
+import { toast } from "react-toastify";
 //#endregion
 
-//#region Component make Styles
-//#endregion
-
-//#region Function Component
 const AddTeam = ({ onClose, user, editableData = null }) => {
   //#region Component states
-  const contentRef = useRef(null);
   const dispatch = useDispatch();
   const [invitedMembers, setInvitedMembers] = useState([]);
-  const [email, setEmail] = useState("");
-  const [loading, setloading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [teamDetails, setTeamDetails] = useState({
     groupName: "",
     description: "",
-    members: [],
   });
   //#endregion
 
   //#region Component hooks
-  React.useEffect(() => {
-    // Anything in here is fired on component mount.
-    const handleClickOutside = (event) => {
-      if (contentRef.current && !contentRef.current.contains(event.target)) {
-        onClose();
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      // Anything in here is fired on component unmount.
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [onClose]);
-
-  React.useEffect(() => {
-    // Anything in here is fired on component update.
-
+  useEffect(() => {
     if (editableData) {
-      setTeamDetails(() => ({
-        groupName: editableData.groupName,
-        description: editableData.description,
-        members: editableData.members,
-      }));
+      setTeamDetails({
+        groupName: editableData.groupName || "",
+        description: editableData.description || "",
+      });
       if (editableData?.members) {
         setInvitedMembers([...editableData.members]);
       }
@@ -64,49 +61,61 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
   }, [editableData]);
   //#endregion
 
-  //#region Component use Styles
-  //#endregion
-
-  //#region Component validation methods
-  //#endregion
-
-  //#region Component Api methods
+  //#region Search logic
   const handleUserSearch = async () => {
+    if (!searchQuery.trim()) {
+      toast.info("Please enter a name or email to search");
+      return;
+    }
     try {
-      setloading;
-      true;
-      const res = await dispatch(searchUser(email)).unwrap();
-      setInvitedMembers([...invitedMembers, res.user]);
-      setEmail("");
-      setloading(false);
-      // eslint-disable-next-line no-unused-vars
+      setIsSearching(true);
+      setHasSearched(true);
+      const res = await dispatch(searchUser(searchQuery.trim())).unwrap();
+      const users = res?.users || (res?.user ? [res.user] : []);
+      setSearchResults(users);
     } catch (error) {
-      setloading(false);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
     }
   };
 
-  //#endregion
-
-  //#region Component feature methods
-  const handleTeamInputChange = (e) => {
-    try {
-      const { name, value } = e.target;
-      setTeamDetails((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    } catch (error) {
-      console.log("Error: ", error?.message);
+  const handleKeyDownSearch = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleUserSearch();
     }
+  };
+
+  const handleAddUser = (userToAdd) => {
+    if (!userToAdd || !userToAdd._id) return;
+    if (invitedMembers.some((m) => m._id === userToAdd._id)) {
+      toast.info("User already added to list");
+      return;
+    }
+    setInvitedMembers((prev) => [...prev, userToAdd]);
   };
 
   const handleRemoveInvitedUser = (userId) => {
     setInvitedMembers((prev) => prev.filter((member) => member._id !== userId));
   };
 
+  const handleTeamInputChange = (e) => {
+    const { name, value } = e.target;
+    setTeamDetails((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   const handleCreateGroup = async () => {
+    if (!teamDetails.groupName.trim()) {
+      toast.error("Group name is required");
+      return;
+    }
+
     try {
-      setloading(true);
+      setLoading(true);
       const finalGroupDetails = {
         ...teamDetails,
         createdBy: user._id,
@@ -114,259 +123,502 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
       };
       const group = await dispatch(createGroup(finalGroupDetails)).unwrap();
 
-      invitedMembers.map(
-        async (member) =>
-          await dispatch(
-            sendInvitation({ groupId: group.group._id, invitedTo: member._id }),
-          ).unwrap(),
-      );
+      // Dispatch invitations to all selected users
+      if (invitedMembers.length > 0 && group?.group?._id) {
+        await Promise.all(
+          invitedMembers.map((member) =>
+            dispatch(
+              sendInvitation({
+                groupId: group.group._id,
+                invitedTo: member._id,
+              })
+            ).unwrap()
+          )
+        );
+      }
 
       setInvitedMembers([]);
-      setTeamDetails({
-        groupName: "",
-        description: "",
-        members: [],
-      });
-
+      setTeamDetails({ groupName: "", description: "" });
       dispatch(resetSearchUsers());
-      setloading(false);
+      setLoading(false);
       onClose();
-      // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      setloading(false);
+      setLoading(false);
     }
   };
 
-  const handleEditGroup = () => {
+  const handleEditGroup = async () => {
+    if (!teamDetails.groupName.trim()) {
+      toast.error("Group name is required");
+      return;
+    }
+
     try {
-      setloading(true);
+      setLoading(true);
       const data = {
-        groupName: teamDetails?.groupName,
-        description: teamDetails?.description,
+        groupName: teamDetails.groupName,
+        description: teamDetails.description,
       };
-      dispatch(updateGroup({ data, groupId: editableData?._id }));
-      setInvitedMembers([]);
-      setTeamDetails({
-        groupName: "",
-        description: "",
-        members: [],
-      });
-      setloading(false);
+      await dispatch(updateGroup({ data, groupId: editableData?._id })).unwrap();
+      setLoading(false);
       onClose();
-      // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      setloading(false);
+      setLoading(false);
     }
   };
   //#endregion
 
-  //#region Component JSX.members
-
-  //#endregion
-
-  //#region Component renders
   return (
-    <Box
+    <Modal
+      open={true}
+      onClose={onClose}
+      closeAfterTransition
       sx={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        bgcolor: "rgba(0,0,0,0.5)",
-        zIndex: 1001,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backdropFilter: "blur(6px)",
+        backgroundColor: "rgba(15, 23, 42, 0.65)",
       }}
     >
-      <Box
-        ref={contentRef}
-        sx={{
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: {
-            xs: "90vw",
-            sm: "80vw",
-            md: "70vw",
-            lg: "60vw",
-            xl: "50vw",
-          },
-          minHeight: "auto",
-          maxHeight: "85vh",
-          overflow: "auto",
-          backgroundColor: "#F9F9F9",
-          display: "flex",
-          flexDirection: "column",
-          zIndex: 1000,
-          p: 3,
-          boxShadow: 3,
-          borderRadius: 2,
-        }}
-      >
-        {loading && <FullScreenLoader />}
-        <Box
+      <Fade in={true}>
+        <Paper
+          elevation={24}
           sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Typography variant="h6" gutterBottom>
-            <Box
-              component="span"
-              sx={{
-                textDecoration: "underline",
-                textDecorationColor: "#F24E1E",
-              }}
-            >
-              {editableData?.groupName ? "Edit" : "Create"}
-            </Box>
-            <Box component="span">
-              {" "}
-              {editableData?.groupName ? "Team" : "New Team"}
-            </Box>
-          </Typography>
-          <Button
-            onClick={() => onClose()}
-            sx={{ textDecoration: "underline" }}
-          >
-            Go BACk
-          </Button>
-        </Box>
-
-        <Box
-          sx={{
-            backgroundColor: "#FFF",
-            width: "100%",
-            height: "90vh",
-            p: "1rem",
+            width: { xs: "92vw", sm: "80vw", md: "560px" },
+            maxHeight: "88vh",
+            borderRadius: "20px",
+            overflow: "hidden",
             display: "flex",
             flexDirection: "column",
-            overflow: "auto",
-            boxShadow: 3,
-            borderRadius: 1,
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            border: "1px solid rgba(226, 232, 240, 0.8)",
           }}
         >
-          <TextField
-            label="Group Name"
-            name="groupName"
-            value={teamDetails.groupName}
-            onChange={handleTeamInputChange}
-            placeholder="Enter Group Name"
-            variant="outlined"
-            type="text"
-            fullWidth
-            size="small"
-          />
-          <TextField
-            label="CreatedBy"
-            name="createdBy"
-            value={user.email}
-            variant="outlined"
-            size="small"
-            type="email"
-            fullWidth
-            sx={{ marginTop: 2 }}
-          />
-          {invitedMembers.length > 0 && (
-            <Stack
-              sx={{
-                margin: "0.9rem 0 0.4rem 0",
-                color: "#FFF",
-                display: "flex",
-                flexWrap: "wrap",
-              }}
-              direction="row"
-            >
-              {invitedMembers.map((member, index) => (
-                <Box
-                  key={index}
-                  component="span"
-                  sx={{
-                    display: "flex",
-                    gap: 0.6,
-                    backgroundColor: "#F24E1E",
-                    borderRadius: 0.5,
-                    padding: "1px 2px",
-                    margin: "2px",
-                  }}
-                >
-                  {member && member.firstName}
-                  <Box
-                    component="span"
-                    sx={{
-                      cursor: editableData ? "not-allowed" : "pointer",
-                      pointerEvents: editableData ? "none" : "auto",
-                      padding: "1px 2px",
-                      fontWeight: "bold",
-                      color: "#000",
-                    }}
-                    disabled={editableData ? true : false}
-                    onClick={() => handleRemoveInvitedUser(member._id)}
-                  >
-                    X
-                  </Box>
-                </Box>
-              ))}
-            </Stack>
-          )}
+          {loading && <FullScreenLoader />}
+
+          {/* Modal Header */}
           <Box
             sx={{
+              background: "linear-gradient(135deg, #269685 0%, #176054 100%)",
+              color: "#FFFFFF",
+              px: 3,
+              py: 2.5,
               display: "flex",
-              gap: 2,
-              marginTop: invitedMembers.length > 0 ? 0 : 1.5,
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
           >
-            <TextField
-              label="Add members"
-              size="small"
-              variant="outlined"
-              type="email"
-              fullWidth
-              value={email}
-              disabled={editableData ? true : false}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Button
-              variant="contained"
-              sx={{ backgroundColor: "#F24E1E" }}
-              disabled={editableData ? true : false}
-              onClick={handleUserSearch}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Avatar
+                sx={{
+                  bgcolor: "rgba(255, 255, 255, 0.2)",
+                  color: "#FFFFFF",
+                  width: 42,
+                  height: 42,
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  boxShadow: "0 4px 12px rgba(23, 96, 84, 0.4)",
+                }}
+              >
+                {editableData ? <EditIcon /> : <GroupAddIcon />}
+              </Avatar>
+              <Box>
+                <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1.2 }}>
+                  {editableData ? "Edit Group" : "Create New Group"}
+                </Typography>
+                <Typography variant="caption" sx={{ opacity: 0.75 }}>
+                  {editableData
+                    ? "Update group name and description"
+                    : "Set up your team and invite members"}
+                </Typography>
+              </Box>
+            </Box>
+
+            <IconButton
+              onClick={onClose}
+              sx={{
+                color: "rgba(255, 255, 255, 0.7)",
+                "&:hover": { color: "#FFFFFF", bgcolor: "rgba(255, 255, 255, 0.1)" },
+              }}
             >
-              Search
-            </Button>
+              <CloseIcon />
+            </IconButton>
           </Box>
 
-          <TextField
-            label="Group Description"
-            name="description"
-            value={teamDetails.description}
-            onChange={handleTeamInputChange}
-            multiline
-            size="small"
-            rows={3}
-            fullWidth
-            variant="outlined"
-            placeholder="Enter Group Description here..."
-            sx={{ marginY: "1rem" }}
-          />
-
-          <Button
-            variant="contained"
-            size="large"
-            sx={{ backgroundColor: "#F24E1E" }}
-            onClick={editableData ? handleEditGroup : handleCreateGroup}
+          {/* Modal Body */}
+          <Box
+            sx={{
+              p: 3,
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: 2.5,
+              "&::-webkit-scrollbar": { width: "6px" },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "#CBD5E1",
+                borderRadius: "3px",
+              },
+            }}
           >
-            {editableData ? "Edit Group" : "Create Group"}
-          </Button>
-        </Box>
-      </Box>
-    </Box>
-  );
-  //#endregion
-};
-//#endregion
+            {/* Group Name Input */}
+            <Box>
+              <Typography
+                variant="subtitle2"
+                fontWeight={600}
+                color="text.primary"
+                sx={{ mb: 0.8 }}
+              >
+                Group Name <Box component="span" sx={{ color: "#1F7A6C" }}>*</Box>
+              </Typography>
+              <TextField
+                name="groupName"
+                value={teamDetails.groupName}
+                onChange={handleTeamInputChange}
+                placeholder="e.g. Goa Trip 2026 or Flatmates Expense"
+                variant="outlined"
+                fullWidth
+                size="small"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "10px",
+                    "&:hover fieldset": { borderColor: "#1F7A6C" },
+                    "&.Mui-focused fieldset": { borderColor: "#1F7A6C" },
+                  },
+                }}
+              />
+            </Box>
 
-//#region Component export
+            {/* Created By Card */}
+            <Box
+              sx={{
+                bgcolor: "#F8FAFC",
+                p: 1.5,
+                borderRadius: "12px",
+                border: "1px solid #E2E8F0",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography variant="caption" fontWeight={600} color="text.secondary">
+                Created By:
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Avatar
+                  src={user?.profile}
+                  sx={{ width: 24, height: 24, bgcolor: "#1F7A6C", fontSize: 12 }}
+                >
+                  {user?.firstName?.charAt(0)}
+                </Avatar>
+                <Typography variant="body2" fontWeight={600} color="text.primary">
+                  {user?.firstName} {user?.lastName} ({user?.email})
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Add / Invite Members Section (Only for new group creation) */}
+            {!editableData && (
+              <Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    mb: 0.8,
+                  }}
+                >
+                  <Typography variant="subtitle2" fontWeight={600} color="text.primary">
+                    Search & Invite Members
+                  </Typography>
+                  {invitedMembers.length > 0 && (
+                    <Chip
+                      label={`${invitedMembers.length} Selected`}
+                      size="small"
+                      sx={{
+                        bgcolor: "#E6F4F1",
+                        color: "#1F7A6C",
+                        fontWeight: 700,
+                        fontSize: "0.75rem",
+                      }}
+                    />
+                  )}
+                </Box>
+
+                {/* Search Box */}
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <TextField
+                    placeholder="Search by name or email (e.g., harsh, har, rkyharsu...)"
+                    size="small"
+                    variant="outlined"
+                    fullWidth
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      if (hasSearched) setHasSearched(false);
+                    }}
+                    onKeyDown={handleKeyDownSearch}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: "#94A3B8" }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "10px",
+                        "&:hover fieldset": { borderColor: "#1F7A6C" },
+                        "&.Mui-focused fieldset": { borderColor: "#1F7A6C" },
+                      },
+                    }}
+                  />
+                  <Button
+                    variant="contained"
+                    disabled={isSearching || !searchQuery.trim()}
+                    onClick={handleUserSearch}
+                    sx={{
+                      bgcolor: "#1F7A6C",
+                      color: "#FFFFFF",
+                      borderRadius: "10px",
+                      px: 2.5,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      boxShadow: "0 4px 10px rgba(31, 122, 108, 0.3)",
+                      "&:hover": { bgcolor: "#176054" },
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {isSearching ? <CircularProgress size={20} color="inherit" /> : "Search"}
+                  </Button>
+                </Box>
+
+                {/* Search Results Display */}
+                {hasSearched && (
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      mt: 1,
+                      p: 1.5,
+                      borderRadius: "12px",
+                      bgcolor: "#F8FAFC",
+                      maxHeight: "180px",
+                      overflowY: "auto",
+                      borderColor: "#E2E8F0",
+                    }}
+                  >
+                    {searchResults.length === 0 ? (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        textAlign="center"
+                        sx={{ py: 1 }}
+                      >
+                        No users found matching "{searchQuery}"
+                      </Typography>
+                    ) : (
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                        <Typography variant="caption" fontWeight={600} color="text.secondary">
+                          Found Users ({searchResults.length}):
+                        </Typography>
+                        {searchResults.map((foundUser) => {
+                          const isAlreadyAdded = invitedMembers.some(
+                            (m) => m._id === foundUser._id
+                          );
+                          return (
+                            <Box
+                              key={foundUser._id}
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                p: 1,
+                                borderRadius: "8px",
+                                bgcolor: "#FFFFFF",
+                                border: "1px solid #F1F5F9",
+                                boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                              }}
+                            >
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                                <Avatar
+                                  src={foundUser.profile}
+                                  sx={{
+                                    width: 34,
+                                    height: 34,
+                                    bgcolor: "#1F7A6C",
+                                    fontSize: 14,
+                                  }}
+                                >
+                                  {foundUser.firstName?.charAt(0)}
+                                </Avatar>
+                                <Box>
+                                  <Typography
+                                    variant="body2"
+                                    fontWeight={600}
+                                    color="text.primary"
+                                    sx={{ lineHeight: 1.2 }}
+                                  >
+                                    {foundUser.firstName} {foundUser.lastName}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    {foundUser.email}
+                                  </Typography>
+                                </Box>
+                              </Box>
+
+                              <Button
+                                size="small"
+                                variant={isAlreadyAdded ? "outlined" : "contained"}
+                                disabled={isAlreadyAdded}
+                                onClick={() => handleAddUser(foundUser)}
+                                startIcon={
+                                  isAlreadyAdded ? <CheckIcon /> : <PersonAddIcon />
+                                }
+                                sx={{
+                                  borderRadius: "8px",
+                                  textTransform: "none",
+                                  fontSize: "0.75rem",
+                                  py: 0.4,
+                                  px: 1.5,
+                                  ...(isAlreadyAdded
+                                    ? { borderColor: "#10B981", color: "#10B981" }
+                                    : {
+                                        bgcolor: "#1F7A6C",
+                                        color: "#FFF",
+                                        "&:hover": { bgcolor: "#176054" },
+                                      }),
+                                }}
+                              >
+                                {isAlreadyAdded ? "Added" : "Add"}
+                              </Button>
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    )}
+                  </Paper>
+                )}
+
+                {/* Selected Members Queue / Chips */}
+                {invitedMembers.length > 0 && (
+                  <Box sx={{ mt: 1.5 }}>
+                    <Typography
+                      variant="caption"
+                      fontWeight={600}
+                      color="text.secondary"
+                      sx={{ mb: 0.5, display: "block" }}
+                    >
+                      Invited List:
+                    </Typography>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8 }}>
+                      {invitedMembers.map((member) => (
+                        <Chip
+                          key={member._id}
+                          avatar={
+                            <Avatar src={member.profile} sx={{ bgcolor: "#1F7A6C" }}>
+                              {member.firstName?.charAt(0)}
+                            </Avatar>
+                          }
+                          label={`${member.firstName} ${member.lastName || ""}`}
+                          onDelete={() => handleRemoveInvitedUser(member._id)}
+                          sx={{
+                            borderRadius: "10px",
+                            bgcolor: "#E6F4F1",
+                            color: "#176054",
+                            fontWeight: 600,
+                            border: "1px solid #B2E2D9",
+                            "& .MuiChip-deleteIcon": {
+                              color: "#1F7A6C",
+                              "&:hover": { color: "#176054" },
+                            },
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+            )}
+
+            {/* Group Description */}
+            <Box>
+              <Typography
+                variant="subtitle2"
+                fontWeight={600}
+                color="text.primary"
+                sx={{ mb: 0.8 }}
+              >
+                Description
+              </Typography>
+              <TextField
+                name="description"
+                value={teamDetails.description}
+                onChange={handleTeamInputChange}
+                multiline
+                rows={3}
+                fullWidth
+                variant="outlined"
+                placeholder="What is this group for? Add a short description..."
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "10px",
+                    "&:hover fieldset": { borderColor: "#1F7A6C" },
+                    "&.Mui-focused fieldset": { borderColor: "#1F7A6C" },
+                  },
+                }}
+              />
+            </Box>
+          </Box>
+
+          {/* Modal Footer Actions */}
+          <Box
+            sx={{
+              px: 3,
+              py: 2,
+              bgcolor: "#F8FAFC",
+              borderTop: "1px solid #E2E8F0",
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 1.5,
+            }}
+          >
+            <Button
+              onClick={onClose}
+              variant="outlined"
+              sx={{
+                borderRadius: "10px",
+                borderColor: "#CBD5E1",
+                color: "#64748B",
+                textTransform: "none",
+                fontWeight: 600,
+                px: 2.5,
+                "&:hover": { borderColor: "#94A3B8", bgcolor: "#F1F5F9" },
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={editableData ? handleEditGroup : handleCreateGroup}
+              disabled={loading || !teamDetails.groupName.trim()}
+              sx={{
+                bgcolor: "#1F7A6C",
+                color: "#FFFFFF",
+                borderRadius: "10px",
+                px: 3,
+                textTransform: "none",
+                fontWeight: 600,
+                boxShadow: "0 4px 12px rgba(31, 122, 108, 0.35)",
+                "&:hover": { bgcolor: "#176054" },
+              }}
+            >
+              {editableData ? "Update Group" : "Create Group"}
+            </Button>
+          </Box>
+        </Paper>
+      </Fade>
+    </Modal>
+  );
+};
+
 export default AddTeam;
-//#endregion

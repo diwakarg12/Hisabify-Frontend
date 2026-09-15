@@ -51,6 +51,7 @@ export const ExpenseContainer = () => {
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [isSettleOpen, setIsSettleOpen] = useState(false);
+  const [fullReceiptUrl, setFullReceiptUrl] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -248,15 +249,27 @@ export const ExpenseContainer = () => {
           {/* Receipt Photo Preview if present */}
           {expense.receiptImage && (
             <div className="pt-2">
-              <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider block mb-2">
-                Receipt
-              </span>
-              <div className="rounded-xl overflow-hidden border border-[var(--border)] max-h-48">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider block">
+                  Receipt
+                </span>
+                <span className="text-[11px] text-[var(--brand)] font-medium">
+                  Click image to expand
+                </span>
+              </div>
+              <div
+                className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--surface-2)] cursor-pointer group relative transition-all hover:border-[var(--brand)]"
+                onClick={() => setFullReceiptUrl(expense.receiptImage)}
+                title="Click to view full receipt"
+              >
                 <img
                   src={expense.receiptImage}
-                  alt="Receipt"
-                  className="w-full h-full object-cover"
+                  alt="Receipt Attachment"
+                  className="w-full h-auto max-h-[550px] object-contain mx-auto block transition-transform group-hover:scale-[1.01]"
                 />
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold gap-1.5 backdrop-blur-[2px]">
+                  <FaImage className="w-4 h-4" /> View Full Attachment
+                </div>
               </div>
             </div>
           )}
@@ -461,14 +474,15 @@ export const ExpenseContainer = () => {
       {/* Mobile Detail Popup Modal (Appears when tapping an expense on phone screens) */}
       {isMobileDetailOpen && selectedExpense && (
         <div
-          className="lg:hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
+          className="lg:hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fadeIn overflow-y-auto"
           role="dialog"
           aria-modal="true"
           onClick={() => setIsMobileDetailOpen(false)}
         >
           <div
-            className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl shadow-[var(--shadow-floating)]"
+            className="w-full max-w-lg max-h-[88vh] my-auto overflow-y-auto rounded-2xl shadow-[var(--shadow-floating)] bg-[var(--surface-1)]"
             onClick={(e) => e.stopPropagation()}
+            style={{ WebkitOverflowScrolling: 'touch' }}
           >
             <DetailContent
               expense={selectedExpense}
@@ -492,6 +506,32 @@ export const ExpenseContainer = () => {
           onClose={() => setIsSettleOpen(false)}
           groupId={groupId}
         />
+      )}
+
+      {/* Full-Screen Receipt Preview Modal */}
+      {fullReceiptUrl && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn"
+          onClick={() => setFullReceiptUrl(null)}
+        >
+          <div
+            className="relative max-w-4xl max-h-[90vh] w-full flex flex-col items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setFullReceiptUrl(null)}
+              className="absolute -top-12 right-0 text-white bg-white/20 hover:bg-white/40 p-2 rounded-full backdrop-blur-sm transition-colors"
+              aria-label="Close image preview"
+            >
+              <FaTimes className="w-5 h-5" />
+            </button>
+            <img
+              src={fullReceiptUrl}
+              alt="Full Receipt Attachment"
+              className="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-2xl shadow-2xl border border-white/20"
+            />
+          </div>
+        </div>
       )}
     </div>
   );

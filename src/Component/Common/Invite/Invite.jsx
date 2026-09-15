@@ -1,6 +1,29 @@
 //#region imports
-import { Box, Button, Modal, TextField, Typography } from "@mui/material";
-import React, { useState } from "react";
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Fade,
+  IconButton,
+  InputAdornment,
+  Modal,
+  Paper,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import CheckIcon from "@mui/icons-material/Check";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
+import SendIcon from "@mui/icons-material/Send";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
+import React, { useState, useEffect } from "react";
 import Members from "./Members";
 import { useDispatch } from "react-redux";
 import { getSentRequests, sendInvitation } from "../../../redux/requestSlice";
@@ -8,59 +31,116 @@ import { searchUser } from "../../../redux/groupSlice";
 import FullScreenLoader from "../Loader/FullScreenLoader";
 import { toast } from "react-toastify";
 import { API_BASE_URL } from "../../../config/Api";
+//#endregion
 
-//#region Function Component
 const Invite = ({ openInvite, handleClose, group }) => {
   //#region Component states
   const dispatch = useDispatch();
   const [pendingInvitation, setPendingInvitation] = useState([]);
   const [owner, setOwner] = useState(null);
-  const [email, setEmail] = useState("");
+  
+  // Search and invite queue states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [usersToInvite, setUsersToInvite] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+
+  // Dummy user states
   const [dummyName, setDummyName] = useState("");
   const [dummyMembers, setDummyMembers] = useState(group?.dummyMembers || []);
+
+  // UI Modes and Tabs
   const [memberTab, setMemberTab] = useState("members"); // "members" | "pending" | "dummy"
   const [mode, setMode] = useState("invite"); // "invite" | "dummy"
   const [loading, setLoading] = useState(false);
   //#endregion
 
   //#region Component hooks
-  React.useEffect(() => {
+  useEffect(() => {
     if (!openInvite || !group?._id) return;
 
     const handlePendingRequest = async () => {
-      const res = await dispatch(getSentRequests(group._id)).unwrap();
-      const pendingRequest = res?.sentInvitations?.map(
-        (invitation) => invitation.invitedTo,
-      );
-      setPendingInvitation(pendingRequest || []);
-      setOwner(group.createdBy._id);
+      try {
+        const res = await dispatch(getSentRequests(group._id)).unwrap();
+        const pendingRequest = res?.sentInvitations?.map(
+          (invitation) => invitation.invitedTo
+        );
+        setPendingInvitation(pendingRequest || []);
+        setOwner(group.createdBy?._id || group.createdBy);
+      } catch (err) {
+        setPendingInvitation([]);
+      }
     };
 
     handlePendingRequest();
     setDummyMembers(group?.dummyMembers || []);
-  }, [
-    dispatch,
-    group._id,
-    openInvite,
-    group.createdBy._id,
-    group?.dummyMembers,
-  ]);
+    setUsersToInvite([]);
+    setSearchResults([]);
+    setSearchQuery("");
+    setHasSearched(false);
+  }, [dispatch, group?._id, openInvite, group?.createdBy, group?.dummyMembers]);
   //#endregion
 
-  //#region Component Api methods
+  //#region User Search & Invite API Methods
+  const handleUserSearch = async () => {
+    if (!searchQuery.trim()) {
+      toast.info("Please enter a name or email to search");
+      return;
+    }
+    try {
+      setIsSearching(true);
+      setHasSearched(true);
+      const res = await dispatch(searchUser(searchQuery.trim())).unwrap();
+      const users = res?.users || (res?.user ? [res.user] : []);
+      setSearchResults(users);
+    } catch (err) {
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
-  const handleInvitation = async () => {
+  const handleKeyDownSearch = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleUserSearch();
+    }
+  };
+
+  const handleAddUserToQueue = (userToAdd) => {
+    if (!userToAdd || !userToAdd._id) return;
+    if (usersToInvite.some((u) => u._id === userToAdd._id)) {
+      toast.info("User already in invitation queue");
+      return;
+    }
+    setUsersToInvite((prev) => [...prev, userToAdd]);
+  };
+
+  const handleRemoveUserFromQueue = (userId) => {
+    setUsersToInvite((prev) => prev.filter((u) => u._id !== userId));
+  };
+
+  const handleSendAllInvitations = async () => {
+    if (usersToInvite.length === 0) return;
     try {
       setLoading(true);
-      const res = await dispatch(searchUser(email)).unwrap();
-      await dispatch(
-        sendInvitation({ groupId: group._id, invitedTo: res.user._id }),
-      ).unwrap();
-      setPendingInvitation((prev) => [...prev, res.user]);
-      setEmail("");
-      // eslint-disable-next-line no-unused-vars
+      await Promise.all(
+        usersToInvite.map((user) =>
+          dispatch(
+            sendInvitation({ groupId: group._id, invitedTo: user._id })
+          ).unwrap()
+        )
+      );
+
+      setPendingInvitation((prev) => [...prev, ...usersToInvite]);
+      setUsersToInvite([]);
+      setSearchResults([]);
+      setSearchQuery("");
+      setHasSearched(false);
+      setMemberTab("pending");
     } catch (err) {
-      // error handled by redux slice toast
+      // toast error handled in slice
     } finally {
       setLoading(false);
     }
@@ -77,7 +157,7 @@ const Invite = ({ openInvite, handleClose, group }) => {
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({ name: dummyName.trim() }),
-        },
+        }
       );
       const result = await response.json();
       if (!response.ok) {
@@ -87,20 +167,18 @@ const Invite = ({ openInvite, handleClose, group }) => {
       toast.success(`"${dummyName.trim()}" added as dummy user`);
       setDummyMembers(result.dummyMembers);
       setDummyName("");
-      // eslint-disable-next-line no-unused-vars
+      setMemberTab("dummy");
     } catch (err) {
       toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }
   };
-
   //#endregion
 
-  //#region Component feature methods
-
+  //#region Tab Data Helper
   const getTabData = () => {
-    if (memberTab === "members") return { data: group.members, isDummy: false };
+    if (memberTab === "members") return { data: group?.members || [], isDummy: false };
     if (memberTab === "pending")
       return { data: pendingInvitation, isDummy: false };
     if (memberTab === "dummy") return { data: dummyMembers, isDummy: true };
@@ -108,225 +186,496 @@ const Invite = ({ openInvite, handleClose, group }) => {
   };
 
   const { data: formateData, isDummy } = getTabData();
-
   //#endregion
 
-  //#region Component renders
   return (
-    <Modal open={openInvite} onClose={handleClose}>
-      <Box
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: { xs: "92vw", sm: "70vw" },
-          height: "80vh",
-          backgroundColor: "white",
-          borderRadius: { xs: 1, sm: 2 },
-          boxShadow: 24,
-          py: 3,
-          px: 1.5,
-          overflow: "auto",
-          "&::-webkit-scrollbar": { display: "none" },
-        }}
-      >
-        {loading && <FullScreenLoader />}
-
-        {/* Header */}
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h5">Manage Members</Typography>
-          <Typography
-            onClick={handleClose}
-            color="primary"
-            sx={{ textDecoration: "underline", cursor: "pointer" }}
-          >
-            Go Back
-          </Typography>
-        </Box>
-
-        {/* Mode Toggle */}
-        <Box
+    <Modal
+      open={openInvite}
+      onClose={handleClose}
+      closeAfterTransition
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backdropFilter: "blur(6px)",
+        backgroundColor: "rgba(15, 23, 42, 0.65)",
+      }}
+    >
+      <Fade in={openInvite}>
+        <Paper
+          elevation={24}
           sx={{
+            width: { xs: "92vw", sm: "80vw", md: "620px" },
+            maxHeight: "88vh",
+            borderRadius: "20px",
+            overflow: "hidden",
             display: "flex",
-            justifyContent: { xs: "center", md: "start" },
-            gap: 1,
-            mt: 2,
+            flexDirection: "column",
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            border: "1px solid rgba(226, 232, 240, 0.8)",
           }}
         >
-          <Button
-            size="medium"
-            variant={mode === "invite" ? "contained" : "outlined"}
-            onClick={() => setMode("invite")}
-            sx={{
-              textTransform: "none",
-              backgroundColor: mode === "invite" ? "#f44336" : "#fff",
-              color: mode === "invite" ? "#fff" : "#000",
-              border: `1px solid ${mode !== "invite" && "#f44336"}`,
-            }}
-          >
-            Invite Member
-          </Button>
-          <Button
-            size="medium"
-            variant={mode === "dummy" ? "contained" : "outlined"}
-            onClick={() => setMode("dummy")}
-            sx={{
-              textTransform: "none",
-              backgroundColor: mode === "dummy" ? "#f44336" : "fff",
-              color: mode === "dummy" ? "#fff" : "#000",
-              border: `1px solid ${mode !== "dummy" && "#f44336"}`,
-            }}
-          >
-            Add Dummy User
-          </Button>
-        </Box>
+          {loading && <FullScreenLoader />}
 
-        {/* Invite by Email */}
-        {mode === "invite" && (
-          <Box sx={{ display: "flex", gap: 2, my: 2 }}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              label="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Button
-              variant="contained"
-              sx={{ backgroundColor: "#f44336", width: "20%" }}
-              disabled={!email}
-              onClick={handleInvitation}
-            >
-              Invite
-            </Button>
-          </Box>
-        )}
-
-        {/* Add Dummy User */}
-        {mode === "dummy" && (
-          <Box sx={{ display: "flex", gap: 2, my: 2 }}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              label="Dummy User Name"
-              value={dummyName}
-              onChange={(e) => setDummyName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAddDummy()}
-            />
-            <Button
-              variant="contained"
-              sx={{ backgroundColor: "#f44336", width: "20%" }}
-              disabled={!dummyName.trim()}
-              onClick={handleAddDummy}
-            >
-              Add
-            </Button>
-          </Box>
-        )}
-
-        {/* Tabs */}
-        <Box my={2}>
+          {/* Modal Header */}
           <Box
             sx={{
+              background: "linear-gradient(135deg, #269685 0%, #176054 100%)",
+              color: "#FFFFFF",
+              px: 3,
+              py: 2.5,
               display: "flex",
-              gap: 2,
-              borderBottom: "1px solid #e0e0e0",
-              pb: 1,
-              mb: 1,
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
           >
-            {[
-              { key: "members", label: `Members(${group.members.length})` },
-              {
-                key: "pending",
-                label: `Requests(${pendingInvitation.length})`,
-              },
-              { key: "dummy", label: `Dummy(${dummyMembers.length})` },
-            ].map((tab) => (
-              <Typography
-                key={tab.key}
-                variant="subtitle1"
-                fontWeight="bold"
-                onClick={() => setMemberTab(tab.key)}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Avatar
                 sx={{
-                  cursor: "pointer",
-                  opacity: memberTab !== tab.key ? 0.4 : 1,
-                  borderBottom:
-                    memberTab === tab.key ? "2px solid #f44336" : "none",
-                  pb: 0.5,
+                  bgcolor: "rgba(255, 255, 255, 0.2)",
+                  color: "#FFFFFF",
+                  width: 42,
+                  height: 42,
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  boxShadow: "0 4px 12px rgba(23, 96, 84, 0.4)",
                 }}
               >
-                {tab.label}
-              </Typography>
-            ))}
+                <GroupAddIcon />
+              </Avatar>
+              <Box>
+                <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1.2 }}>
+                  Manage Members
+                </Typography>
+                <Typography variant="caption" sx={{ opacity: 0.75 }}>
+                  {group?.groupName || "Group Members & Invitations"}
+                </Typography>
+              </Box>
+            </Box>
+
+            <IconButton
+              onClick={handleClose}
+              sx={{
+                color: "rgba(255, 255, 255, 0.7)",
+                "&:hover": { color: "#FFFFFF", bgcolor: "rgba(255, 255, 255, 0.1)" },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
           </Box>
 
-          {/* Dummy users list */}
-          {isDummy ? (
-            dummyMembers.length === 0 ? (
-              <Typography variant="body2" color="text.secondary" mt={2}>
-                No dummy users added yet.
-              </Typography>
-            ) : (
-              dummyMembers.map((dummy, index) => (
-                <Box
-                  key={dummy._id || index}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1.5,
-                    py: 1.2,
-                    borderBottom: "1px solid #f5f5f5",
-                  }}
-                >
-                  <Box
+          {/* Modal Content */}
+          <Box
+            sx={{
+              p: 3,
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: 2.5,
+              "&::-webkit-scrollbar": { width: "6px" },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "#CBD5E1",
+                borderRadius: "3px",
+              },
+            }}
+          >
+            {/* Mode Switcher Buttons */}
+            <Box
+              sx={{
+                display: "flex",
+                bgcolor: "#F1F5F9",
+                p: 0.5,
+                borderRadius: "12px",
+                gap: 0.5,
+              }}
+            >
+              <Button
+                fullWidth
+                size="small"
+                startIcon={<PersonOutlineIcon />}
+                onClick={() => setMode("invite")}
+                sx={{
+                  borderRadius: "9px",
+                  py: 0.8,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  fontSize: "0.85rem",
+                  ...(mode === "invite"
+                    ? {
+                        bgcolor: "#FFFFFF",
+                        color: "#1F7A6C",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                      }
+                    : { color: "#64748B", "&:hover": { color: "#1E293B" } }),
+                }}
+              >
+                Invite Real User
+              </Button>
+              <Button
+                fullWidth
+                size="small"
+                startIcon={<SmartToyIcon />}
+                onClick={() => setMode("dummy")}
+                sx={{
+                  borderRadius: "9px",
+                  py: 0.8,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  fontSize: "0.85rem",
+                  ...(mode === "dummy"
+                    ? {
+                        bgcolor: "#FFFFFF",
+                        color: "#1F7A6C",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                      }
+                    : { color: "#64748B", "&:hover": { color: "#1E293B" } }),
+                }}
+              >
+                Add Dummy User
+              </Button>
+            </Box>
+
+            {/* Invite Real User Form */}
+            {mode === "invite" && (
+              <Box>
+                <Typography variant="subtitle2" fontWeight={600} color="text.primary" sx={{ mb: 0.8 }}>
+                  Search Players by Name or Email
+                </Typography>
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <TextField
+                    placeholder="Search by name or email (e.g. harsh, har, rkyharsu...)"
+                    size="small"
+                    variant="outlined"
+                    fullWidth
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      if (hasSearched) setHasSearched(false);
+                    }}
+                    onKeyDown={handleKeyDownSearch}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: "#94A3B8" }} />
+                        </InputAdornment>
+                      ),
+                    }}
                     sx={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      backgroundColor: "#ffe0e0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: "bold",
-                      color: "#f44336",
-                      fontSize: 14,
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "10px",
+                        "&:hover fieldset": { borderColor: "#1F7A6C" },
+                        "&.Mui-focused fieldset": { borderColor: "#1F7A6C" },
+                      },
+                    }}
+                  />
+                  <Button
+                    variant="contained"
+                    disabled={isSearching || !searchQuery.trim()}
+                    onClick={handleUserSearch}
+                    sx={{
+                      bgcolor: "#1F7A6C",
+                      color: "#FFFFFF",
+                      borderRadius: "10px",
+                      px: 2.5,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      boxShadow: "0 4px 10px rgba(31, 122, 108, 0.3)",
+                      "&:hover": { bgcolor: "#176054" },
+                      whiteSpace: "nowrap",
                     }}
                   >
-                    {dummy.name?.charAt(0).toUpperCase()}
-                  </Box>
-                  <Box>
-                    <Typography variant="body1" fontWeight={500}>
-                      {dummy.name}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Dummy User
-                    </Typography>
-                  </Box>
+                    {isSearching ? <CircularProgress size={20} color="inherit" /> : "Search"}
+                  </Button>
                 </Box>
-              ))
-            )
-          ) : (
-            // Real members / pending list
-            formateData.map((user, index) => (
-              <Members
-                key={index}
-                user={user}
-                owner={owner}
-                index={index}
-                memberTab={memberTab === "members"}
-              />
-            ))
-          )}
-        </Box>
-      </Box>
+
+                {/* Search Results Dropdown */}
+                {hasSearched && (
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      mt: 1,
+                      p: 1.5,
+                      borderRadius: "12px",
+                      bgcolor: "#F8FAFC",
+                      maxHeight: "180px",
+                      overflowY: "auto",
+                      borderColor: "#E2E8F0",
+                    }}
+                  >
+                    {searchResults.length === 0 ? (
+                      <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 1 }}>
+                        No users found matching "{searchQuery}"
+                      </Typography>
+                    ) : (
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                        <Typography variant="caption" fontWeight={600} color="text.secondary">
+                          Matching Users ({searchResults.length}):
+                        </Typography>
+                        {searchResults.map((foundUser) => {
+                          const isAlreadyMember = group?.members?.some((m) => m._id === foundUser._id);
+                          const isAlreadyInvited = pendingInvitation.some((p) => p._id === foundUser._id);
+                          const isQueued = usersToInvite.some((u) => u._id === foundUser._id);
+
+                          return (
+                            <Box
+                              key={foundUser._id}
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                p: 1,
+                                borderRadius: "8px",
+                                bgcolor: "#FFFFFF",
+                                border: "1px solid #F1F5F9",
+                                boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                              }}
+                            >
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                                <Avatar
+                                  src={foundUser.profile}
+                                  sx={{ width: 34, height: 34, bgcolor: "#1F7A6C", fontSize: 14 }}
+                                >
+                                  {foundUser.firstName?.charAt(0)}
+                                </Avatar>
+                                <Box>
+                                  <Typography variant="body2" fontWeight={600} color="text.primary" sx={{ lineHeight: 1.2 }}>
+                                    {foundUser.firstName} {foundUser.lastName}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    {foundUser.email}
+                                  </Typography>
+                                </Box>
+                              </Box>
+
+                              {isAlreadyMember ? (
+                                <Chip label="Member" size="small" variant="outlined" sx={{ borderRadius: "6px" }} />
+                              ) : isAlreadyInvited ? (
+                                <Chip label="Invited" size="small" color="warning" variant="outlined" sx={{ borderRadius: "6px" }} />
+                              ) : (
+                                <Button
+                                  size="small"
+                                  variant={isQueued ? "outlined" : "contained"}
+                                  disabled={isQueued}
+                                  onClick={() => handleAddUserToQueue(foundUser)}
+                                  startIcon={isQueued ? <CheckIcon /> : <PersonAddIcon />}
+                                  sx={{
+                                    borderRadius: "8px",
+                                    textTransform: "none",
+                                    fontSize: "0.75rem",
+                                    py: 0.4,
+                                    px: 1.5,
+                                    ...(isQueued
+                                      ? { borderColor: "#10B981", color: "#10B981" }
+                                      : { bgcolor: "#1F7A6C", color: "#FFF", "&:hover": { bgcolor: "#176054" } }),
+                                  }}
+                                >
+                                  {isQueued ? "Queued" : "Add"}
+                                </Button>
+                              )}
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    )}
+                  </Paper>
+                )}
+
+                {/* Queued Users to Invite */}
+                {usersToInvite.length > 0 && (
+                  <Box sx={{ mt: 1.5, p: 1.5, bgcolor: "#E6F4F1", borderRadius: "12px", border: "1px solid #B2E2D9" }}>
+                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+                      <Typography variant="caption" fontWeight={700} color="#176054">
+                        To Invite ({usersToInvite.length} Selected):
+                      </Typography>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={handleSendAllInvitations}
+                        startIcon={<SendIcon style={{ fontSize: 14 }} />}
+                        sx={{
+                          bgcolor: "#1F7A6C",
+                          color: "#FFF",
+                          borderRadius: "8px",
+                          textTransform: "none",
+                          fontSize: "0.75rem",
+                          fontWeight: 700,
+                          "&:hover": { bgcolor: "#176054" },
+                        }}
+                      >
+                        Send Invites
+                      </Button>
+                    </Box>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8 }}>
+                      {usersToInvite.map((user) => (
+                        <Chip
+                          key={user._id}
+                          avatar={
+                            <Avatar src={user.profile} sx={{ bgcolor: "#1F7A6C" }}>
+                              {user.firstName?.charAt(0)}
+                            </Avatar>
+                          }
+                          label={`${user.firstName} ${user.lastName || ""}`}
+                          onDelete={() => handleRemoveUserFromQueue(user._id)}
+                          sx={{
+                            borderRadius: "10px",
+                            bgcolor: "#FFFFFF",
+                            color: "#176054",
+                            fontWeight: 600,
+                            border: "1px solid #B2E2D9",
+                            "& .MuiChip-deleteIcon": {
+                              color: "#1F7A6C",
+                              "&:hover": { color: "#176054" },
+                            },
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+            )}
+
+            {/* Add Dummy User Form */}
+            {mode === "dummy" && (
+              <Box>
+                <Typography variant="subtitle2" fontWeight={600} color="text.primary" sx={{ mb: 0.8 }}>
+                  Add a Dummy Member (For record-keeping without email account)
+                </Typography>
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <TextField
+                    placeholder="Enter dummy user name (e.g. Cash Expense, Driver, Guest)"
+                    size="small"
+                    variant="outlined"
+                    fullWidth
+                    value={dummyName}
+                    onChange={(e) => setDummyName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddDummy()}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "10px",
+                        "&:hover fieldset": { borderColor: "#1F7A6C" },
+                        "&.Mui-focused fieldset": { borderColor: "#1F7A6C" },
+                      },
+                    }}
+                  />
+                  <Button
+                    variant="contained"
+                    disabled={!dummyName.trim()}
+                    onClick={handleAddDummy}
+                    sx={{
+                      bgcolor: "#1F7A6C",
+                      color: "#FFFFFF",
+                      borderRadius: "10px",
+                      px: 2.5,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      boxShadow: "0 4px 10px rgba(31, 122, 108, 0.3)",
+                      "&:hover": { bgcolor: "#176054" },
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Add Dummy
+                  </Button>
+                </Box>
+              </Box>
+            )}
+
+            {/* Tabs for View List */}
+            <Box sx={{ mt: 1 }}>
+              <Box sx={{ borderBottom: 1, borderColor: "#E2E8F0" }}>
+                <Tabs
+                  value={memberTab}
+                  onChange={(e, val) => setMemberTab(val)}
+                  textColor="primary"
+                  indicatorColor="primary"
+                  sx={{
+                    minHeight: 40,
+                    "& .MuiTabs-indicator": { backgroundColor: "#1F7A6C", height: 3 },
+                    "& .MuiTab-root": {
+                      textTransform: "none",
+                      fontWeight: 600,
+                      minHeight: 40,
+                      color: "#64748B",
+                      "&.Mui-selected": { color: "#1F7A6C" },
+                    },
+                  }}
+                >
+                  <Tab label={`Members (${group?.members?.length || 0})`} value="members" />
+                  <Tab label={`Requests (${pendingInvitation.length})`} value="pending" />
+                  <Tab label={`Dummy (${dummyMembers.length})`} value="dummy" />
+                </Tabs>
+              </Box>
+
+              {/* List Rendering */}
+              <Box sx={{ pt: 1, maxHeight: "240px", overflowY: "auto" }}>
+                {isDummy ? (
+                  dummyMembers.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 3 }}>
+                      No dummy users added yet.
+                    </Typography>
+                  ) : (
+                    dummyMembers.map((dummy, index) => (
+                      <Box
+                        key={dummy._id || index}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1.5,
+                          py: 1.2,
+                          px: 2,
+                          my: 1,
+                          borderRadius: "12px",
+                          bgcolor: "#FFFFFF",
+                          border: "1px solid #F1F5F9",
+                        }}
+                      >
+                        <Avatar
+                          sx={{
+                            width: 36,
+                            height: 36,
+                            bgcolor: "#E6F4F1",
+                            color: "#1F7A6C",
+                            fontWeight: 700,
+                            fontSize: 14,
+                          }}
+                        >
+                          {dummy.name?.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="body2" fontWeight={600}>
+                            {dummy.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Dummy User (No account)
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ))
+                  )
+                ) : formateData.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 3 }}>
+                    {memberTab === "members"
+                      ? "No members in group yet."
+                      : "No pending invitations sent."}
+                  </Typography>
+                ) : (
+                  formateData.map((usr, index) => (
+                    <Members
+                      key={usr._id || index}
+                      user={usr}
+                      owner={owner}
+                      index={index}
+                      memberTab={memberTab === "members"}
+                    />
+                  ))
+                )}
+              </Box>
+            </Box>
+          </Box>
+        </Paper>
+      </Fade>
     </Modal>
   );
-  //#endregion
 };
-//#endregion
 
-//#region Component export
 export default Invite;
-//#endregion

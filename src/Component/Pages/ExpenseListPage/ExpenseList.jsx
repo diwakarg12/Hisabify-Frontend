@@ -149,38 +149,44 @@ const ExpenseList = ({
         <Modal
           open={openDetailsModal}
           onClose={() => setOpenDetailsModal(false)}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            p: 2,
+          }}
         >
           <Box
             sx={{
-              position: "absolute",
-              inset: 0,
+              position: "relative",
+              width: "92vw",
+              maxWidth: "500px",
+              maxHeight: "88vh",
               overflowY: "auto",
-              top: "20%",
+              backgroundColor: "#f6f9fc",
+              borderRadius: "16px",
               p: 2,
+              boxShadow: 24,
             }}
           >
             {/* Close button */}
-            <Box
-              sx={{ backgroundColor: "#f6f9fc", padding: 1, borderRadius: 2 }}
+            <IconButton
+              onClick={() => setOpenDetailsModal(false)}
+              sx={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                zIndex: 10,
+              }}
             >
-              <IconButton
-                onClick={() => setOpenDetailsModal(false)}
-                sx={{
-                  position: "absolute",
-                  top: 15,
-                  right: 12,
-                  zIndex: 10,
-                }}
-              >
-                <CloseIcon sx={{ fontSize: 45 }} />
-              </IconButton>
+              <CloseIcon sx={{ fontSize: 28 }} />
+            </IconButton>
 
-              <ExpenseDetails
-                expense={expenses.find((e) => e._id === selectedExpenseId)}
-                handleOpenEditExpense={handleOpenEditExpense}
-                handleOpenDeleteExpense={handleOpenDeleteExpense}
-              />
-            </Box>
+            <ExpenseDetails
+              expense={expenses.find((e) => e._id === selectedExpenseId)}
+              handleOpenEditExpense={handleOpenEditExpense}
+              handleOpenDeleteExpense={handleOpenDeleteExpense}
+            />
           </Box>
         </Modal>
       )}
