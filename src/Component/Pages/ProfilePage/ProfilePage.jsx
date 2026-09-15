@@ -134,7 +134,11 @@ export const ProfilePage = () => {
       <Card className="p-6 sm:p-8">
         <div className="flex flex-col items-center justify-center text-center space-y-3 w-full">
           <div className="flex justify-center items-center w-full">
-            <ProfilePhoto profile={userData.profile} setUserData={setUserData} />
+            <ProfilePhoto
+              profile={userData.profile}
+              setUserData={setUserData}
+              editable={editable}
+            />
           </div>
           <div className="space-y-1 text-center w-full flex flex-col items-center">
             <h3 className="text-2xl font-extrabold text-[var(--text-primary)] text-center">

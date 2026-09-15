@@ -121,6 +121,33 @@ export const removeUser = createAsyncThunk('removeUser', async ({ groupId, userI
     }
 });
 
+export const removeDummyUser = createAsyncThunk(
+    'removeDummyUser',
+    async ({ groupId, dummyId }, { rejectWithValue }) => {
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/group/remove-dummy/${groupId}/${dummyId}`,
+                {
+                    method: 'DELETE',
+                    headers: { "Content-type": "application/json" },
+                    credentials: 'include',
+                }
+            );
+
+            const result = await response.json();
+            if (!response.ok) {
+                toast.error(result?.message || "Failed to remove dummy user");
+                return rejectWithValue(result?.message);
+            }
+            toast.success("Dummy user removed");
+            return { groupId, dummyId, dummyMembers: result.dummyMembers };
+        } catch (error) {
+            toast.error(error?.message);
+            return rejectWithValue(error?.message);
+        }
+    }
+);
+
 export const deleteGroup = createAsyncThunk(
     'deleteGroup',
     async (groupId, { rejectWithValue }) => {
@@ -137,11 +164,11 @@ export const deleteGroup = createAsyncThunk(
             const result = await response.json();
 
             if (!response.ok) {
-                toast.error(result?.message);
+                toast.error(result?.message || "Failed to delete group");
                 return rejectWithValue(result?.message);
             }
 
-            toast.success(result?.message);
+            toast.success(result?.message || "Group deleted successfully");
 
             return { groupId };
 
@@ -255,16 +282,33 @@ const groupSlice = createSlice({
                     group._id === groupId
                         ? {
                             ...group,
-                            members: group.members.filter(user => user._id !== userId),
+                            members: group.members.filter(user => (user._id || user) !== userId),
                         }
                         : group
                 );
 
                 state.error = null;
             })
-
-
             .addCase(removeUser.rejected, (state, action) => {
+                state.groupLoading = false;
+                state.error = action.payload;
+            })
+
+            //removeDummyUser
+            .addCase(removeDummyUser.pending, (state) => {
+                state.groupLoading = true;
+            })
+            .addCase(removeDummyUser.fulfilled, (state, action) => {
+                state.groupLoading = false;
+                const { groupId, dummyMembers } = action.payload;
+                state.groups = state.groups.map(group =>
+                    group._id === groupId
+                        ? { ...group, dummyMembers }
+                        : group
+                );
+                state.error = null;
+            })
+            .addCase(removeDummyUser.rejected, (state, action) => {
                 state.groupLoading = false;
                 state.error = action.payload;
             })
@@ -276,14 +320,14 @@ const groupSlice = createSlice({
             .addCase(deleteGroup.fulfilled, (state, action) => {
                 state.groupLoading = false;
                 state.groups = state.groups.filter(
-                    group => group._id !== action.payload.groupId
+                    group => String(group._id) !== String(action.payload?.groupId)
                 );
                 state.error = null;
             })
 
             .addCase(deleteGroup.rejected, (state, action) => {
                 state.groupLoading = false;
-                state.error = action.payload.message;
+                state.error = action.payload;
             })
     }
 });

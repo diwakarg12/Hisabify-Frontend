@@ -29,8 +29,19 @@ import {
 } from "../../../redux/groupSlice";
 import { sendInvitation } from "../../../redux/requestSlice";
 import FullScreenLoader from "../Loader/FullScreenLoader";
+import { useGlobalLoader } from "../Loader/GlobalLoaderContext";
 import { toast } from "react-toastify";
 //#endregion
+
+const POPULAR_CATEGORIES = [
+  { name: "Food & Dining", icon: "🍔" },
+  { name: "Rent & Bills", icon: "🏠" },
+  { name: "Travel & Fuel", icon: "🚗" },
+  { name: "Shopping", icon: "🛍️" },
+  { name: "Entertainment", icon: "🎬" },
+  { name: "Medical", icon: "🏥" },
+  { name: "Trip & Vacation", icon: "✈️" },
+];
 
 const AddTeam = ({ onClose, user, editableData = null }) => {
   //#region Component states
@@ -45,7 +56,19 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
     groupName: "",
     description: "",
   });
+
+  const [selectedCategories, setSelectedCategories] = useState([
+    "Food & Dining",
+    "Rent & Bills",
+    "Travel & Fuel",
+    "Shopping",
+    "Entertainment",
+    "Medical",
+  ]);
+  const [customCategoryInput, setCustomCategoryInput] = useState("");
   //#endregion
+
+  const initialCategoriesRef = React.useRef([]);
 
   //#region Component hooks
   useEffect(() => {
@@ -54,11 +77,70 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
         groupName: editableData.groupName || "",
         description: editableData.description || "",
       });
+      const existing = editableData?.categories || [];
+      initialCategoriesRef.current = existing;
+      if (existing.length > 0) {
+        setSelectedCategories([...existing]);
+      }
       if (editableData?.members) {
         setInvitedMembers([...editableData.members]);
       }
+    } else {
+      initialCategoriesRef.current = [];
     }
   }, [editableData]);
+
+  const handleToggleCategory = (catName) => {
+    const isExisting = editableData && initialCategoriesRef.current.some(
+      (c) => c.toLowerCase() === catName.toLowerCase()
+    );
+
+    if (isExisting) {
+      toast.info(`"🔒 ${catName}" is an existing group category and cannot be removed to protect expense history.`);
+      return;
+    }
+
+    if (selectedCategories.includes(catName)) {
+      if (selectedCategories.length === 1) {
+        toast.info("At least one category is required for the group");
+        return;
+      }
+      setSelectedCategories((prev) => prev.filter((c) => c !== catName));
+    } else {
+      setSelectedCategories((prev) => [...prev, catName]);
+    }
+  };
+
+  const handleAddCustomCategory = () => {
+    const trimmed = customCategoryInput.trim();
+    if (!trimmed) return;
+
+    if (selectedCategories.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+      toast.info(`"${trimmed}" category is already added`);
+      setCustomCategoryInput("");
+      return;
+    }
+
+    setSelectedCategories((prev) => [...prev, trimmed]);
+    setCustomCategoryInput("");
+  };
+
+  const handleRemoveCustomCategory = (catName) => {
+    const isExisting = editableData && initialCategoriesRef.current.some(
+      (c) => c.toLowerCase() === catName.toLowerCase()
+    );
+
+    if (isExisting) {
+      toast.info(`"🔒 ${catName}" is an existing group category and cannot be removed to protect expense history.`);
+      return;
+    }
+
+    if (selectedCategories.length === 1) {
+      toast.info("At least one category is required for the group");
+      return;
+    }
+    setSelectedCategories((prev) => prev.filter((c) => c !== catName));
+  };
   //#endregion
 
   //#region Search logic
@@ -120,6 +202,7 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
         ...teamDetails,
         createdBy: user._id,
         members: [],
+        categories: selectedCategories,
       };
       const group = await dispatch(createGroup(finalGroupDetails)).unwrap();
 
@@ -138,6 +221,10 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
       }
 
       setInvitedMembers([]);
+      setSearchQuery("");
+      setSearchResults([]);
+      setHasSearched(false);
+      setCustomCategoryInput("");
       setTeamDetails({ groupName: "", description: "" });
       dispatch(resetSearchUsers());
       setLoading(false);
@@ -158,6 +245,7 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
       const data = {
         groupName: teamDetails.groupName,
         description: teamDetails.description,
+        categories: selectedCategories,
       };
       await dispatch(updateGroup({ data, groupId: editableData?._id })).unwrap();
       setLoading(false);
@@ -287,6 +375,134 @@ const AddTeam = ({ onClose, user, editableData = null }) => {
                   },
                 }}
               />
+            </Box>
+            {/* Expense Categories Selection Section */}
+            <Box>
+              <Typography variant="subtitle2" fontWeight={600} color="text.primary" sx={{ mb: 0.5 }}>
+                Expense Categories <Box component="span" sx={{ color: "#1F7A6C" }}>*</Box>
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1.2 }}>
+                Click to select popular category tiles or type custom ones to customize this group
+              </Typography>
+
+              {/* Popular Categories Tiles */}
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 1.5 }}>
+                {POPULAR_CATEGORIES.map((cat) => {
+                  const isSelected = selectedCategories.includes(cat.name);
+                  const isExisting = editableData && initialCategoriesRef.current.some(
+                    (c) => c.toLowerCase() === cat.name.toLowerCase()
+                  );
+
+                  return (
+                    <Chip
+                      key={cat.name}
+                      label={`${isExisting ? '🔒 ' : ''}${cat.icon} ${cat.name}`}
+                      onClick={() => handleToggleCategory(cat.name)}
+                      variant={isSelected ? "contained" : "outlined"}
+                      sx={{
+                        borderRadius: "10px",
+                        fontWeight: 600,
+                        fontSize: "0.8rem",
+                        cursor: isExisting ? "default" : "pointer",
+                        py: 1.8,
+                        px: 0.5,
+                        transition: "all 0.2s ease-in-out",
+                        ...(isSelected
+                          ? {
+                              bgcolor: isExisting ? "#14532D" : "#1F7A6C",
+                              color: "#FFFFFF",
+                              borderColor: isExisting ? "#14532D" : "#1F7A6C",
+                              boxShadow: "0 2px 8px rgba(31,122,108,0.3)",
+                              "&:hover": { bgcolor: isExisting ? "#14532D" : "#176054" },
+                            }
+                          : {
+                              bgcolor: "#F8FAFC",
+                              color: "#64748B",
+                              borderColor: "#CBD5E1",
+                              "&:hover": { borderColor: "#1F7A6C", bgcolor: "#F1F5F9", color: "#1E293B" },
+                            }),
+                      }}
+                    />
+                  );
+                })}
+              </Box>
+
+              {/* Custom Category Input & Add Button */}
+              <Box sx={{ display: "flex", gap: 1, mb: 1.2 }}>
+                <TextField
+                  placeholder="Type custom category name (e.g. Snacks, Gym, Groceries)..."
+                  size="small"
+                  variant="outlined"
+                  fullWidth
+                  value={customCategoryInput}
+                  onChange={(e) => setCustomCategoryInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddCustomCategory();
+                    }
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "10px",
+                      "&:hover fieldset": { borderColor: "#1F7A6C" },
+                      "&.Mui-focused fieldset": { borderColor: "#1F7A6C" },
+                    },
+                  }}
+                />
+                <Button
+                  variant="outlined"
+                  onClick={handleAddCustomCategory}
+                  disabled={!customCategoryInput.trim()}
+                  sx={{
+                    borderRadius: "10px",
+                    borderColor: "#1F7A6C",
+                    color: "#1F7A6C",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    px: 2,
+                    "&:hover": { bgcolor: "#E6F4F1", borderColor: "#176054" },
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  + Add
+                </Button>
+              </Box>
+
+              {/* Display Custom / Additional Active Categories */}
+              {selectedCategories.some((c) => !POPULAR_CATEGORIES.some((p) => p.name === c)) && (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8, mt: 1, p: 1.2, bgcolor: "#F8FAFC", borderRadius: "10px", border: "1px solid #E2E8F0" }}>
+                  <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ width: "100%", mb: 0.5 }}>
+                    Custom Categories Added:
+                  </Typography>
+                  {selectedCategories
+                    .filter((c) => !POPULAR_CATEGORIES.some((p) => p.name === c))
+                    .map((customCat) => {
+                      const isExisting = editableData && initialCategoriesRef.current.some(
+                        (c) => c.toLowerCase() === customCat.toLowerCase()
+                      );
+
+                      return (
+                        <Chip
+                          key={customCat}
+                          label={`${isExisting ? '🔒 ' : '🏷️ '}${customCat}${isExisting ? ' (Existing)' : ' (Custom)'}`}
+                          onDelete={isExisting ? undefined : () => handleRemoveCustomCategory(customCat)}
+                          sx={{
+                            borderRadius: "8px",
+                            bgcolor: isExisting ? "#F1F5F9" : "#F0FDF4",
+                            color: isExisting ? "#475569" : "#0D9488",
+                            fontWeight: 700,
+                            border: isExisting ? "1.5px solid #94A3B8" : "1.5px dashed #0D9488",
+                            "& .MuiChip-deleteIcon": {
+                              color: "#0D9488",
+                              "&:hover": { color: "#115E59" },
+                            },
+                          }}
+                        />
+                      );
+                    })}
+                </Box>
+              )}
             </Box>
 
             {/* Created By Card */}

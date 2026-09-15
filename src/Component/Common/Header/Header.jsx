@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../../redux/authSlice';
@@ -8,6 +8,7 @@ import Button from '../Primitives/Button';
 import RequestDailog from '../Request/RequestDailog';
 import NotificationDialog from '../Notification/NotificationDialog';
 import { FaBell, FaUserPlus, FaSignOutAlt, FaMoon, FaSun, FaChartPie } from 'react-icons/fa';
+import { API_BASE_URL } from '../../../config/Api';
 
 export const Header = () => {
   const dispatch = useDispatch();
@@ -17,7 +18,32 @@ export const Header = () => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const [openRequests, setOpenRequests] = useState(false);
   const [openNotifications, setOpenNotifications] = useState(false);
+  const [unreadNotifs, setUnreadNotifs] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/notification/getAll`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json', 'x-background-sync': 'true' },
+          credentials: 'include',
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setUnreadNotifs(data.unreadCount || 0);
+        }
+      } catch (err) {
+        // silent catch
+      }
+    };
+
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 25000); // Check every 25s
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   const toggleDarkMode = () => {
     const nextDark = !isDarkMode;
@@ -88,11 +114,19 @@ export const Header = () => {
 
             {/* Notifications */}
             <button
-              onClick={() => setOpenNotifications(true)}
-              className="w-9 h-9 rounded-lg bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-primary)] flex items-center justify-center hover:border-[var(--brand)] transition-all"
+              onClick={() => {
+                setOpenNotifications(true);
+                setUnreadNotifs(0);
+              }}
+              className="relative w-9 h-9 rounded-lg bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-primary)] flex items-center justify-center hover:border-[var(--brand)] transition-all"
               title="Notifications"
             >
               <FaBell className="w-4 h-4" />
+              {unreadNotifs > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center animate-pulse">
+                  {unreadNotifs > 9 ? '9+' : unreadNotifs}
+                </span>
+              )}
             </button>
             <NotificationDialog open={openNotifications} onClose={() => setOpenNotifications(false)} />
 

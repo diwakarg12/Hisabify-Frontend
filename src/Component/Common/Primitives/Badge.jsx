@@ -1,10 +1,10 @@
 import React from 'react';
-import { getCategoryColor } from '../../../helpers/formatters';
+import { getCategoryColor, isCustomCategory } from '../../../helpers/formatters';
 
 /**
  * HisabiFY Badge Primitive
  * Supports:
- * 1. Category Badges (using fixed category colors)
+ * 1. Category Badges (using fixed category colors & custom indicators)
  * 2. Balance Pills (Positive green / Negative red / Neutral)
  */
 export const Badge = ({
@@ -15,7 +15,9 @@ export const Badge = ({
   size = 'md', // 'sm' | 'md'
 }) => {
   if (variant === 'category') {
-    const bgColor = getCategoryColor(categoryName || children);
+    const cat = categoryName || children;
+    const isCustom = isCustomCategory(cat);
+    const bgColor = isCustom ? '#0D9488' : getCategoryColor(cat);
     return (
       <span
         style={{ backgroundColor: `${bgColor}20`, color: bgColor, borderColor: `${bgColor}40` }}
@@ -25,7 +27,7 @@ export const Badge = ({
         `}
       >
         <span className="w-1.5 h-1.5 rounded-full mr-1.5" style={{ backgroundColor: bgColor }} />
-        {categoryName || children}
+        {isCustom ? `🏷️ ${cat} (Custom)` : cat}
       </span>
     );
   }

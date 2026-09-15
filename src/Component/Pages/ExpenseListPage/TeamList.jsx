@@ -13,6 +13,7 @@ import AddTeam from '../../Common/AddTeam/AddTeam';
 import Invite from '../../Common/Invite/Invite';
 import AddExpenseModal from './AddExpenseModal';
 import SettleUpModal from './SettleUpModal';
+import { useConfirm } from '../../Common/Modal/ConfirmDialogContext';
 import { FaPlus, FaUsers, FaUserPlus, FaEllipsisV, FaTrashAlt, FaPen, FaCalendarAlt } from 'react-icons/fa';
 
 const MONTHS = [
@@ -24,12 +25,14 @@ const YEARS = [2024, 2025, 2026, 2027];
 export const TeamList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const confirm = useConfirm();
 
   const { user } = useSelector((state) => state.auth);
   const { groups = [], groupLoading } = useSelector((state) => state.group);
   const { groupExpenses = {} } = useSelector((state) => state.expense);
 
   const [openAddGroup, setOpenAddGroup] = useState(false);
+  const [editingGroup, setEditingGroup] = useState(null);
   const [openInviteGroup, setOpenInviteGroup] = useState(null);
   const [openAddExpenseGroup, setOpenAddExpenseGroup] = useState(null);
   const [openSettleGroup, setOpenSettleGroup] = useState(null);
@@ -60,9 +63,26 @@ export const TeamList = () => {
   );
 
   const handleDelete = async (group) => {
-    if (window.confirm(`Delete '${group.groupName}'? This can't be undone.`)) {
-      await dispatch(deleteGroup(group._id));
-      setDeletableGroup(null);
+    const isOwner = String(group.createdBy?._id || group.createdBy) === String(user?._id);
+    if (!isOwner) {
+      return;
+    }
+
+    const isConfirmed = await confirm({
+      title: "Delete Group",
+      message: `Delete '${group.groupName}'? This action cannot be undone.`,
+      confirmText: "Delete Group",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+
+    if (isConfirmed) {
+      try {
+        await dispatch(deleteGroup(group._id)).unwrap();
+        dispatch(getAllGroup());
+      } catch (err) {
+        // error handled by redux toast
+      }
     }
   };
 
@@ -135,6 +155,7 @@ export const TeamList = () => {
           {groups.map((group) => {
             const gData = groupBalancesMap[group._id] || { netBalance: 0, memberBalances: [] };
             const net = gData.netBalance;
+            const isOwner = String(group.createdBy?._id || group.createdBy) === String(user?._id);
 
             return (
               <Card
@@ -176,16 +197,30 @@ export const TeamList = () => {
                             <FaUserPlus className="w-3.5 h-3.5 text-[var(--brand)] shrink-0" />
                             <span>Invite member</span>
                           </button>
-                          <button
-                            onClick={() => {
-                              setOpenMenuId(null);
-                              handleDelete(group);
-                            }}
-                            className="w-full px-3.5 py-2.5 text-left text-xs font-medium text-[var(--negative)] hover:bg-[var(--negative-bg)] flex items-center gap-2"
-                          >
-                            <FaTrashAlt className="w-3.5 h-3.5 shrink-0" />
-                            <span>Delete group</span>
-                          </button>
+                          {isOwner && (
+                            <button
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                setEditingGroup(group);
+                              }}
+                              className="w-full px-3.5 py-2.5 text-left text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--surface-2)] flex items-center gap-2"
+                            >
+                              <FaPen className="w-3.5 h-3.5 text-[var(--brand)] shrink-0" />
+                              <span>Edit group</span>
+                            </button>
+                          )}
+                          {isOwner && (
+                            <button
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                handleDelete(group);
+                              }}
+                              className="w-full px-3.5 py-2.5 text-left text-xs font-medium text-[var(--negative)] hover:bg-[var(--negative-bg)] flex items-center gap-2"
+                            >
+                              <FaTrashAlt className="w-3.5 h-3.5 shrink-0" />
+                              <span>Delete group</span>
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -282,6 +317,11 @@ export const TeamList = () => {
       {/* Create Team Modal */}
       {openAddGroup && (
         <AddTeam user={user} onClose={() => setOpenAddGroup(false)} />
+      )}
+
+      {/* Edit Team Modal */}
+      {editingGroup && (
+        <AddTeam user={user} editableData={editingGroup} onClose={() => setEditingGroup(null)} />
       )}
 
       {/* Invite Modal */}

@@ -13,6 +13,7 @@ import {
   Tab,
   Tabs,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
@@ -23,12 +24,15 @@ import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import SendIcon from "@mui/icons-material/Send";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import React, { useState, useEffect } from "react";
 import Members from "./Members";
-import { useDispatch } from "react-redux";
-import { getSentRequests, sendInvitation } from "../../../redux/requestSlice";
-import { searchUser } from "../../../redux/groupSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { getSentRequests, sendInvitation, reviewReceivedRequest } from "../../../redux/requestSlice";
+import { searchUser, removeUser, removeDummyUser, getAllGroup } from "../../../redux/groupSlice";
 import FullScreenLoader from "../Loader/FullScreenLoader";
+import { useGlobalLoader } from "../Loader/GlobalLoaderContext";
 import { toast } from "react-toastify";
 import { API_BASE_URL } from "../../../config/Api";
 //#endregion
@@ -36,6 +40,7 @@ import { API_BASE_URL } from "../../../config/Api";
 const Invite = ({ openInvite, handleClose, group }) => {
   //#region Component states
   const dispatch = useDispatch();
+  const currentUser = useSelector((state) => state.auth.user);
   const [pendingInvitation, setPendingInvitation] = useState([]);
   const [owner, setOwner] = useState(null);
   
@@ -63,9 +68,10 @@ const Invite = ({ openInvite, handleClose, group }) => {
     const handlePendingRequest = async () => {
       try {
         const res = await dispatch(getSentRequests(group._id)).unwrap();
-        const pendingRequest = res?.sentInvitations?.map(
-          (invitation) => invitation.invitedTo
-        );
+        const pendingRequest = res?.sentInvitations?.map((invitation) => ({
+          ...(invitation.invitedTo || {}),
+          invitationId: invitation._id,
+        }));
         setPendingInvitation(pendingRequest || []);
         setOwner(group.createdBy?._id || group.createdBy);
       } catch (err) {
@@ -176,6 +182,58 @@ const Invite = ({ openInvite, handleClose, group }) => {
   };
   //#endregion
 
+  const isGroupOwner = Boolean(
+    currentUser?._id && owner && String(currentUser._id) === String(owner)
+  );
+
+  const handleRemoveMember = async (userId) => {
+    if (!isGroupOwner) return;
+    try {
+      setLoading(true);
+      await dispatch(removeUser({ groupId: group._id, userId })).unwrap();
+      dispatch(getAllGroup());
+    } catch (err) {
+      // toast error handled in slice
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveDummy = async (dummyId) => {
+    if (!isGroupOwner) return;
+    try {
+      setLoading(true);
+      const res = await dispatch(removeDummyUser({ groupId: group._id, dummyId })).unwrap();
+      setDummyMembers(res.dummyMembers || []);
+      dispatch(getAllGroup());
+    } catch (err) {
+      // toast error handled in slice
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelInvitation = async (invitationId) => {
+    if (!invitationId || !isGroupOwner) return;
+    try {
+      setLoading(true);
+      await dispatch(
+        reviewReceivedRequest({
+          status: "cancelled",
+          requestId: invitationId,
+          groupId: group._id,
+        })
+      ).unwrap();
+      setPendingInvitation((prev) =>
+        prev.filter((inv) => inv.invitationId !== invitationId && inv._id !== invitationId)
+      );
+    } catch (err) {
+      // toast error handled in thunk
+    } finally {
+      setLoading(false);
+    }
+  };
+
   //#region Tab Data Helper
   const getTabData = () => {
     if (memberTab === "members") return { data: group?.members || [], isDummy: false };
@@ -279,305 +337,332 @@ const Invite = ({ openInvite, handleClose, group }) => {
               },
             }}
           >
-            {/* Mode Switcher Buttons */}
-            <Box
-              sx={{
-                display: "flex",
-                bgcolor: "#F1F5F9",
-                p: 0.5,
-                borderRadius: "12px",
-                gap: 0.5,
-              }}
-            >
-              <Button
-                fullWidth
-                size="small"
-                startIcon={<PersonOutlineIcon />}
-                onClick={() => setMode("invite")}
+            {/* Owner vs Non-Owner Action Section */}
+            {!isGroupOwner ? (
+              <Box
                 sx={{
-                  borderRadius: "9px",
-                  py: 0.8,
-                  textTransform: "none",
-                  fontWeight: 600,
-                  fontSize: "0.85rem",
-                  ...(mode === "invite"
-                    ? {
-                        bgcolor: "#FFFFFF",
-                        color: "#1F7A6C",
-                        boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
-                      }
-                    : { color: "#64748B", "&:hover": { color: "#1E293B" } }),
+                  p: 2,
+                  borderRadius: "12px",
+                  bgcolor: "#E6F4F1",
+                  border: "1px solid #B2E2D9",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
                 }}
               >
-                Invite Real User
-              </Button>
-              <Button
-                fullWidth
-                size="small"
-                startIcon={<SmartToyIcon />}
-                onClick={() => setMode("dummy")}
-                sx={{
-                  borderRadius: "9px",
-                  py: 0.8,
-                  textTransform: "none",
-                  fontWeight: 600,
-                  fontSize: "0.85rem",
-                  ...(mode === "dummy"
-                    ? {
-                        bgcolor: "#FFFFFF",
-                        color: "#1F7A6C",
-                        boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
-                      }
-                    : { color: "#64748B", "&:hover": { color: "#1E293B" } }),
-                }}
-              >
-                Add Dummy User
-              </Button>
-            </Box>
-
-            {/* Invite Real User Form */}
-            {mode === "invite" && (
-              <Box>
-                <Typography variant="subtitle2" fontWeight={600} color="text.primary" sx={{ mb: 0.8 }}>
-                  Search Players by Name or Email
-                </Typography>
-                <Box sx={{ display: "flex", gap: 1 }}>
-                  <TextField
-                    placeholder="Search by name or email (e.g. harsh, har, rkyharsu...)"
-                    size="small"
-                    variant="outlined"
-                    fullWidth
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      if (hasSearched) setHasSearched(false);
-                    }}
-                    onKeyDown={handleKeyDownSearch}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: "#94A3B8" }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        "&:hover fieldset": { borderColor: "#1F7A6C" },
-                        "&.Mui-focused fieldset": { borderColor: "#1F7A6C" },
-                      },
-                    }}
-                  />
+                <InfoOutlinedIcon sx={{ color: "#1F7A6C", fontSize: 24 }} />
+                <Box>
+                  <Typography variant="body2" fontWeight={700} color="#176054">
+                    Restricted Management
+                  </Typography>
+                  <Typography variant="caption" color="#1F7A6C" display="block">
+                    Only the group owner can search, invite, or add new members/dummy users.
+                  </Typography>
+                </Box>
+              </Box>
+            ) : (
+              <>
+                {/* Mode Switcher Buttons */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    bgcolor: "#F1F5F9",
+                    p: 0.5,
+                    borderRadius: "12px",
+                    gap: 0.5,
+                  }}
+                >
                   <Button
-                    variant="contained"
-                    disabled={isSearching || !searchQuery.trim()}
-                    onClick={handleUserSearch}
+                    fullWidth
+                    size="small"
+                    startIcon={<PersonOutlineIcon />}
+                    onClick={() => setMode("invite")}
                     sx={{
-                      bgcolor: "#1F7A6C",
-                      color: "#FFFFFF",
-                      borderRadius: "10px",
-                      px: 2.5,
+                      borderRadius: "9px",
+                      py: 0.8,
                       textTransform: "none",
                       fontWeight: 600,
-                      boxShadow: "0 4px 10px rgba(31, 122, 108, 0.3)",
-                      "&:hover": { bgcolor: "#176054" },
-                      whiteSpace: "nowrap",
+                      fontSize: "0.85rem",
+                      ...(mode === "invite"
+                        ? {
+                            bgcolor: "#FFFFFF",
+                            color: "#1F7A6C",
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                          }
+                        : { color: "#64748B", "&:hover": { color: "#1E293B" } }),
                     }}
                   >
-                    {isSearching ? <CircularProgress size={20} color="inherit" /> : "Search"}
+                    Invite Real User
+                  </Button>
+                  <Button
+                    fullWidth
+                    size="small"
+                    startIcon={<SmartToyIcon />}
+                    onClick={() => setMode("dummy")}
+                    sx={{
+                      borderRadius: "9px",
+                      py: 0.8,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                      ...(mode === "dummy"
+                        ? {
+                            bgcolor: "#FFFFFF",
+                            color: "#1F7A6C",
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                          }
+                        : { color: "#64748B", "&:hover": { color: "#1E293B" } }),
+                    }}
+                  >
+                    Add Dummy User
                   </Button>
                 </Box>
 
-                {/* Search Results Dropdown */}
-                {hasSearched && (
-                  <Paper
-                    variant="outlined"
-                    sx={{
-                      mt: 1,
-                      p: 1.5,
-                      borderRadius: "12px",
-                      bgcolor: "#F8FAFC",
-                      maxHeight: "180px",
-                      overflowY: "auto",
-                      borderColor: "#E2E8F0",
-                    }}
-                  >
-                    {searchResults.length === 0 ? (
-                      <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 1 }}>
-                        No users found matching "{searchQuery}"
-                      </Typography>
-                    ) : (
-                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                        <Typography variant="caption" fontWeight={600} color="text.secondary">
-                          Matching Users ({searchResults.length}):
-                        </Typography>
-                        {searchResults.map((foundUser) => {
-                          const isAlreadyMember = group?.members?.some((m) => m._id === foundUser._id);
-                          const isAlreadyInvited = pendingInvitation.some((p) => p._id === foundUser._id);
-                          const isQueued = usersToInvite.some((u) => u._id === foundUser._id);
-
-                          return (
-                            <Box
-                              key={foundUser._id}
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                p: 1,
-                                borderRadius: "8px",
-                                bgcolor: "#FFFFFF",
-                                border: "1px solid #F1F5F9",
-                                boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-                              }}
-                            >
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                                <Avatar
-                                  src={foundUser.profile}
-                                  sx={{ width: 34, height: 34, bgcolor: "#1F7A6C", fontSize: 14 }}
-                                >
-                                  {foundUser.firstName?.charAt(0)}
-                                </Avatar>
-                                <Box>
-                                  <Typography variant="body2" fontWeight={600} color="text.primary" sx={{ lineHeight: 1.2 }}>
-                                    {foundUser.firstName} {foundUser.lastName}
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    {foundUser.email}
-                                  </Typography>
-                                </Box>
-                              </Box>
-
-                              {isAlreadyMember ? (
-                                <Chip label="Member" size="small" variant="outlined" sx={{ borderRadius: "6px" }} />
-                              ) : isAlreadyInvited ? (
-                                <Chip label="Invited" size="small" color="warning" variant="outlined" sx={{ borderRadius: "6px" }} />
-                              ) : (
-                                <Button
-                                  size="small"
-                                  variant={isQueued ? "outlined" : "contained"}
-                                  disabled={isQueued}
-                                  onClick={() => handleAddUserToQueue(foundUser)}
-                                  startIcon={isQueued ? <CheckIcon /> : <PersonAddIcon />}
-                                  sx={{
-                                    borderRadius: "8px",
-                                    textTransform: "none",
-                                    fontSize: "0.75rem",
-                                    py: 0.4,
-                                    px: 1.5,
-                                    ...(isQueued
-                                      ? { borderColor: "#10B981", color: "#10B981" }
-                                      : { bgcolor: "#1F7A6C", color: "#FFF", "&:hover": { bgcolor: "#176054" } }),
-                                  }}
-                                >
-                                  {isQueued ? "Queued" : "Add"}
-                                </Button>
-                              )}
-                            </Box>
-                          );
-                        })}
-                      </Box>
-                    )}
-                  </Paper>
-                )}
-
-                {/* Queued Users to Invite */}
-                {usersToInvite.length > 0 && (
-                  <Box sx={{ mt: 1.5, p: 1.5, bgcolor: "#E6F4F1", borderRadius: "12px", border: "1px solid #B2E2D9" }}>
-                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-                      <Typography variant="caption" fontWeight={700} color="#176054">
-                        To Invite ({usersToInvite.length} Selected):
-                      </Typography>
-                      <Button
+                {/* Invite Real User Form */}
+                {mode === "invite" && (
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={600} color="text.primary" sx={{ mb: 0.8 }}>
+                      Search Players by Name or Email
+                    </Typography>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <TextField
+                        placeholder="Search by name or email (e.g. harsh, har, rkyharsu...)"
                         size="small"
+                        variant="outlined"
+                        fullWidth
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          if (hasSearched) setHasSearched(false);
+                        }}
+                        onKeyDown={handleKeyDownSearch}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <SearchIcon sx={{ color: "#94A3B8" }} />
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: "10px",
+                            "&:hover fieldset": { borderColor: "#1F7A6C" },
+                            "&.Mui-focused fieldset": { borderColor: "#1F7A6C" },
+                          },
+                        }}
+                      />
+                      <Button
                         variant="contained"
-                        onClick={handleSendAllInvitations}
-                        startIcon={<SendIcon style={{ fontSize: 14 }} />}
+                        disabled={isSearching || !searchQuery.trim()}
+                        onClick={handleUserSearch}
                         sx={{
                           bgcolor: "#1F7A6C",
-                          color: "#FFF",
-                          borderRadius: "8px",
+                          color: "#FFFFFF",
+                          borderRadius: "10px",
+                          px: 2.5,
                           textTransform: "none",
-                          fontSize: "0.75rem",
-                          fontWeight: 700,
+                          fontWeight: 600,
+                          boxShadow: "0 4px 10px rgba(31, 122, 108, 0.3)",
                           "&:hover": { bgcolor: "#176054" },
+                          whiteSpace: "nowrap",
                         }}
                       >
-                        Send Invites
+                        {isSearching ? <CircularProgress size={20} color="inherit" /> : "Search"}
                       </Button>
                     </Box>
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8 }}>
-                      {usersToInvite.map((user) => (
-                        <Chip
-                          key={user._id}
-                          avatar={
-                            <Avatar src={user.profile} sx={{ bgcolor: "#1F7A6C" }}>
-                              {user.firstName?.charAt(0)}
-                            </Avatar>
-                          }
-                          label={`${user.firstName} ${user.lastName || ""}`}
-                          onDelete={() => handleRemoveUserFromQueue(user._id)}
-                          sx={{
+
+                    {/* Search Results Dropdown */}
+                    {hasSearched && (
+                      <Paper
+                        variant="outlined"
+                        sx={{
+                          mt: 1,
+                          p: 1.5,
+                          borderRadius: "12px",
+                          bgcolor: "#F8FAFC",
+                          maxHeight: "180px",
+                          overflowY: "auto",
+                          borderColor: "#E2E8F0",
+                        }}
+                      >
+                        {searchResults.length === 0 ? (
+                          <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 1 }}>
+                            No users found matching "{searchQuery}"
+                          </Typography>
+                        ) : (
+                          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                            <Typography variant="caption" fontWeight={600} color="text.secondary">
+                              Matching Users ({searchResults.length}):
+                            </Typography>
+                            {searchResults.map((foundUser) => {
+                              const isAlreadyMember = group?.members?.some((m) => m._id === foundUser._id);
+                              const isAlreadyInvited = pendingInvitation.some((p) => p._id === foundUser._id);
+                              const isQueued = usersToInvite.some((u) => u._id === foundUser._id);
+
+                              return (
+                                <Box
+                                  key={foundUser._id}
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    p: 1,
+                                    borderRadius: "8px",
+                                    bgcolor: "#FFFFFF",
+                                    border: "1px solid #F1F5F9",
+                                    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                                  }}
+                                >
+                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                                    <Avatar
+                                      src={foundUser.profile}
+                                      sx={{ width: 34, height: 34, bgcolor: "#1F7A6C", fontSize: 14 }}
+                                    >
+                                      {foundUser.firstName?.charAt(0)}
+                                    </Avatar>
+                                    <Box>
+                                      <Typography variant="body2" fontWeight={600} color="text.primary" sx={{ lineHeight: 1.2 }}>
+                                        {foundUser.firstName} {foundUser.lastName}
+                                      </Typography>
+                                      <Typography variant="caption" color="text.secondary">
+                                        {foundUser.email}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+
+                                  {isAlreadyMember ? (
+                                    <Chip label="Member" size="small" variant="outlined" sx={{ borderRadius: "6px" }} />
+                                  ) : isAlreadyInvited ? (
+                                    <Chip label="Invited" size="small" color="warning" variant="outlined" sx={{ borderRadius: "6px" }} />
+                                  ) : (
+                                    <Button
+                                      size="small"
+                                      variant={isQueued ? "outlined" : "contained"}
+                                      disabled={isQueued}
+                                      onClick={() => handleAddUserToQueue(foundUser)}
+                                      startIcon={isQueued ? <CheckIcon /> : <PersonAddIcon />}
+                                      sx={{
+                                        borderRadius: "8px",
+                                        textTransform: "none",
+                                        fontSize: "0.75rem",
+                                        py: 0.4,
+                                        px: 1.5,
+                                        ...(isQueued
+                                          ? { borderColor: "#10B981", color: "#10B981" }
+                                          : { bgcolor: "#1F7A6C", color: "#FFF", "&:hover": { bgcolor: "#176054" } }),
+                                      }}
+                                    >
+                                      {isQueued ? "Queued" : "Add"}
+                                    </Button>
+                                  )}
+                                </Box>
+                              );
+                            })}
+                          </Box>
+                        )}
+                      </Paper>
+                    )}
+
+                    {/* Queued Users to Invite */}
+                    {usersToInvite.length > 0 && (
+                      <Box sx={{ mt: 1.5, p: 1.5, bgcolor: "#E6F4F1", borderRadius: "12px", border: "1px solid #B2E2D9" }}>
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+                          <Typography variant="caption" fontWeight={700} color="#176054">
+                            To Invite ({usersToInvite.length} Selected):
+                          </Typography>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            onClick={handleSendAllInvitations}
+                            startIcon={<SendIcon style={{ fontSize: 14 }} />}
+                            sx={{
+                              bgcolor: "#1F7A6C",
+                              color: "#FFF",
+                              borderRadius: "8px",
+                              textTransform: "none",
+                              fontSize: "0.75rem",
+                              fontWeight: 700,
+                              "&:hover": { bgcolor: "#176054" },
+                            }}
+                          >
+                            Send Invites
+                          </Button>
+                        </Box>
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8 }}>
+                          {usersToInvite.map((user) => (
+                            <Chip
+                              key={user._id}
+                              avatar={
+                                <Avatar src={user.profile} sx={{ bgcolor: "#1F7A6C" }}>
+                                  {user.firstName?.charAt(0)}
+                                </Avatar>
+                              }
+                              label={`${user.firstName} ${user.lastName || ""}`}
+                              onDelete={() => handleRemoveUserFromQueue(user._id)}
+                              sx={{
+                                borderRadius: "10px",
+                                bgcolor: "#FFFFFF",
+                                color: "#176054",
+                                fontWeight: 600,
+                                border: "1px solid #B2E2D9",
+                                "& .MuiChip-deleteIcon": {
+                                  color: "#1F7A6C",
+                                  "&:hover": { color: "#176054" },
+                                },
+                              }}
+                            />
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+
+                {/* Add Dummy User Form */}
+                {mode === "dummy" && (
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={600} color="text.primary" sx={{ mb: 0.8 }}>
+                      Add a Dummy Member (For record-keeping without email account)
+                    </Typography>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <TextField
+                        placeholder="Enter dummy user name (e.g. Cash Expense, Driver, Guest)"
+                        size="small"
+                        variant="outlined"
+                        fullWidth
+                        value={dummyName}
+                        onChange={(e) => setDummyName(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleAddDummy()}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
                             borderRadius: "10px",
-                            bgcolor: "#FFFFFF",
-                            color: "#176054",
-                            fontWeight: 600,
-                            border: "1px solid #B2E2D9",
-                            "& .MuiChip-deleteIcon": {
-                              color: "#1F7A6C",
-                              "&:hover": { color: "#176054" },
-                            },
-                          }}
-                        />
-                      ))}
+                            "&:hover fieldset": { borderColor: "#1F7A6C" },
+                            "&.Mui-focused fieldset": { borderColor: "#1F7A6C" },
+                          },
+                        }}
+                      />
+                      <Button
+                        variant="contained"
+                        disabled={!dummyName.trim()}
+                        onClick={handleAddDummy}
+                        sx={{
+                          bgcolor: "#1F7A6C",
+                          color: "#FFFFFF",
+                          borderRadius: "10px",
+                          px: 2.5,
+                          textTransform: "none",
+                          fontWeight: 600,
+                          boxShadow: "0 4px 10px rgba(31, 122, 108, 0.3)",
+                          "&:hover": { bgcolor: "#176054" },
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        Add Dummy
+                      </Button>
                     </Box>
                   </Box>
                 )}
-              </Box>
-            )}
-
-            {/* Add Dummy User Form */}
-            {mode === "dummy" && (
-              <Box>
-                <Typography variant="subtitle2" fontWeight={600} color="text.primary" sx={{ mb: 0.8 }}>
-                  Add a Dummy Member (For record-keeping without email account)
-                </Typography>
-                <Box sx={{ display: "flex", gap: 1 }}>
-                  <TextField
-                    placeholder="Enter dummy user name (e.g. Cash Expense, Driver, Guest)"
-                    size="small"
-                    variant="outlined"
-                    fullWidth
-                    value={dummyName}
-                    onChange={(e) => setDummyName(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleAddDummy()}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                        "&:hover fieldset": { borderColor: "#1F7A6C" },
-                        "&.Mui-focused fieldset": { borderColor: "#1F7A6C" },
-                      },
-                    }}
-                  />
-                  <Button
-                    variant="contained"
-                    disabled={!dummyName.trim()}
-                    onClick={handleAddDummy}
-                    sx={{
-                      bgcolor: "#1F7A6C",
-                      color: "#FFFFFF",
-                      borderRadius: "10px",
-                      px: 2.5,
-                      textTransform: "none",
-                      fontWeight: 600,
-                      boxShadow: "0 4px 10px rgba(31, 122, 108, 0.3)",
-                      "&:hover": { bgcolor: "#176054" },
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    Add Dummy
-                  </Button>
-                </Box>
-              </Box>
+              </>
             )}
 
             {/* Tabs for View List */}
@@ -620,7 +705,7 @@ const Invite = ({ openInvite, handleClose, group }) => {
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          gap: 1.5,
+                          justifyContent: "space-between",
                           py: 1.2,
                           px: 2,
                           my: 1,
@@ -629,26 +714,47 @@ const Invite = ({ openInvite, handleClose, group }) => {
                           border: "1px solid #F1F5F9",
                         }}
                       >
-                        <Avatar
-                          sx={{
-                            width: 36,
-                            height: 36,
-                            bgcolor: "#E6F4F1",
-                            color: "#1F7A6C",
-                            fontWeight: 700,
-                            fontSize: 14,
-                          }}
-                        >
-                          {dummy.name?.charAt(0).toUpperCase()}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="body2" fontWeight={600}>
-                            {dummy.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Dummy User (No account)
-                          </Typography>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                          <Avatar
+                            sx={{
+                              width: 36,
+                              height: 36,
+                              bgcolor: "#E6F4F1",
+                              color: "#1F7A6C",
+                              fontWeight: 700,
+                              fontSize: 14,
+                            }}
+                          >
+                            {dummy.name?.charAt(0).toUpperCase()}
+                          </Avatar>
+                          <Box>
+                            <Typography variant="body2" fontWeight={600}>
+                              {dummy.name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Dummy User (No account)
+                            </Typography>
+                          </Box>
                         </Box>
+
+                        {/* Remove Dummy User Button (Owner Only) */}
+                        {isGroupOwner && (
+                          <Tooltip title="Remove dummy user">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleRemoveDummy(dummy._id)}
+                              sx={{
+                                color: "#EF4444",
+                                bgcolor: "#FEF2F2",
+                                border: "1px solid #FCA5A5",
+                                "&:hover": { bgcolor: "#FEE2E2", color: "#DC2626" },
+                                p: 0.6,
+                              }}
+                            >
+                              <DeleteOutlineIcon style={{ fontSize: 16 }} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                       </Box>
                     ))
                   )
@@ -666,6 +772,9 @@ const Invite = ({ openInvite, handleClose, group }) => {
                       owner={owner}
                       index={index}
                       memberTab={memberTab === "members"}
+                      currentUserId={currentUser?._id}
+                      onRemoveMember={handleRemoveMember}
+                      onCancelInvitation={handleCancelInvitation}
                     />
                   ))
                 )}

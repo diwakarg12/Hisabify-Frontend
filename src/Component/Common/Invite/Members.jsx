@@ -1,10 +1,12 @@
-import { Avatar, Box, Typography, Chip, Button } from "@mui/material";
+import { Avatar, Box, Typography, Chip, IconButton, Tooltip } from "@mui/material";
 import React from "react";
 import StarIcon from "@mui/icons-material/Star";
 import PersonIcon from "@mui/icons-material/Person";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
-const Members = ({ user, index, memberTab, owner }) => {
+const Members = ({ user, index, memberTab, owner, currentUserId, onRemoveMember, onCancelInvitation }) => {
   const isOwner = user._id === owner;
+  const isCurrentUserOwner = Boolean(currentUserId && owner && String(currentUserId) === String(owner));
 
   return (
     <Box
@@ -50,35 +52,75 @@ const Members = ({ user, index, memberTab, owner }) => {
         </Box>
       </Box>
 
-      {memberTab ? (
-        <Chip
-          icon={isOwner ? <StarIcon style={{ fontSize: 14 }} /> : <PersonIcon style={{ fontSize: 14 }} />}
-          label={isOwner ? "Owner" : "Member"}
-          size="small"
-          sx={{
-            borderRadius: "8px",
-            fontWeight: 600,
-            fontSize: "0.75rem",
-            px: 1,
-            ...(isOwner
-              ? { bgcolor: "#E6F4F1", color: "#1F7A6C", border: "1px solid #B2E2D9" }
-              : { bgcolor: "#F1F5F9", color: "#475569", border: "1px solid #E2E8F0" }),
-          }}
-        />
-      ) : (
-        <Chip
-          label="Pending Request"
-          size="small"
-          sx={{
-            borderRadius: "8px",
-            fontWeight: 600,
-            fontSize: "0.75rem",
-            bgcolor: "#FEF3C7",
-            color: "#D97706",
-            border: "1px solid #FDE68A",
-          }}
-        />
-      )}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        {memberTab ? (
+          <Chip
+            icon={isOwner ? <StarIcon style={{ fontSize: 14 }} /> : <PersonIcon style={{ fontSize: 14 }} />}
+            label={isOwner ? "Owner" : "Member"}
+            size="small"
+            sx={{
+              borderRadius: "8px",
+              fontWeight: 600,
+              fontSize: "0.75rem",
+              px: 1,
+              ...(isOwner
+                ? { bgcolor: "#E6F4F1", color: "#1F7A6C", border: "1px solid #B2E2D9" }
+                : { bgcolor: "#F1F5F9", color: "#475569", border: "1px solid #E2E8F0" }),
+            }}
+          />
+        ) : (
+          <Chip
+            label="Pending Request"
+            size="small"
+            sx={{
+              borderRadius: "8px",
+              fontWeight: 600,
+              fontSize: "0.75rem",
+              bgcolor: "#FEF3C7",
+              color: "#D97706",
+              border: "1px solid #FDE68A",
+            }}
+          />
+        )}
+
+        {/* Remove Member Button (Owner only, cannot remove owner) */}
+        {memberTab && isCurrentUserOwner && !isOwner && (
+          <Tooltip title="Remove member from group">
+            <IconButton
+              size="small"
+              onClick={() => onRemoveMember && onRemoveMember(user._id)}
+              sx={{
+                color: "#EF4444",
+                bgcolor: "#FEF2F2",
+                border: "1px solid #FCA5A5",
+                "&:hover": { bgcolor: "#FEE2E2", color: "#DC2626" },
+                p: 0.6,
+              }}
+            >
+              <DeleteOutlineIcon style={{ fontSize: 16 }} />
+            </IconButton>
+          </Tooltip>
+        )}
+
+        {/* Cancel Pending Invitation Button (Owner only) */}
+        {!memberTab && isCurrentUserOwner && (
+          <Tooltip title="Cancel / Delete invitation">
+            <IconButton
+              size="small"
+              onClick={() => onCancelInvitation && onCancelInvitation(user.invitationId || user._id)}
+              sx={{
+                color: "#EF4444",
+                bgcolor: "#FEF2F2",
+                border: "1px solid #FCA5A5",
+                "&:hover": { bgcolor: "#FEE2E2", color: "#DC2626" },
+                p: 0.6,
+              }}
+            >
+              <DeleteOutlineIcon style={{ fontSize: 16 }} />
+            </IconButton>
+          </Tooltip>
+        )}
+      </Box>
     </Box>
   );
 };

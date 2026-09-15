@@ -15,7 +15,42 @@ export const CATEGORY_COLORS = {
   rent:          '#5F5E5A',
   lentMoney:     '#10B981',
   borrowedMoney: '#EF4444',
+  custom:        '#0D9488',
   other:         '#B4B2A9',
+};
+
+/**
+ * Checks if a given category name is a user-created custom category vs standard built-in category
+ */
+export const isCustomCategory = (categoryName) => {
+  if (!categoryName) return false;
+  const normalized = String(categoryName).toLowerCase().trim();
+  const standardCategories = [
+    'groceries',
+    'food & dining',
+    'fooddining',
+    'food',
+    'rent & bills',
+    'rent',
+    'home',
+    'travel & fuel',
+    'transport',
+    'travel',
+    'cab',
+    'fuel',
+    'shopping',
+    'entertainment',
+    'medical',
+    'health',
+    'trip & vacation',
+    'trip',
+    'vacation',
+    'utilities',
+    'bills',
+    'education',
+    'other',
+  ];
+  return !standardCategories.includes(normalized);
 };
 
 /**

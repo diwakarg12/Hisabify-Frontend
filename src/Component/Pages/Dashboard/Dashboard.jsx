@@ -12,6 +12,7 @@ import EmptyState from '../../Common/Primitives/EmptyState';
 import AddExpenseModal from '../ExpenseListPage/AddExpenseModal';
 import AddLendBorrowModal from '../ExpenseListPage/AddLendBorrowModal';
 import SettleUpModal from '../ExpenseListPage/SettleUpModal';
+import { useConfirm } from '../../Common/Modal/ConfirmDialogContext';
 import { FaPlus, FaHandHoldingUsd, FaReceipt, FaWallet, FaArrowUp, FaArrowDown, FaUsers, FaCalendarAlt, FaTrashAlt } from 'react-icons/fa';
 
 const MONTHS = [
@@ -23,6 +24,7 @@ const YEARS = [2024, 2025, 2026, 2027];
 export const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const confirm = useConfirm();
 
   const { user } = useSelector((state) => state.auth);
   const { groups = [], groupLoading } = useSelector((state) => state.group);
@@ -581,7 +583,14 @@ export const Dashboard = () => {
                               </span>
                               <button
                                 onClick={async () => {
-                                  if (window.confirm(`Delete record for '${personName}'?`)) {
+                                  const isConfirmed = await confirm({
+                                    title: "Delete Record",
+                                    message: `Delete record for '${personName}'? This action cannot be undone.`,
+                                    confirmText: "Delete Record",
+                                    cancelText: "Cancel",
+                                    variant: "danger",
+                                  });
+                                  if (isConfirmed) {
                                     await dispatch(deleteExpense({ expenseId: rec._id, isPersonal: true, groupId: null }));
                                   }
                                 }}

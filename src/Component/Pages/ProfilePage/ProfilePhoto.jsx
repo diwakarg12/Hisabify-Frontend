@@ -1,19 +1,23 @@
 import React, { useRef } from "react";
-import { Avatar, Box, CircularProgress } from "@mui/material";
+import { Avatar, Box, IconButton, Tooltip } from "@mui/material";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { toast } from "react-toastify";
 
-const ProfilePhoto = ({ profile, setUserData }) => {
+const ProfilePhoto = ({ profile, setUserData, editable }) => {
   const fileInputRef = useRef(null);
 
   const handleAvatarClick = () => {
-    fileInputRef.current.click();
+    // Only allow changing photo when in Edit mode
+    if (!editable) return;
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // validations
     if (!file.type.startsWith("image/")) {
       toast.error("Only image files allowed");
       return;
@@ -29,8 +33,6 @@ const ProfilePhoto = ({ profile, setUserData }) => {
 
     reader.onloadend = () => {
       const base64Image = reader.result;
-
-      // ✅ just update local state
       setUserData((prev) => ({
         ...prev,
         profile: base64Image,
@@ -39,19 +41,51 @@ const ProfilePhoto = ({ profile, setUserData }) => {
   };
 
   return (
-    <Box sx={{ position: "relative", width: 100, mx: "auto", display: "flex", justifyContent: "center", alignItems: "center" }}>
+    <Box
+      sx={{
+        position: "relative",
+        width: { xs: 90, sm: 110 },
+        height: { xs: 90, sm: 110 },
+        mx: "auto",
+      }}
+    >
       <Avatar
         src={profile}
         alt="Profile"
+        onClick={handleAvatarClick}
         sx={{
-          width: { xs: 80, sm: 100 },
-          height: { xs: 80, sm: 100 },
-          cursor: "pointer",
+          width: "100%",
+          height: "100%",
+          cursor: editable ? "pointer" : "default",
           border: "3px solid var(--brand)",
           boxShadow: "var(--shadow-3d)",
+          transition: "transform 0.2s ease-in-out",
+          "&:hover": {
+            transform: editable ? "scale(1.03)" : "none",
+          },
         }}
-        onClick={handleAvatarClick}
       />
+
+      {/* Camera Overlay Icon - Enabled only when in Edit mode */}
+      {editable && (
+        <Tooltip title="Change profile photo">
+          <IconButton
+            onClick={handleAvatarClick}
+            size="small"
+            sx={{
+              position: "absolute",
+              bottom: 2,
+              right: 2,
+              bgcolor: "var(--brand)",
+              color: "#FFFFFF",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+              "&:hover": { bgcolor: "var(--brand-hover)" },
+            }}
+          >
+            <CameraAltIcon style={{ fontSize: 18 }} />
+          </IconButton>
+        </Tooltip>
+      )}
 
       <input
         type="file"

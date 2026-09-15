@@ -166,6 +166,9 @@ const requestSlice = createSlice({
                 state.receivedRequest = state.receivedRequest.filter(
                     (req) => req._id !== action.payload.requestId
                 );
+                state.sentRequest = state.sentRequest.filter(
+                    (req) => req._id !== action.payload.requestId
+                );
                 state.error = null;
             })
             .addCase(reviewReceivedRequest.rejected, (state, action) => {

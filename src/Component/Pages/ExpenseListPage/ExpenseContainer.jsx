@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getExpenses, deleteExpense } from '../../../redux/expenseSlice';
-import { formatMoney, formatRelativeDate, CATEGORY_COLORS } from '../../../helpers/formatters';
+import { formatMoney, formatRelativeDate, CATEGORY_COLORS, isCustomCategory, getCategoryColor } from '../../../helpers/formatters';
 import Card from '../../Common/Primitives/Card';
 import Button from '../../Common/Primitives/Button';
 import Badge from '../../Common/Primitives/Badge';
@@ -10,6 +10,7 @@ import Input from '../../Common/Primitives/Input';
 import EmptyState from '../../Common/Primitives/EmptyState';
 import AddExpenseModal from './AddExpenseModal';
 import SettleUpModal from './SettleUpModal';
+import { useConfirm } from '../../Common/Modal/ConfirmDialogContext';
 import {
   FaSearch,
   FaPlus,
@@ -29,11 +30,14 @@ import {
   FaGraduationCap,
   FaHome,
   FaHandHoldingUsd,
+  FaTag,
+  FaPlane,
 } from 'react-icons/fa';
 
 export const ExpenseContainer = () => {
   const { groupId } = useParams();
   const dispatch = useDispatch();
+  const confirm = useConfirm();
 
   const { user } = useSelector((state) => state.auth);
   const { groups = [] } = useSelector((state) => state.group);
@@ -58,11 +62,13 @@ export const ExpenseContainer = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
-    if (groupId) {
-      dispatch(getExpenses(groupId));
-    } else {
-      dispatch(getExpenses());
-    }
+    const fetchExpenses = (isBackground = false) => {
+      dispatch(getExpenses({ groupId, isBackground }));
+    };
+
+    fetchExpenses(false);
+    const interval = setInterval(() => fetchExpenses(true), 15000);
+    return () => clearInterval(interval);
   }, [groupId, dispatch]);
 
   useEffect(() => {
@@ -107,7 +113,15 @@ export const ExpenseContainer = () => {
   const totalPeriodSpend = filteredExpenses.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
 
   const handleDelete = async (expense) => {
-    if (window.confirm(`Delete '${expense.description}'? This can't be undone.`)) {
+    const isConfirmed = await confirm({
+      title: "Delete Expense",
+      message: `Delete '${expense.description}'? This action cannot be undone.`,
+      confirmText: "Delete Expense",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+
+    if (isConfirmed) {
       await dispatch(
         deleteExpense({
           expenseId: expense._id,
@@ -115,6 +129,7 @@ export const ExpenseContainer = () => {
           groupId: groupId || null,
         })
       ).unwrap();
+      dispatch(getExpenses(groupId || null));
       setSelectedExpense(null);
       setIsMobileDetailOpen(false);
     }
@@ -134,18 +149,21 @@ export const ExpenseContainer = () => {
   ];
 
   const getCategoryIcon = (catKey) => {
-    const c = (catKey || '').toLowerCase();
+    const c = (catKey || '').toLowerCase().trim();
     if (c === 'groceries') return FaShoppingBasket;
-    if (c === 'fooddining' || c === 'food & dining') return FaUtensils;
-    if (c === 'transport') return FaCar;
-    if (c === 'utilities') return FaBolt;
-    if (c === 'health') return FaHeartbeat;
-    if (c === 'entertainment') return FaGamepad;
+    if (c === 'fooddining' || c === 'food & dining' || c === 'food') return FaUtensils;
+    if (c === 'rent & bills' || c === 'rent' || c === 'home') return FaHome;
+    if (c === 'travel & fuel' || c === 'transport' || c === 'travel' || c === 'cab' || c === 'fuel') return FaCar;
     if (c === 'shopping') return FaShoppingBag;
+    if (c === 'entertainment') return FaGamepad;
+    if (c === 'medical' || c === 'health') return FaHeartbeat;
+    if (c === 'trip & vacation' || c === 'trip' || c === 'vacation') return FaPlane;
+    if (c === 'utilities' || c === 'bills') return FaBolt;
     if (c === 'education') return FaGraduationCap;
-    if (c === 'rent') return FaHome;
     if (c.includes('lent') || c.includes('lend') || c.includes('friend')) return FaHandHoldingUsd;
-    return FaReceipt;
+    
+    // Distinct tag icon for user-created custom categories!
+    return FaTag;
   };
 
   // Reusable Expense Detail Content Component
@@ -340,16 +358,26 @@ export const ExpenseContainer = () => {
           className="tactile-input h-11 px-3 text-xs sm:text-sm font-medium w-[60%] shrink-0 border border-[var(--border)] rounded-lg box-border"
         >
           <option value="all">All categories</option>
-          <option value="groceries">Groceries</option>
-          <option value="foodDining">Food & Dining</option>
-          <option value="transport">Transport</option>
-          <option value="utilities">Utilities</option>
-          <option value="health">Health</option>
-          <option value="entertainment">Entertainment</option>
-          <option value="shopping">Shopping</option>
-          <option value="education">Education</option>
-          <option value="rent">Rent</option>
-          <option value="other">Other</option>
+          {group?.categories && group.categories.length > 0 ? (
+            group.categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))
+          ) : (
+            <>
+              <option value="groceries">Groceries</option>
+              <option value="foodDining">Food & Dining</option>
+              <option value="transport">Transport</option>
+              <option value="utilities">Utilities</option>
+              <option value="health">Health</option>
+              <option value="entertainment">Entertainment</option>
+              <option value="shopping">Shopping</option>
+              <option value="education">Education</option>
+              <option value="rent">Rent</option>
+              <option value="other">Other</option>
+            </>
+          )}
         </select>
 
         <Button
@@ -407,8 +435,9 @@ export const ExpenseContainer = () => {
                         ? 'You'
                         : `${item.createdBy?.firstName || 'Member'}`;
 
+                    const isCustom = isCustomCategory(item.category);
                     const CatIcon = getCategoryIcon(item.category);
-                    const catColor = CATEGORY_COLORS[item.category] || CATEGORY_COLORS.other;
+                    const catColor = isCustom ? '#0D9488' : (getCategoryColor(item.category) || CATEGORY_COLORS.other);
 
                     return (
                       <div
@@ -437,9 +466,17 @@ export const ExpenseContainer = () => {
                             {item.description}
                           </h4>
                           <div className="flex items-center gap-2 flex-wrap text-xs text-[var(--text-secondary)]">
-                            <span className="capitalize font-semibold text-[var(--text-primary)] bg-[var(--surface-2)] px-2 py-0.5 rounded-md border border-[var(--border)] text-[11px]">
-                              {item.category || 'Other'}
-                            </span>
+                            {isCustom ? (
+                              <span className="capitalize font-bold text-teal-800 dark:text-teal-200 bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 rounded-md border border-teal-300 dark:border-teal-700 text-[11px] flex items-center gap-1 shadow-xs">
+                                <FaTag className="w-2.5 h-2.5 text-teal-600 dark:text-teal-400" />
+                                {item.category}
+                                <span className="text-[9px] font-black uppercase tracking-wider bg-teal-600 text-white px-1 rounded ml-0.5">Custom</span>
+                              </span>
+                            ) : (
+                              <span className="capitalize font-semibold text-[var(--text-primary)] bg-[var(--surface-2)] px-2 py-0.5 rounded-md border border-[var(--border)] text-[11px]">
+                                {item.category || 'Other'}
+                              </span>
+                            )}
                             <span>•</span>
                             <span>Paid by <strong className="text-[var(--text-primary)] font-semibold">{payerName}</strong></span>
                             {item.receiptImage && (

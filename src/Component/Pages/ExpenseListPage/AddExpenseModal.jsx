@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addExpense } from '../../../redux/expenseSlice';
+import { addExpense, getExpenses } from '../../../redux/expenseSlice';
 import { formatMoney } from '../../../helpers/formatters';
 import Button from '../../Common/Primitives/Button';
 import Input from '../../Common/Primitives/Input';
@@ -61,6 +61,13 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
   if (!isOpen) return null;
 
   const currentGroupObj = groups.find((g) => String(g._id) === String(selectedGroup));
+
+  const activeCategories = React.useMemo(() => {
+    if (currentGroupObj?.categories && currentGroupObj.categories.length > 0) {
+      return currentGroupObj.categories.map((c) => ({ id: c, label: c }));
+    }
+    return CATEGORIES;
+  }, [currentGroupObj]);
 
   // Determine split participants
   const members = currentGroupObj
@@ -136,11 +143,14 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
 
     try {
       await dispatch(addExpense({ groupId: selectedGroup || null, data: payload })).unwrap();
+      dispatch(getExpenses(selectedGroup || null));
       setIsSubmitting(false);
-      onClose();
-      // Reset form
+      // Reset form fields
       setAmount('');
       setDescription('');
+      setReceiptImage('');
+      setErrors({});
+      onClose();
     } catch (err) {
       setIsSubmitting(false);
       setErrors({ submit: err?.message || 'Could not save expense. Please retry.' });
@@ -167,7 +177,7 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
         {/* Header */}
         <div className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between bg-[var(--surface-2)]/50">
           <h2 id="add-expense-title" className="text-lg font-semibold text-[var(--text-primary)]">
-            Add expense
+            {defaultGroupId ? 'Add group expense' : 'Add expense'}
           </h2>
           <button
             onClick={onClose}
@@ -180,7 +190,7 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4 flex-1">
-          {/* Main Amount Input (Big Tactile Number Display) */}
+          {/* Main Amount Input */}
           <div className="bg-[var(--surface-2)] p-4 rounded-xl border border-[var(--border)] text-center shadow-inner">
             <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider block mb-1">
               Amount
@@ -225,6 +235,7 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
                 onChange={(e) => {
                   setSelectedGroup(e.target.value);
                 }}
+                disabled={Boolean(defaultGroupId)}
                 className="tactile-input w-full h-11 px-3 text-xs sm:text-sm font-medium"
               >
                 <option value="">Personal expense</option>
@@ -266,7 +277,7 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
                 onChange={(e) => setCategory(e.target.value)}
                 className="tactile-input w-full h-11 px-3 text-xs sm:text-sm font-medium"
               >
-                {CATEGORIES.map((c) => (
+                {activeCategories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.label}
                   </option>
@@ -275,7 +286,7 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
             </div>
           </div>
 
-          {/* Live Split Breakdown Preview (If Group selected) */}
+          {/* Live Split Breakdown Preview */}
           {selectedGroup && calculatedSplits.length > 0 && (
             <div className="p-3.5 bg-[var(--surface-2)] rounded-xl border border-[var(--border)] space-y-2">
               <div className="flex items-center justify-between text-xs font-semibold text-[var(--text-secondary)]">
@@ -297,7 +308,7 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
             </div>
           )}
 
-          {/* Date & Optional Receipt */}
+          {/* Date & Receipt */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div>
               <label className="text-xs font-semibold text-[var(--text-primary)] mb-1 flex items-center gap-1.5">
@@ -307,7 +318,7 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="tactile-input w-full h-11 px-3 text-sm"
+                className="tactile-input w-full h-11 px-3 text-sm font-medium"
               />
             </div>
 
@@ -344,3 +355,4 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
 };
 
 export default AddExpenseModal;
+
