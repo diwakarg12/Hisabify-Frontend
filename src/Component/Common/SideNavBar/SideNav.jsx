@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaChartPie, FaReceipt, FaUsers, FaCog, FaPlus, FaUser } from 'react-icons/fa';
+import { FaChartPie, FaReceipt, FaUsers, FaCog, FaPlus, FaHandHoldingUsd } from 'react-icons/fa';
 
 const NAV_ITEMS = [
   { name: 'Dashboard', icon: FaChartPie, link: '/dashboard' },
   { name: 'Group expenses', icon: FaUsers, link: '/teamlist' },
   { name: 'Personal expenses', icon: FaReceipt, link: '/myexpense' },
+  { name: 'Lend & Borrow', icon: FaHandHoldingUsd, link: '/lend-borrow' },
   { name: 'Settings', icon: FaCog, link: '/setting' },
 ];
 
@@ -56,13 +57,13 @@ export const SideNav = ({ isMobile = false, onOpenAddExpense }) => {
         </Link>
 
         <Link
-          to="/profile"
+          to="/lend-borrow"
           className={`flex flex-col items-center justify-center w-12 h-12 rounded-lg transition-colors ${
-            location.pathname === '/profile' ? 'text-[var(--brand)] font-bold' : 'text-[var(--text-secondary)]'
+            location.pathname === '/lend-borrow' ? 'text-[var(--brand)] font-bold' : 'text-[var(--text-secondary)]'
           }`}
         >
-          <FaUser className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5">Profile</span>
+          <FaHandHoldingUsd className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5">Lend/Borrow</span>
         </Link>
       </nav>
     );

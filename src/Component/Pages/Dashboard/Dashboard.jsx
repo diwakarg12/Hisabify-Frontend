@@ -172,115 +172,126 @@ export const Dashboard = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Month & Year Selection Bar */}
-          <div className="flex items-center gap-1 bg-[var(--surface-2)] p-1 rounded-xl border border-[var(--border)] shadow-sm">
-            <FaCalendarAlt className="text-[var(--brand)] w-3.5 h-3.5 ml-2 shrink-0" />
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="bg-transparent text-xs font-semibold text-[var(--text-primary)] py-1.5 px-2 focus:outline-none cursor-pointer"
-              aria-label="Select month"
-            >
-              {MONTHS.map((m, idx) => (
-                <option key={idx} value={idx}>
-                  {m}
-                </option>
-              ))}
-            </select>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+          {/* Top row on mobile: Month/Year Selection Bar + Lend/Borrow Button */}
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            {/* Month & Year Selection Bar */}
+            <div className="flex-1 sm:flex-initial flex items-center justify-between sm:justify-start gap-1 bg-[var(--surface-2)] p-1 rounded-xl border border-[var(--border)] shadow-sm">
+              <FaCalendarAlt className="text-[var(--brand)] w-3.5 h-3.5 ml-2 shrink-0" />
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                className="bg-transparent text-xs font-semibold text-[var(--text-primary)] py-1.5 px-1.5 focus:outline-none cursor-pointer"
+                aria-label="Select month"
+              >
+                {MONTHS.map((m, idx) => (
+                  <option key={idx} value={idx}>
+                    {m}
+                  </option>
+                ))}
+              </select>
 
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="bg-transparent text-xs font-semibold text-[var(--text-primary)] py-1.5 px-2 focus:outline-none cursor-pointer border-l border-[var(--border)]"
-              aria-label="Select year"
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                className="bg-transparent text-xs font-semibold text-[var(--text-primary)] py-1.5 px-1.5 focus:outline-none cursor-pointer border-l border-[var(--border)]"
+                aria-label="Select year"
+              >
+                {YEARS.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setIsLendBorrowOpen(true)}
+              icon={FaHandHoldingUsd}
+              className="shrink-0 font-medium h-10 text-xs"
             >
-              {YEARS.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
+              Lend / Borrow
+            </Button>
           </div>
 
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => setIsLendBorrowOpen(true)}
-            icon={FaHandHoldingUsd}
-            className="shrink-0 font-medium h-10"
-          >
-            Lend / Borrow
-          </Button>
-
+          {/* Add Expense Button: Full width below on mobile, auto width on desktop */}
           <Button
             size="sm"
             variant="primary"
+            fullWidth
             onClick={() => {
               setSelectedGroupId(null);
               setIsAddExpenseOpen(true);
             }}
             icon={FaPlus}
-            className="shrink-0 font-medium h-10"
+            className="sm:w-auto font-semibold h-10 text-xs sm:text-sm"
           >
             Add expense
           </Button>
         </div>
       </div>
 
-      {/* 1. Metric Summary Cards Row */}
+      {/* 1. Metric Summary Cards Row - Explicit Left Alignment */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* You Will Get */}
-        <Card className="p-5 border-l-4 border-l-[var(--positive)] flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
-          <div>
-            <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider block mb-1">
-              You will get
-            </span>
-            <div className="text-2xl md:text-3xl font-extrabold text-[var(--positive)] tabular-nums">
-              {formatMoney(youAreOwedTotal)}
+        <Card className="p-4 sm:p-5 border-l-4 border-l-[var(--positive)] shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between gap-3 text-left w-full">
+            <div className="min-w-0 flex-1 text-left">
+              <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider block mb-1">
+                You will get
+              </span>
+              <div className="text-2xl md:text-3xl font-extrabold text-[var(--positive)] tabular-nums truncate">
+                {formatMoney(youAreOwedTotal)}
+              </div>
+              <span className="text-[11px] font-medium text-[var(--text-muted)] mt-1 block truncate">
+                Overall total balance to receive
+              </span>
             </div>
-            <span className="text-[11px] font-medium text-[var(--text-muted)] mt-1 block">
-              Overall total balance to receive
-            </span>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-[var(--positive)] flex items-center justify-center shrink-0">
-            <FaArrowDown className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-[var(--positive)] flex items-center justify-center shrink-0">
+              <FaArrowDown className="w-5 h-5" />
+            </div>
           </div>
         </Card>
 
         {/* You Have To Give */}
-        <Card className="p-5 border-l-4 border-l-[var(--negative)] flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
-          <div>
-            <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider block mb-1">
-              You have to give
-            </span>
-            <div className="text-2xl md:text-3xl font-extrabold text-[var(--negative)] tabular-nums">
-              {formatMoney(youOweTotal)}
+        <Card className="p-4 sm:p-5 border-l-4 border-l-[var(--negative)] shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between gap-3 text-left w-full">
+            <div className="min-w-0 flex-1 text-left">
+              <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider block mb-1">
+                You have to give
+              </span>
+              <div className="text-2xl md:text-3xl font-extrabold text-[var(--negative)] tabular-nums truncate">
+                {formatMoney(youOweTotal)}
+              </div>
+              <span className="text-[11px] font-medium text-[var(--text-muted)] mt-1 block truncate">
+                Overall total balance to pay
+              </span>
             </div>
-            <span className="text-[11px] font-medium text-[var(--text-muted)] mt-1 block">
-              Overall total balance to pay
-            </span>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-rose-500/10 text-[var(--negative)] flex items-center justify-center shrink-0">
-            <FaArrowUp className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl bg-rose-500/10 text-[var(--negative)] flex items-center justify-center shrink-0">
+              <FaArrowUp className="w-5 h-5" />
+            </div>
           </div>
         </Card>
 
         {/* Spent This Month */}
-        <Card className="p-5 border-l-4 border-l-[var(--brand)] flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
-          <div>
-            <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider block mb-1">
-              Spent in {MONTHS[selectedMonth]}
-            </span>
-            <div className="text-2xl md:text-3xl font-extrabold text-[var(--text-primary)] tabular-nums">
-              {formatMoney(monthlySpent)}
+        <Card className="p-4 sm:p-5 border-l-4 border-l-[var(--brand)] shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between gap-3 text-left w-full">
+            <div className="min-w-0 flex-1 text-left">
+              <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider block mb-1">
+                Spent in {MONTHS[selectedMonth]}
+              </span>
+              <div className="text-2xl md:text-3xl font-extrabold text-[var(--text-primary)] tabular-nums truncate">
+                {formatMoney(monthlySpent)}
+              </div>
+              <span className="text-[11px] font-semibold text-[var(--brand)] mt-1 block truncate">
+                Duration: {MONTHS[selectedMonth]} {selectedYear}
+              </span>
             </div>
-            <span className="text-[11px] font-semibold text-[var(--brand)] mt-1 block">
-              Duration: {MONTHS[selectedMonth]} {selectedYear}
-            </span>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-[var(--brand-light)] text-[var(--brand)] flex items-center justify-center shrink-0">
-            <FaWallet className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl bg-[var(--brand-light)] text-[var(--brand)] flex items-center justify-center shrink-0">
+              <FaWallet className="w-5 h-5" />
+            </div>
           </div>
         </Card>
       </div>

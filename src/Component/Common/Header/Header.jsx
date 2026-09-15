@@ -68,6 +68,7 @@ export const Header = () => {
     if (path === '/myexpense') return 'Personal expenses';
     if (path === '/teamlist') return 'Group expenses';
     if (path.startsWith('/group-expense')) return 'Group expenses';
+    if (path === '/lend-borrow') return 'Lend & Borrow';
     if (path === '/setting') return 'Settings';
     if (path === '/contact') return 'Contact us';
     if (path === '/profile') return 'Profile';

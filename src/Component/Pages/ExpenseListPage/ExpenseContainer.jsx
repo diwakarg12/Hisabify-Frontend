@@ -81,6 +81,15 @@ export const ExpenseContainer = () => {
   const filteredExpenses = useMemo(() => {
     return expenses.filter((item) => {
       if (!item || item.isDeleted) return false;
+
+      // Exclude direct Lend & Borrow records from personal expenses view (they have their own dedicated /lend-borrow page)
+      if (!groupId) {
+        const cat = (item.category || '').toLowerCase();
+        if (cat === 'lentmoney' || cat === 'borrowedmoney' || cat.includes('lent') || cat.includes('borrow')) {
+          return false;
+        }
+      }
+
       const d = item.date ? new Date(item.date) : new Date();
 
       const matchMonth = d.getMonth() === Number(selectedMonth);
@@ -97,7 +106,7 @@ export const ExpenseContainer = () => {
 
       return matchMonth && matchYear && matchSearch && matchCategory;
     });
-  }, [expenses, selectedMonth, selectedYear, searchQuery, selectedCategory]);
+  }, [expenses, groupId, selectedMonth, selectedYear, searchQuery, selectedCategory]);
 
   // Group by sticky dates
   const groupedByDate = useMemo(() => {

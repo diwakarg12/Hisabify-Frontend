@@ -7,6 +7,7 @@ import ProfilePage from "../Component/Pages/ProfilePage/ProfilePage";
 import Dashboard from "../Component/Pages/Dashboard/Dashboard";
 import TeamList from "../Component/Pages/ExpenseListPage/TeamList";
 import ExpenseContainer from "../Component/Pages/ExpenseListPage/ExpenseContainer";
+import LendBorrowContainer from "../Component/Pages/LendBorrowPage/LendBorrowContainer";
 import WithAuthRoutes from "../helpers/withAuthRoutes";
 import Contact from "../Component/Pages/Contact/Contact";
 import Setting from "../Component/Pages/Setting/Setting";
@@ -114,6 +115,16 @@ const RoutesConfig = () => {
         <WithAuthRoutes>
           <LandingPage>
             <ExpenseContainer />
+          </LandingPage>
+        </WithAuthRoutes>
+      ),
+    },
+    {
+      path: "/lend-borrow",
+      element: (
+        <WithAuthRoutes>
+          <LandingPage>
+            <LendBorrowContainer />
           </LandingPage>
         </WithAuthRoutes>
       ),
