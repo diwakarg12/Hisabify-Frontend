@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { updateProfile, updateEmail, updatePhone } from '../../../redux/authSlice';
+import { updateProfile, updateEmail, updatePhone, logout } from '../../../redux/authSlice';
 import Card from '../../Common/Primitives/Card';
 import Button from '../../Common/Primitives/Button';
 import Input from '../../Common/Primitives/Input';
@@ -15,6 +15,7 @@ import {
   FaPen,
   FaSave,
   FaTimes,
+  FaSignOutAlt,
 } from 'react-icons/fa';
 
 export const ProfilePage = () => {
@@ -76,6 +77,11 @@ export const ProfilePage = () => {
     }
   };
 
+  const handleLogout = async () => {
+    await dispatch(logout()).unwrap();
+    navigate('/');
+  };
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">
       {/* Header Alignment */}
@@ -91,15 +97,6 @@ export const ProfilePage = () => {
 
         {editable ? (
           <div className="flex items-center gap-2 shrink-0">
-            {/* <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setEditable(false)}
-              icon={FaTimes}
-              className="whitespace-nowrap"
-            >
-              Cancel
-            </Button> */}
             <Button
               variant="primary"
               size="sm"
@@ -282,6 +279,27 @@ export const ProfilePage = () => {
           </div>
         </Card>
       </div>
+
+      {/* Account Logout Action Card */}
+      <Card className="p-5 border-l-4 border-l-[var(--negative)]">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h4 className="text-sm font-bold text-[var(--text-primary)]">Log out of your account</h4>
+            <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+              Sign out of your active session on this device.
+            </p>
+          </div>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={handleLogout}
+            icon={FaSignOutAlt}
+            className="w-full sm:w-auto font-semibold shrink-0"
+          >
+            Log out
+          </Button>
+        </div>
+      </Card>
 
       {/* Bottom Save Profile Button */}
       {editable && (
