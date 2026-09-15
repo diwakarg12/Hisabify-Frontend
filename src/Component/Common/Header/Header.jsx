@@ -144,11 +144,12 @@ export const Header = () => {
               )}
             </Link>
 
-            {/* Logout button desktop */}
+            {/* Logout button (Desktop only, hidden on mobile phone screens) */}
             <button
               onClick={handleLogout}
-              className="hidden md:flex w-9 h-9 rounded-lg bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-secondary)] items-center justify-center hover:text-[var(--negative)] hover:border-[var(--negative)] transition-all"
+              className="hidden md:flex w-9 h-9 rounded-lg bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-secondary)] items-center justify-center hover:text-[var(--negative)] hover:border-[var(--negative)] transition-all shrink-0"
               title="Log out"
+              aria-label="Log out"
             >
               <FaSignOutAlt className="w-4 h-4" />
             </button>
