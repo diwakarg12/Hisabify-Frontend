@@ -3,9 +3,10 @@
   "name": "HisabiFY - Expense Tracker & Bill Splitter",
   "icons": [
     {
-      "src": "/vite.svg",
-      "type": "image/svg+xml",
-      "sizes": "192x192 512x512"
+      "src": "/logo-dark.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/",
