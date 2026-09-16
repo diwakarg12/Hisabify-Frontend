@@ -42,7 +42,8 @@ export const Login = ({ setIsLogin }) => {
       await dispatch(login(form)).unwrap();
       navigate('/dashboard');
     } catch (err) {
-      setErrorMsg(err?.message || 'Email or password is not correct');
+      const message = typeof err === 'string' ? err : err?.message || 'Email or password is not correct';
+      setErrorMsg(message);
     }
   };
 

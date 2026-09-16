@@ -24,15 +24,17 @@ export const register = createAsyncThunk('create', async (user, { rejectWithValu
         const result = await response.json();
 
         if (!response.ok) {
-            toast.error(result);
-            return rejectWithValue(result?.message);
+            const errorMsg = result?.message || result?.error || "Registration failed";
+            toast.error(errorMsg);
+            return rejectWithValue(errorMsg);
         }
-        toast.success("Signup Successful !")
+        toast.success("Signup Successful!");
         return result;
 
     } catch (error) {
-        toast.error(error);
-        return rejectWithValue(error?.message);
+        const errorMsg = error?.message || "Server error";
+        toast.error(errorMsg);
+        return rejectWithValue(errorMsg);
     }
 })
 
@@ -51,13 +53,18 @@ export const login = createAsyncThunk('login', async (user, { rejectWithValue })
         const result = await response.json();
 
         if (!response.ok) {
-            return rejectWithValue(result?.message);
+            const errorMsg = result?.message || result?.error || "Login failed";
+            toast.error(errorMsg);
+            return rejectWithValue(errorMsg);
         }
 
+        toast.success("Login Successful!");
         return result;
 
     } catch (error) {
-        return rejectWithValue(error);
+        const errorMsg = error?.message || "Server error";
+        toast.error(errorMsg);
+        return rejectWithValue(errorMsg);
     }
 })
 
@@ -80,13 +87,18 @@ export const sendResetOtp = createAsyncThunk(
             const result = await response.json();
 
             if (!response.ok) {
-                return rejectWithValue(result?.message);
+                const errorMsg = result?.message || result?.error || "Failed to send OTP";
+                toast.error(errorMsg);
+                return rejectWithValue(errorMsg);
             }
 
+            toast.success("Reset OTP sent to your email!");
             return result;
 
         } catch (error) {
-            return rejectWithValue(error?.message);
+            const errorMsg = error?.message || "Server error";
+            toast.error(errorMsg);
+            return rejectWithValue(errorMsg);
         }
     }
 );
@@ -110,13 +122,18 @@ export const verifyResetOtp = createAsyncThunk(
             const result = await response.json();
 
             if (!response.ok) {
-                return rejectWithValue(result?.message);
+                const errorMsg = result?.message || result?.error || "OTP verification failed";
+                toast.error(errorMsg);
+                return rejectWithValue(errorMsg);
             }
 
+            toast.success("Password reset successful!");
             return result;
 
         } catch (error) {
-            return rejectWithValue(error?.message);
+            const errorMsg = error?.message || "Server error";
+            toast.error(errorMsg);
+            return rejectWithValue(errorMsg);
         }
     }
 );
@@ -133,14 +150,18 @@ export const logout = createAsyncThunk('logout', async (_, { dispatch, rejectWit
         const result = await response.json();
 
         if (!response.ok) {
-            return rejectWithValue(result?.message);
+            const errorMsg = result?.message || result?.error || "Logout failed";
+            toast.error(errorMsg);
+            return rejectWithValue(errorMsg);
         }
 
         dispatch(resetAuth());
-
-        return result
+        toast.success("Logged out successfully!");
+        return result;
     } catch (error) {
-        return rejectWithValue(error);
+        const errorMsg = error?.message || "Server error";
+        toast.error(errorMsg);
+        return rejectWithValue(errorMsg);
     }
 })
 
@@ -161,7 +182,7 @@ export const checkAuth = createAsyncThunk('checkAuth', async (_, { getState, rej
         const result = await response.json();
 
         if (!response.ok) {
-            return rejectWithValue(result?.message || "UnAuthorized");
+            return rejectWithValue(result?.message || "Unauthorized");
         }
 
         return result;
@@ -184,13 +205,18 @@ export const updateProfile = createAsyncThunk('updateProfile', async (data, { re
         const result = await response.json();
 
         if (!response.ok) {
-            return rejectWithValue(result?.message);
+            const errorMsg = result?.message || result?.error || "Failed to update profile";
+            toast.error(errorMsg);
+            return rejectWithValue(errorMsg);
         }
 
+        toast.success("Profile updated successfully!");
         return result;
 
     } catch (error) {
-        return rejectWithValue(error.message || 'Server unreachable or CORS blocked');
+        const errorMsg = error.message || 'Server unreachable or CORS blocked';
+        toast.error(errorMsg);
+        return rejectWithValue(errorMsg);
     }
 });
 
@@ -203,18 +229,23 @@ export const updatePhone = createAsyncThunk('updatePhone', async (phone, { rejec
                 "Content-type": "application/json"
             },
             credentials: 'include',
-            body: JSON.stringify(phone)
+            body: JSON.stringify({ phone })
         });
         const result = await response.json();
 
         if (!response.ok) {
-            return rejectWithValue(result?.message);
+            const errorMsg = result?.message || result?.error || "Failed to update phone number";
+            toast.error(errorMsg);
+            return rejectWithValue(errorMsg);
         }
 
+        toast.success("Phone number updated successfully!");
         return result;
 
     } catch (error) {
-        return rejectWithValue(error);
+        const errorMsg = error?.message || "Failed to update phone number";
+        toast.error(errorMsg);
+        return rejectWithValue(errorMsg);
     }
 });
 
@@ -232,13 +263,18 @@ export const updateEmail = createAsyncThunk('updateEmail', async (email, { rejec
         const result = await response.json();
 
         if (!response.ok) {
-            return rejectWithValue(result?.message);
+            const errorMsg = result?.message || result?.error || "Failed to update email address";
+            toast.error(errorMsg);
+            return rejectWithValue(errorMsg);
         }
 
+        toast.success("Email address updated successfully!");
         return result;
 
     } catch (error) {
-        return rejectWithValue(error);
+        const errorMsg = error?.message || "Failed to update email address";
+        toast.error(errorMsg);
+        return rejectWithValue(errorMsg);
     }
 });
 
