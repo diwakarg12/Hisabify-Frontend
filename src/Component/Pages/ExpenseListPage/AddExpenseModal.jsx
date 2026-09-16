@@ -58,8 +58,6 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
     }
   }, [defaultGroupId]);
 
-  if (!isOpen) return null;
-
   const currentGroupObj = groups.find((g) => String(g._id) === String(selectedGroup));
 
   const activeCategories = React.useMemo(() => {
@@ -68,6 +66,8 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
     }
     return CATEGORIES;
   }, [currentGroupObj]);
+
+  if (!isOpen) return null;
 
   // Determine split participants
   const members = currentGroupObj
