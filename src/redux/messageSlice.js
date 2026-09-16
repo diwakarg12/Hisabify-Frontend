@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { toast } from 'react-toastify'
-import { API_BASE_URL } from "../config/Api";
+import { toast } from 'react-toastify';
+import { API_BASE_URL, getAuthHeaders } from "../config/Api";
 
 const initialState = {
     messages: [],
@@ -15,9 +15,7 @@ export const sendMessage = createAsyncThunk("sendMessage", async (data, { reject
 
         const response = await fetch(`${API_BASE_URL}/message/send`, {
             method: "POST",
-            headers: {
-                "Content-type": "application/json",
-            },
+            headers: getAuthHeaders(),
             credentials: "include",
             body: JSON.stringify(data)
         });
@@ -44,9 +42,7 @@ export const deleteMessage = createAsyncThunk("deleteMessage", async (id, { reje
 
         const response = await fetch(`${API_BASE_URL}/message/delete/${id}`, {
             method: "DELETE",
-            headers: {
-                "Content-type": "application/json"
-            },
+            headers: getAuthHeaders(),
             credentials: "include",
         });
 
@@ -79,7 +75,7 @@ export const getAllMessage = createAsyncThunk(
         try {
             const response = await fetch(`${API_BASE_URL}/message/getAll`, {
                 method: "GET",
-                headers: { "Content-type": "application/json" },
+                headers: getAuthHeaders(),
                 credentials: "include",
             });
 

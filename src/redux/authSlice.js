@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { toast } from 'react-toastify'
-import { API_BASE_URL } from "../config/Api";
+import { toast } from 'react-toastify';
+import { API_BASE_URL, getAuthHeaders } from "../config/Api";
 
 const initialState = {
     user: null,
@@ -15,9 +15,7 @@ export const register = createAsyncThunk('create', async (user, { rejectWithValu
     try {
         const response = await fetch(`${API_BASE_URL}/auth/signup`, {
             method: 'POST',
-            headers: {
-                "Content-type": "application/json"
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify(user),
             credentials: 'include'
         });
@@ -27,6 +25,9 @@ export const register = createAsyncThunk('create', async (user, { rejectWithValu
             const errorMsg = result?.message || result?.error || "Registration failed";
             toast.error(errorMsg);
             return rejectWithValue(errorMsg);
+        }
+        if (result?.token) {
+            localStorage.setItem('token', result.token);
         }
         toast.success("Signup Successful!");
         return result;
@@ -43,9 +44,7 @@ export const login = createAsyncThunk('login', async (user, { rejectWithValue })
         const response = await fetch(`${API_BASE_URL}/auth/login`,
             {
                 method: 'POST',
-                headers: {
-                    "Content-type": "application/json"
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(user),
                 credentials: 'include'
             },
@@ -56,6 +55,9 @@ export const login = createAsyncThunk('login', async (user, { rejectWithValue })
             const errorMsg = result?.message || result?.error || "Login failed";
             toast.error(errorMsg);
             return rejectWithValue(errorMsg);
+        }
+        if (result?.token) {
+            localStorage.setItem('token', result.token);
         }
 
         toast.success("Login Successful!");
@@ -77,9 +79,7 @@ export const sendResetOtp = createAsyncThunk(
                 `${API_BASE_URL}/auth/send-reset-otp`,
                 {
                     method: 'POST',
-                    headers: {
-                        "Content-type": "application/json"
-                    },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({ email })
                 }
             );
@@ -112,9 +112,7 @@ export const verifyResetOtp = createAsyncThunk(
                 `${API_BASE_URL}/auth/verify-reset-otp`,
                 {
                     method: 'POST',
-                    headers: {
-                        "Content-type": "application/json"
-                    },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify(data)
                 }
             );
@@ -142,9 +140,7 @@ export const logout = createAsyncThunk('logout', async (_, { dispatch, rejectWit
     try {
         const response = await fetch(`${API_BASE_URL}/auth/logout`, {
             method: 'POST',
-            headers: {
-                "Content-type": "application/json"
-            },
+            headers: getAuthHeaders(),
             credentials: 'include'
         });
         const result = await response.json();
@@ -155,10 +151,12 @@ export const logout = createAsyncThunk('logout', async (_, { dispatch, rejectWit
             return rejectWithValue(errorMsg);
         }
 
+        localStorage.removeItem('token');
         dispatch(resetAuth());
         toast.success("Logged out successfully!");
         return result;
     } catch (error) {
+        localStorage.removeItem('token');
         const errorMsg = error?.message || "Server error";
         toast.error(errorMsg);
         return rejectWithValue(errorMsg);
@@ -174,14 +172,13 @@ export const checkAuth = createAsyncThunk('checkAuth', async (_, { getState, rej
     try {
         const response = await fetch(`${API_BASE_URL}/auth/check`, {
             method: 'GET',
-            headers: {
-                "Content-type": "application/json"
-            },
+            headers: getAuthHeaders(),
             credentials: 'include'
         });
         const result = await response.json();
 
         if (!response.ok) {
+            localStorage.removeItem('token');
             return rejectWithValue(result?.message || "Unauthorized");
         }
 
@@ -196,9 +193,7 @@ export const updateProfile = createAsyncThunk('updateProfile', async (data, { re
 
         const response = await fetch(`${API_BASE_URL}/profile/update`, {
             method: 'PATCH',
-            headers: {
-                "Content-type": "application/json"
-            },
+            headers: getAuthHeaders(),
             credentials: 'include',
             body: JSON.stringify(data)
         });
@@ -225,9 +220,7 @@ export const updatePhone = createAsyncThunk('updatePhone', async (phone, { rejec
 
         const response = await fetch(`${API_BASE_URL}/profile/update-phone`, {
             method: 'PATCH',
-            headers: {
-                "Content-type": "application/json"
-            },
+            headers: getAuthHeaders(),
             credentials: 'include',
             body: JSON.stringify({ phone })
         });
@@ -254,9 +247,7 @@ export const updateEmail = createAsyncThunk('updateEmail', async (email, { rejec
 
         const response = await fetch(`${API_BASE_URL}/profile/update-email`, {
             method: 'PATCH',
-            headers: {
-                "Content-type": "application/json"
-            },
+            headers: getAuthHeaders(),
             credentials: 'include',
             body: JSON.stringify({ email })
         });
@@ -283,9 +274,7 @@ export const deleteProfile = createAsyncThunk('deleteProfile', async (_, { rejec
 
         const response = await fetch(`${API_BASE_URL}/profile/delete`, {
             method: 'DELETE',
-            headers: {
-                "Content-type": "application/json"
-            },
+            headers: getAuthHeaders(),
             credentials: 'include'
         });
         const result = await response.json();
@@ -308,6 +297,7 @@ const authSlice = createSlice({
 
     reducers: {
         resetAuth: (state) => {
+            localStorage.removeItem('token');
             state.user = null;
             state.isAuthenticated = false;
             state.authLoading = false;

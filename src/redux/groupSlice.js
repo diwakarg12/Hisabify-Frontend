@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
-import { API_BASE_URL } from "../config/Api";
+import { API_BASE_URL, getAuthHeaders } from "../config/Api";
 
 const initialState = {
     groups: [],
@@ -22,7 +22,7 @@ export const searchUser = createAsyncThunk(
                 `${API_BASE_URL}/group/searchUser/${encodeURIComponent(query.trim())}`,
                 {
                     method: 'GET',
-                    headers: { "Content-type": "application/json" },
+                    headers: getAuthHeaders(),
                     credentials: 'include',
                 }
             );
@@ -49,9 +49,7 @@ export const createGroup = createAsyncThunk('createGroup', async (data, { reject
 
         const response = await fetch(`${API_BASE_URL}/group/create`, {
             method: 'POST',
-            headers: {
-                "Content-type": "application/json"
-            },
+            headers: getAuthHeaders(),
             credentials: 'include',
             body: JSON.stringify(data)
         });
@@ -75,9 +73,7 @@ export const updateGroup = createAsyncThunk('updateGroup', async ({ data, groupI
 
         const response = await fetch(`${API_BASE_URL}/group/update/${groupId}`, {
             method: 'PUT',
-            headers: {
-                "Content-type": "application/json"
-            },
+            headers: getAuthHeaders(),
             credentials: 'include',
             body: JSON.stringify(data)
         });
@@ -101,9 +97,7 @@ export const removeUser = createAsyncThunk('removeUser', async ({ groupId, userI
 
         const response = await fetch(`${API_BASE_URL}/group/remove-user/${groupId}/${userId}`, {
             method: 'POST',
-            headers: {
-                "Content-type": "application/json"
-            },
+            headers: getAuthHeaders(),
             credentials: 'include',
         });
 
@@ -129,7 +123,7 @@ export const removeDummyUser = createAsyncThunk(
                 `${API_BASE_URL}/group/remove-dummy/${groupId}/${dummyId}`,
                 {
                     method: 'DELETE',
-                    headers: { "Content-type": "application/json" },
+                    headers: getAuthHeaders(),
                     credentials: 'include',
                 }
             );
@@ -156,7 +150,7 @@ export const deleteGroup = createAsyncThunk(
                 `${API_BASE_URL}/group/delete/${groupId}`,
                 {
                     method: 'DELETE',
-                    headers: { "Content-type": "application/json" },
+                    headers: getAuthHeaders(),
                     credentials: 'include',
                 }
             );
@@ -192,7 +186,7 @@ export const getAllGroup = createAsyncThunk(
         try {
             const response = await fetch(`${API_BASE_URL}/group/view`, {
                 method: 'GET',
-                headers: { "Content-type": "application/json" },
+                headers: getAuthHeaders(),
                 credentials: 'include',
             });
 

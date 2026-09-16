@@ -1,11 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { FaDownload, FaTimes } from 'react-icons/fa';
+import { FaDownload, FaTimes, FaShareSquare } from 'react-icons/fa';
 
 export const PWAInstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
+    // Check if running on iOS
+    const iosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+
+    if (isStandalone) {
+      setShowPrompt(false);
+      return;
+    }
+
+    if (iosDevice) {
+      setIsIOS(true);
+      setShowPrompt(true);
+    }
+
     const handleBeforeInstallPrompt = (e) => {
       // Prevent automatic browser banner
       e.preventDefault();
@@ -16,11 +31,6 @@ export const PWAInstallPrompt = () => {
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    // Hide if already installed / running standalone mode
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setShowPrompt(false);
-    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -48,17 +58,28 @@ export const PWAInstallPrompt = () => {
           </div>
           <div>
             <h4 className="text-xs font-bold text-[var(--text-primary)]">Install HisabiFY App</h4>
-            <p className="text-[11px] text-[var(--text-secondary)]">Get quick access from your home screen</p>
+            <p className="text-[11px] text-[var(--text-secondary)]">
+              {isIOS
+                ? "Tap Share ↗ and 'Add to Home Screen'"
+                : 'Get quick access from your home screen'}
+            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            onClick={handleInstallClick}
-            className="px-3 py-1.5 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-1.5"
-          >
-            <FaDownload className="w-3 h-3" /> Install
-          </button>
+          {!isIOS && deferredPrompt && (
+            <button
+              onClick={handleInstallClick}
+              className="px-3 py-1.5 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-1.5"
+            >
+              <FaDownload className="w-3 h-3" /> Install
+            </button>
+          )}
+          {isIOS && (
+            <span className="px-2.5 py-1 bg-[var(--brand-light)] text-[var(--brand)] text-[11px] font-bold rounded-lg flex items-center gap-1">
+              <FaShareSquare className="w-3 h-3" /> Share
+            </span>
+          )}
           <button
             onClick={() => setShowPrompt(false)}
             className="w-7 h-7 rounded-lg text-[var(--text-muted)] hover:bg-[var(--surface-2)] flex items-center justify-center transition-colors"
@@ -73,3 +94,4 @@ export const PWAInstallPrompt = () => {
 };
 
 export default PWAInstallPrompt;
+

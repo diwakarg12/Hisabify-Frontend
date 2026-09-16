@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { toast } from 'react-toastify';
-import { API_BASE_URL } from '../config/Api';
+import { API_BASE_URL, getAuthHeaders } from '../config/Api';
 
 const initialState = {
     personalExpenses: [],
@@ -22,10 +22,7 @@ export const getExpenses = createAsyncThunk(
                 ? `${API_BASE_URL}/expense/getAllExpense/${groupId}`
                 : `${API_BASE_URL}/expense/getAllExpense`;
 
-            const headers = { "Content-type": "application/json" };
-            if (isBackground) {
-                headers["x-background-sync"] = "true";
-            }
+            const headers = getAuthHeaders(isBackground ? { "x-background-sync": "true" } : {});
 
             const response = await fetch(url, {
                 method: 'GET',
@@ -59,7 +56,7 @@ export const addExpense = createAsyncThunk(
 
             const response = await fetch(url, {
                 method: 'POST',
-                headers: { "Content-type": "application/json" },
+                headers: getAuthHeaders(),
                 credentials: "include",
                 body: JSON.stringify(data)
             });
@@ -90,7 +87,7 @@ export const editExpense = createAsyncThunk(
                 `${API_BASE_URL}/expense/edit/${expenseId}`,
                 {
                     method: 'PATCH',
-                    headers: { "Content-type": "application/json" },
+                    headers: getAuthHeaders(),
                     credentials: "include",
                     body: JSON.stringify(data)
                 }
@@ -120,7 +117,11 @@ export const deleteExpense = createAsyncThunk(
         try {
             const response = await fetch(
                 `${API_BASE_URL}/expense/delete/${expenseId}`,
-                { method: 'DELETE', credentials: 'include' }
+                {
+                    method: 'DELETE',
+                    headers: getAuthHeaders(),
+                    credentials: 'include'
+                }
             );
 
             const result = await response.json();

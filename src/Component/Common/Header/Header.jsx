@@ -8,7 +8,7 @@ import Button from '../Primitives/Button';
 import RequestDailog from '../Request/RequestDailog';
 import NotificationDialog from '../Notification/NotificationDialog';
 import { FaBell, FaUserPlus, FaSignOutAlt, FaMoon, FaSun, FaChartPie } from 'react-icons/fa';
-import { API_BASE_URL } from '../../../config/Api';
+import { API_BASE_URL, getAuthHeaders } from '../../../config/Api';
 
 export const Header = () => {
   const dispatch = useDispatch();
@@ -28,7 +28,7 @@ export const Header = () => {
       try {
         const res = await fetch(`${API_BASE_URL}/notification/getAll`, {
           method: 'GET',
-          headers: { 'Content-Type': 'application/json', 'x-background-sync': 'true' },
+          headers: getAuthHeaders({ 'x-background-sync': 'true' }),
           credentials: 'include',
         });
         const data = await res.json();

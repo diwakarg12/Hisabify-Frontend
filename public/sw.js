@@ -41,8 +41,18 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
 
-  // Exclude API calls and backend sockets from static caching
-  if (url.pathname.startsWith('/auth') || url.pathname.startsWith('/expense') || url.pathname.startsWith('/group')) {
+  // Exclude cross-origin API requests and backend endpoints from static caching
+  if (
+    url.origin !== self.location.origin ||
+    url.pathname.startsWith('/auth') ||
+    url.pathname.startsWith('/expense') ||
+    url.pathname.startsWith('/group') ||
+    url.pathname.startsWith('/invite') ||
+    url.pathname.startsWith('/notification') ||
+    url.pathname.startsWith('/message') ||
+    url.pathname.startsWith('/profile') ||
+    event.request.headers.has('authorization')
+  ) {
     return;
   }
 
@@ -52,8 +62,9 @@ self.addEventListener('fetch', (event) => {
         // Return cached asset and update cache in background (Stale-While-Revalidate)
         fetch(event.request)
           .then((networkResponse) => {
-            if (networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
+            if (networkResponse && networkResponse.status === 200) {
+              const responseToCache = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
             }
           })
           .catch(() => {});
@@ -69,3 +80,4 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+

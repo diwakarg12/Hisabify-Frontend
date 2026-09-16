@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import NotificationTile from './NotificationTile';
 import { FaTimes, FaBell, FaCheckDouble } from 'react-icons/fa';
-import { API_BASE_URL } from '../../../config/Api';
+import { API_BASE_URL, getAuthHeaders } from '../../../config/Api';
 
 export const NotificationDialog = ({ open, onClose }) => {
   const [notifications, setNotifications] = useState([]);
@@ -13,7 +13,7 @@ export const NotificationDialog = ({ open, onClose }) => {
       setLoading(true);
       const res = await fetch(`${API_BASE_URL}/notification/getAll`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         credentials: 'include',
       });
       const data = await res.json();
@@ -38,7 +38,7 @@ export const NotificationDialog = ({ open, onClose }) => {
     try {
       await fetch(`${API_BASE_URL}/notification/markAllRead`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         credentials: 'include',
       });
       setUnreadCount(0);
