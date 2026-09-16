@@ -42,18 +42,25 @@ export const Signup = ({ setIsLogin }) => {
       return;
     }
 
+    // Auto-prefix +91 if user entered a 10-digit Indian phone number without country code
+    let formattedPhone = form.phone.trim();
+    if (/^[6-9]\d{9}$/.test(formattedPhone)) {
+      formattedPhone = `+91${formattedPhone}`;
+    }
+
     setLoading(true);
     setErrorMsg('');
 
     try {
-      const response = await dispatch(register(form)).unwrap();
+      const response = await dispatch(register({ ...form, phone: formattedPhone })).unwrap();
       setLoading(false);
       if (response && !response.error) {
         navigate('/dashboard');
       }
     } catch (err) {
       setLoading(false);
-      setErrorMsg(err?.message || 'Could not register account. Please check inputs.');
+      const message = typeof err === 'string' ? err : err?.message || 'Could not register account. Please check inputs.';
+      setErrorMsg(message);
     }
   };
 
@@ -94,16 +101,21 @@ export const Signup = ({ setIsLogin }) => {
       </div>
 
       {/* Phone & Email */}
-      <Input
-        label="Phone number"
-        name="phone"
-        type="tel"
-        placeholder="Phone number"
-        value={form.phone}
-        onChange={handleChange}
-        leftIcon={FaPhone}
-        required
-      />
+      <div>
+        <Input
+          label="Phone number (with country code)"
+          name="phone"
+          type="tel"
+          placeholder="e.g. +919876543210"
+          value={form.phone}
+          onChange={handleChange}
+          leftIcon={FaPhone}
+          required
+        />
+        <p className="text-[11px] text-[var(--text-secondary)] mt-1">
+          Include country code (e.g. <span className="font-semibold text-[var(--brand)]">+91</span>) before your 10-digit mobile number.
+        </p>
+      </div>
 
       <Input
         label="Email address"

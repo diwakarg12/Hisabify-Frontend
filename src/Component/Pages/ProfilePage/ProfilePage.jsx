@@ -198,12 +198,13 @@ export const ProfilePage = () => {
           {/* Phone field with standalone inline save */}
           <div className="relative">
             <Input
-              label="Phone number"
+              label="Phone number (with country code)"
               name="phone"
               value={userData.phone || ''}
               onChange={handleChange}
               disabled={!phoneUpdate}
               leftIcon={FaPhone}
+              placeholder="e.g. +919876543210"
               rightElement={
                 <button
                   type="button"
