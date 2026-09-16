@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
-import { API_BASE_URL } from "../config/Api";
+import { API_BASE_URL, getAuthHeaders } from "../config/Api";
 
 const initialState = {
     sentRequest: [],
@@ -23,9 +23,7 @@ export const getReceivedRequests = createAsyncThunk('getReceivedRequests', async
 
         const response = await fetch(`${API_BASE_URL}/invite/view/received-request`, {
             method: 'GET',
-            headers: {
-                "Content-type": "application/json",
-            },
+            headers: getAuthHeaders(),
             credentials: 'include'
         });
         const result = await response.json();
@@ -54,9 +52,7 @@ export const getSentRequests = createAsyncThunk('getSentRequests', async (groupI
 
         const response = await fetch(`${API_BASE_URL}/invite/view/sent-request/${groupId}`, {
             method: 'GET',
-            headers: {
-                "Content-type": "application/json",
-            },
+            headers: getAuthHeaders(),
             credentials: 'include'
         });
         const result = await response.json();
@@ -78,9 +74,7 @@ export const reviewReceivedRequest = createAsyncThunk('reviewReceivedRequest', a
 
         const response = await fetch(`${API_BASE_URL}/invite/review/${status}/${requestId}/${groupId}`, {
             method: 'POST',
-            headers: {
-                "Content-type": "application/json",
-            },
+            headers: getAuthHeaders(),
             credentials: 'include'
         });
         const result = await response.json();
@@ -105,9 +99,7 @@ export const sendInvitation = createAsyncThunk('sendInvitation', async ({ groupI
 
         const response = await fetch(`${API_BASE_URL}/invite/send/${groupId}`, {
             method: 'POST',
-            headers: {
-                "Content-type": "application/json",
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify({ invitedTo }),
             credentials: 'include'
         });

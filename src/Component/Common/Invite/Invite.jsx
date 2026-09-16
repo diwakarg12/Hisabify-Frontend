@@ -34,7 +34,7 @@ import { searchUser, removeUser, removeDummyUser, getAllGroup } from "../../../r
 import FullScreenLoader from "../Loader/FullScreenLoader";
 import { useGlobalLoader } from "../Loader/GlobalLoaderContext";
 import { toast } from "react-toastify";
-import { API_BASE_URL } from "../../../config/Api";
+import { API_BASE_URL, getAuthHeaders } from "../../../config/Api";
 //#endregion
 
 const Invite = ({ openInvite, handleClose, group }) => {
@@ -160,7 +160,7 @@ const Invite = ({ openInvite, handleClose, group }) => {
         `${API_BASE_URL}/group/add-dummy/${group._id}`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getAuthHeaders(),
           credentials: "include",
           body: JSON.stringify({ name: dummyName.trim() }),
         }
