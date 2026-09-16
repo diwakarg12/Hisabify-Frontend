@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { checkAuth } from "./redux/authSlice";
 import { GlobalLoaderProvider } from "./Component/Common/Loader/GlobalLoaderContext";
 import { ConfirmDialogProvider } from "./Component/Common/Modal/ConfirmDialogContext";
+import PWAInstallPrompt from "./Component/Common/PWA/PWAInstallPrompt";
 
 const AppInitializer = ({ children }) => {
   const dispatch = useDispatch();
@@ -22,6 +23,7 @@ function App() {
         <div className="flex flex-col bg-gray-300">
           <AppInitializer>
             <RoutesConfig />
+            <PWAInstallPrompt />
           </AppInitializer>
         </div>
       </ConfirmDialogProvider>

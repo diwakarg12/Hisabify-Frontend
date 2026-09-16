@@ -1,17 +1,49 @@
 {
   "short_name": "HisabiFY",
-  "name": "HisabiFY - Expense Tracker & Bill Splitter",
+  "name": "HisabiFY - Smart Expense Tracker & Bill Splitter",
+  "description": "Track personal expenses, split bills with groups, and manage lend & borrow ledgers effortlessly.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F1115",
+  "theme_color": "#1F7A6C",
+  "categories": ["finance", "utilities", "productivity"],
   "icons": [
     {
       "src": "/logo-dark.png",
       "type": "image/png",
-      "sizes": "192x192 512x512",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-dark.png",
+      "type": "image/png",
+      "sizes": "512x512",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180",
+      "purpose": "any"
     }
   ],
-  "start_url": "/",
-  "background_color": "#0F1115",
-  "theme_color": "#1F7A6C",
-  "display": "standalone",
-  "orientation": "portrait"
+  "shortcuts": [
+    {
+      "name": "Add Expense",
+      "short_name": "Add",
+      "description": "Record a new expense",
+      "url": "/myexpense",
+      "icons": [{ "src": "/logo-dark.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Lend & Borrow",
+      "short_name": "Lend",
+      "description": "Check lend & borrow ledger",
+      "url": "/lend-borrow",
+      "icons": [{ "src": "/logo-dark.png", "sizes": "192x192" }]
+    }
+  ]
 }
