@@ -226,18 +226,41 @@ export const TeamList = () => {
                     </div>
                   </div>
 
-                  {/* Derived Net Balance Banner - Spacious margin before and after */}
-                  <div className="my-1 p-3.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-between gap-2 shadow-sm">
-                    <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
-                      Your position
-                    </span>
-                    <Badge variant={net > 0 ? 'positive' : net < 0 ? 'negative' : 'neutral'}>
-                      {net > 0
-                        ? `You will get ${formatMoney(net)}`
-                        : net < 0
-                          ? `You have to give ${formatMoney(Math.abs(net))}`
-                          : 'All clear'}
-                    </Badge>
+                  {/* Derived Group Spending Summary & Your Position Banner */}
+                  <div className="my-2 p-3.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border)] space-y-2.5 shadow-sm">
+                    {/* Top row: Total Group Spend & You Spent */}
+                    <div className="grid grid-cols-2 gap-2 pb-2 border-b border-[var(--border)]/60 text-xs">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] tracking-wider block">
+                          Total Group Spend
+                        </span>
+                        <span className="text-sm font-bold text-[var(--text-primary)]">
+                          {formatMoney(gData.totalGroupSpend)}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] tracking-wider block">
+                          You Spent
+                        </span>
+                        <span className="text-sm font-bold text-[var(--brand)]">
+                          {formatMoney(gData.userTotalSpent)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Bottom row: Your Position */}
+                    <div className="flex items-center justify-between gap-2 pt-0.5">
+                      <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+                        Your position
+                      </span>
+                      <Badge variant={net > 0 ? 'positive' : net < 0 ? 'negative' : 'neutral'}>
+                        {net > 0
+                          ? `You will get ${formatMoney(net)}`
+                          : net < 0
+                            ? `You have to give ${formatMoney(Math.abs(net))}`
+                            : 'All clear'}
+                      </Badge>
+                    </div>
                   </div>
 
                   {/* Per-Member Balance Breakdown List */}
@@ -250,18 +273,37 @@ export const TeamList = () => {
                     ) : (
                       <div className="space-y-1.5">
                         {gData.memberBalances.map((mb, i) => (
-                          <div key={i} className="flex justify-between items-center py-1.5 border-b border-[var(--border)]/40 last:border-none">
+                          <div
+                            key={i}
+                            className={`flex justify-between items-center py-2 px-2.5 rounded-lg border border-transparent transition-colors ${
+                              mb.isCurrentUser
+                                ? 'bg-[var(--brand-light)]/40 border-[var(--brand)]/20'
+                                : 'border-b border-[var(--border)]/40'
+                            }`}
+                          >
                             <div>
-                              <span className="font-medium text-[var(--text-primary)] block truncate max-w-[140px]">
-                                {mb.member.firstName} {mb.member.lastName || ''}
+                              <span className="font-semibold text-[var(--text-primary)] flex items-center gap-1 truncate max-w-[160px]">
+                                {mb.isCurrentUser ? (
+                                  <>
+                                    <span>You</span>
+                                    <span className="text-[10px] text-[var(--brand)] font-normal">({mb.member.firstName})</span>
+                                  </>
+                                ) : (
+                                  `${mb.member.firstName} ${mb.member.lastName || ''}`.trim()
+                                )}
                               </span>
-                              <span className="text-[10px] text-[var(--text-muted)] block">
-                                Spent in {MONTHS[selectedMonth]}: {formatMoney(mb.totalSpent)}
+                              <span className="text-[10px] text-[var(--text-secondary)] block mt-0.5">
+                                Spent in {MONTHS[selectedMonth]}: <strong className="text-[var(--text-primary)]">{formatMoney(mb.totalSpent)}</strong>
                               </span>
                             </div>
                             <span
-                              className={`font-semibold tabular-nums shrink-0 ${mb.amount > 0 ? 'text-[var(--positive)]' : mb.amount < 0 ? 'text-[var(--negative)]' : 'text-[var(--text-muted)]'
-                                }`}
+                              className={`font-semibold tabular-nums shrink-0 text-xs ${
+                                mb.amount > 0
+                                  ? 'text-[var(--positive)]'
+                                  : mb.amount < 0
+                                    ? 'text-[var(--negative)]'
+                                    : 'text-[var(--text-muted)]'
+                              }`}
                             >
                               {mb.amount > 0
                                 ? `will get ${formatMoney(mb.amount)}`

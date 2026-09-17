@@ -134,22 +134,21 @@ export const calculateUserBalances = (
       youOweTotal += Math.abs(userNetPosition);
     }
 
-    // Prepare member balances array (excluding logged-in user)
-    const otherMemberBalances = Object.values(memberStats)
-      .filter((s) => String(s.member._id) !== String(userId))
-      .map((s) => ({
-        member: s.member,
-        totalSpent: s.totalSpent,
-        shareConsumed: s.shareConsumed,
-        amount: s.netBalance,
-      }));
+    // Prepare member balances array for all group members (including logged-in user)
+    const allMemberBalances = Object.values(memberStats).map((s) => ({
+      member: s.member,
+      totalSpent: s.totalSpent,
+      shareConsumed: s.shareConsumed,
+      amount: s.netBalance,
+      isCurrentUser: String(s.member._id) === String(userId),
+    }));
 
     groupBalancesMap[group._id] = {
       totalGroupSpend,
       userTotalSpent: userStat.totalSpent,
       userShareConsumed: userStat.shareConsumed,
       netBalance: userNetPosition,
-      memberBalances: otherMemberBalances,
+      memberBalances: allMemberBalances,
     };
   });
 
