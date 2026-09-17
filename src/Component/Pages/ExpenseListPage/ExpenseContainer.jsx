@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getExpenses, deleteExpense } from '../../../redux/expenseSlice';
-import { formatMoney, formatRelativeDate, CATEGORY_COLORS, isCustomCategory, getCategoryColor } from '../../../helpers/formatters';
+import { formatMoney, formatRelativeDate, formatAddedOnDate, CATEGORY_COLORS, isCustomCategory, getCategoryColor } from '../../../helpers/formatters';
 import Card from '../../Common/Primitives/Card';
 import Button from '../../Common/Primitives/Button';
 import Badge from '../../Common/Primitives/Badge';
@@ -77,9 +77,9 @@ export const ExpenseContainer = () => {
     }
   }, [expenses, selectedExpense]);
 
-  // Filtered Expenses (Month, Year, Search, Category)
+  // Filtered & Sorted Expenses (Descending Order: Newer spend/added date first)
   const filteredExpenses = useMemo(() => {
-    return expenses.filter((item) => {
+    const list = expenses.filter((item) => {
       if (!item || item.isDeleted) return false;
 
       // Exclude direct Lend & Borrow records from personal expenses view (they have their own dedicated /lend-borrow page)
@@ -106,9 +106,20 @@ export const ExpenseContainer = () => {
 
       return matchMonth && matchYear && matchSearch && matchCategory;
     });
+
+    // Sort strictly by date descending (Newer spend date first), fallback to createdAt descending
+    return list.sort((a, b) => {
+      const timeA = new Date(a.date || a.createdAt).getTime();
+      const timeB = new Date(b.date || b.createdAt).getTime();
+      if (timeB !== timeA) return timeB - timeA;
+
+      const createdA = new Date(a.createdAt || 0).getTime();
+      const createdB = new Date(b.createdAt || 0).getTime();
+      return createdB - createdA;
+    });
   }, [expenses, groupId, selectedMonth, selectedYear, searchQuery, selectedCategory]);
 
-  // Group by sticky dates
+  // Group by sticky dates (maintains descending order)
   const groupedByDate = useMemo(() => {
     const map = {};
     filteredExpenses.forEach((exp) => {
@@ -242,9 +253,16 @@ export const ExpenseContainer = () => {
           </div>
 
           <div className="flex justify-between py-1 border-b border-[var(--border)]/50">
-            <span className="text-[var(--text-secondary)]">Date</span>
+            <span className="text-[var(--text-secondary)]">Spent Date</span>
             <span className="font-semibold text-[var(--text-primary)]">
               {formatRelativeDate(expense.date)}
+            </span>
+          </div>
+
+          <div className="flex justify-between py-1 border-b border-[var(--border)]/50">
+            <span className="text-[var(--text-secondary)]">Added on</span>
+            <span className="font-semibold text-[var(--text-primary)]">
+              {formatAddedOnDate(expense.createdAt || expense.date)}
             </span>
           </div>
 
@@ -488,6 +506,14 @@ export const ExpenseContainer = () => {
                             )}
                             <span>•</span>
                             <span>Paid by <strong className="text-[var(--text-primary)] font-semibold">{payerName}</strong></span>
+                            {item.createdAt && (
+                              <>
+                                <span>•</span>
+                                <span className="text-[11px] text-[var(--text-muted)]">
+                                  Added: <span className="font-medium text-[var(--text-secondary)]">{formatAddedOnDate(item.createdAt)}</span>
+                                </span>
+                              </>
+                            )}
                             {item.receiptImage && (
                               <span className="text-emerald-500 flex items-center gap-1 text-[11px] font-medium ml-1">
                                 <FaImage className="w-3 h-3" /> Receipt

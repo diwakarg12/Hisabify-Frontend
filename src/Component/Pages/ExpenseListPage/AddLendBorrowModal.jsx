@@ -1,14 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addExpense } from '../../../redux/expenseSlice';
 import Button from '../../Common/Primitives/Button';
 import Input from '../../Common/Primitives/Input';
-import { FaTimes, FaHandHoldingUsd, FaCalendarAlt, FaUser, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { FaTimes, FaHandHoldingUsd, FaCalendarAlt, FaUser, FaArrowUp, FaArrowDown, FaCheck } from 'react-icons/fa';
 
 export const AddLendBorrowModal = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
   const amountInputRef = useRef(null);
+  const dropdownRef = useRef(null);
+
   const { user } = useSelector((state) => state.auth);
+  const { personalExpenses = [] } = useSelector((state) => state.expense);
+  const { groups = [] } = useSelector((state) => state.group);
 
   // Form state
   const [type, setType] = useState('lent'); // 'lent' (I gave money) | 'borrowed' (I took money)
@@ -18,6 +22,7 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
   const [note, setNote] = useState('');
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -28,6 +33,75 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
       }, 100);
     }
   }, [isOpen]);
+
+  // Handle click outside to close suggestion dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Deduplicated list of person names from past lend/borrow, group members, and localStorage
+  const existingPersonNames = useMemo(() => {
+    const nameMap = new Map(); // lowercase -> Display Name
+
+    const addName = (rawName) => {
+      if (!rawName || typeof rawName !== 'string') return;
+      // Strip note in parenthesis e.g. "Harsh (Lunch cash)" -> "Harsh"
+      let clean = rawName.split('(')[0].trim();
+      if (!clean) return;
+      const normalized = clean.toLowerCase();
+      if (!nameMap.has(normalized)) {
+        nameMap.set(normalized, clean);
+      }
+    };
+
+    // 1. From personal lend/borrow expenses
+    (personalExpenses || []).forEach((exp) => {
+      if (exp.category === 'lentMoney' || exp.category === 'borrowedMoney') {
+        addName(exp.description);
+      }
+    });
+
+    // 2. From group members & guest members
+    (groups || []).forEach((g) => {
+      (g.members || []).forEach((m) => {
+        if (String(m._id) !== String(user?._id)) {
+          addName(`${m.firstName || ''} ${m.lastName || ''}`);
+        }
+      });
+      (g.dummyMembers || []).forEach((d) => {
+        addName(d.name);
+      });
+    });
+
+    // 3. From saved localStorage history
+    try {
+      const saved = JSON.parse(localStorage.getItem('hisabify_lend_borrow_names') || '[]');
+      if (Array.isArray(saved)) {
+        saved.forEach(addName);
+      }
+    } catch (e) {
+      // ignore JSON errors
+    }
+
+    return Array.from(nameMap.values());
+  }, [personalExpenses, groups, user?._id]);
+
+  // Filter suggestions dynamically based on user typing
+  const filteredSuggestions = useMemo(() => {
+    const query = personName.trim().toLowerCase();
+    if (!query) {
+      return existingPersonNames;
+    }
+    return existingPersonNames.filter((name) =>
+      name.toLowerCase().includes(query)
+    );
+  }, [existingPersonNames, personName]);
 
   if (!isOpen) return null;
 
@@ -50,11 +124,12 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
 
     setIsSubmitting(true);
     const numericAmount = parseFloat(amount);
+    const cleanPersonName = personName.trim();
 
     const isLent = type === 'lent';
     const formattedDesc = note.trim()
-      ? `${personName.trim()} (${note.trim()})`
-      : personName.trim();
+      ? `${cleanPersonName} (${note.trim()})`
+      : cleanPersonName;
 
     const payload = {
       amount: numericAmount,
@@ -69,6 +144,16 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
 
     try {
       await dispatch(addExpense({ groupId: null, data: payload })).unwrap();
+
+      // Save person name to localStorage history (deduplicated)
+      try {
+        const saved = JSON.parse(localStorage.getItem('hisabify_lend_borrow_names') || '[]');
+        const updated = [cleanPersonName, ...saved.filter((n) => n.toLowerCase() !== cleanPersonName.toLowerCase())].slice(0, 25);
+        localStorage.setItem('hisabify_lend_borrow_names', JSON.stringify(updated));
+      } catch (e) {
+        // ignore
+      }
+
       setIsSubmitting(false);
       onClose();
       // Reset form
@@ -76,6 +161,7 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
       setPersonName('');
       setNote('');
       setType('lent');
+      setShowSuggestions(false);
     } catch (err) {
       setIsSubmitting(false);
       setErrors({ submit: err?.message || 'Failed to save record. Please try again.' });
@@ -162,16 +248,52 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
             )}
           </div>
 
-          {/* Friend / Person Name */}
-          <Input
-            label={type === 'lent' ? 'Lent to (Friend or Person Name)' : 'Borrowed from (Friend or Person Name)'}
-            value={personName}
-            onChange={(e) => setPersonName(e.target.value)}
-            placeholder={type === 'lent' ? 'e.g. Rahul, Priya' : 'e.g. Landlord, Uncle'}
-            error={errors.personName}
-            required
-            icon={FaUser}
-          />
+          {/* Friend / Person Name with Auto-Suggestion Dropdown & Quick-Select Chips */}
+          <div className="relative" ref={dropdownRef}>
+            <Input
+              label={type === 'lent' ? 'Lent to (Friend or Person Name)' : 'Borrowed from (Friend or Person Name)'}
+              value={personName}
+              onChange={(e) => {
+                setPersonName(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => setShowSuggestions(true)}
+              placeholder={type === 'lent' ? 'e.g. Rahul, Priya' : 'e.g. Landlord, Uncle'}
+              error={errors.personName}
+              required
+              leftIcon={FaUser}
+              autoComplete="off"
+            />
+
+            {/* Floating Suggestions List */}
+            {showSuggestions && filteredSuggestions.length > 0 && (
+              <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-40 bg-[var(--surface-1)] border border-[var(--border)] rounded-xl shadow-xl max-h-48 overflow-y-auto py-1 animate-fadeIn">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)] border-b border-[var(--border)]/50 flex justify-between items-center bg-[var(--surface-2)]/50">
+                  <span>Suggested Contacts ({filteredSuggestions.length})</span>
+                  <span className="text-[var(--brand)] font-semibold text-[10px] lowercase">Click to select</span>
+                </div>
+                {filteredSuggestions.map((name, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setPersonName(name);
+                      setShowSuggestions(false);
+                    }}
+                    className="w-full text-left px-3.5 py-2.5 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--brand-light)] hover:text-[var(--brand)] transition-colors flex items-center justify-between group cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2 truncate">
+                      <FaUser className="w-3 h-3 text-[var(--brand)] shrink-0" />
+                      <span className="truncate">{name}</span>
+                    </span>
+                    {personName.trim().toLowerCase() === name.toLowerCase() && (
+                      <FaCheck className="w-3 h-3 text-[var(--brand)] shrink-0" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Date & Note/Description */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
