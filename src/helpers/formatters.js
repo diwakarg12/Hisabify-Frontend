@@ -118,6 +118,30 @@ export const formatRelativeDate = (dateInput) => {
 };
 
 /**
+ * Format added on timestamp with date and time (e.g. 17 Sep 2026 at 2:30 PM)
+ */
+export const formatAddedOnDate = (dateInput) => {
+  if (!dateInput) return '';
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return '';
+
+  const day = date.getDate();
+  const monthNames = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  const month = monthNames[date.getMonth()];
+  const year = date.getFullYear();
+
+  let hours = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12;
+
+  return `${day} ${month} ${year}, ${hours}:${minutes} ${ampm}`;
+};
+
+/**
  * Normalizes category names to match CATEGORY_COLORS keys
  */
 export const getCategoryColor = (categoryName) => {
