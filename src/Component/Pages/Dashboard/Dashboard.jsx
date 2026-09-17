@@ -12,8 +12,9 @@ import EmptyState from '../../Common/Primitives/EmptyState';
 import AddExpenseModal from '../ExpenseListPage/AddExpenseModal';
 import AddLendBorrowModal from '../ExpenseListPage/AddLendBorrowModal';
 import SettleUpModal from '../ExpenseListPage/SettleUpModal';
+import ScanAndPayModal from '../../Common/ScanAndPay/ScanAndPayModal';
 import { useConfirm } from '../../Common/Modal/ConfirmDialogContext';
-import { FaPlus, FaHandHoldingUsd, FaReceipt, FaWallet, FaArrowUp, FaArrowDown, FaUsers, FaCalendarAlt, FaTrashAlt } from 'react-icons/fa';
+import { FaPlus, FaHandHoldingUsd, FaReceipt, FaWallet, FaArrowUp, FaArrowDown, FaUsers, FaCalendarAlt, FaTrashAlt, FaQrcode } from 'react-icons/fa';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -32,6 +33,7 @@ export const Dashboard = () => {
 
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [isLendBorrowOpen, setIsLendBorrowOpen] = useState(false);
+  const [isScanPayOpen, setIsScanPayOpen] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [settleModalData, setSettleModalData] = useState({ isOpen: false, groupId: null, targetUser: null });
 
@@ -99,11 +101,8 @@ export const Dashboard = () => {
   const parseLendBorrowRecord = (rec) => {
     const isLent =
       rec.category === 'lentMoney' ||
-      (rec.description || '').toLowerCase().startsWith('lent') ||
-      (rec.description || '').toLowerCase().includes('lent to');
+      (rec.description || '').toLowerCase().includes('lent');
     let raw = rec.description || '';
-
-    // Strip legacy prefixes if present
     raw = raw.replace(/^Lent to\s+/i, '').replace(/^Borrowed from\s+/i, '').replace(/^Lent\s+/i, '').replace(/^Borrowed\s+/i, '');
 
     let personName = raw;

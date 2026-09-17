@@ -7,7 +7,8 @@ import Logo from '../Primitives/Logo';
 import Button from '../Primitives/Button';
 import RequestDailog from '../Request/RequestDailog';
 import NotificationDialog from '../Notification/NotificationDialog';
-import { FaBell, FaUserPlus, FaSignOutAlt, FaMoon, FaSun, FaChartPie } from 'react-icons/fa';
+import ScanAndPayModal from '../ScanAndPay/ScanAndPayModal';
+import { FaBell, FaUserPlus, FaSignOutAlt, FaMoon, FaSun, FaChartPie, FaQrcode } from 'react-icons/fa';
 import { API_BASE_URL, getAuthHeaders } from '../../../config/Api';
 
 export const Header = () => {
@@ -18,6 +19,7 @@ export const Header = () => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const [openRequests, setOpenRequests] = useState(false);
   const [openNotifications, setOpenNotifications] = useState(false);
+  const [openScanPay, setOpenScanPay] = useState(false);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
 
@@ -100,6 +102,17 @@ export const Header = () => {
 
         {isAuthenticated ? (
           <>
+            {/* Scan & Pay Button */}
+            <button
+              onClick={() => setOpenScanPay(true)}
+              className="h-9 px-2.5 sm:px-3 rounded-lg bg-gradient-to-r from-[var(--brand)] to-[var(--brand-hover)] text-white font-bold text-xs flex items-center gap-1.5 shadow-sm hover:opacity-95 transition-all"
+              title="Scan & Pay via UPI"
+            >
+              <FaQrcode className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Scan & Pay</span>
+            </button>
+            <ScanAndPayModal open={openScanPay} onClose={() => setOpenScanPay(false)} />
+
             {/* Invitations / Requests */}
             <button
               onClick={() => {
