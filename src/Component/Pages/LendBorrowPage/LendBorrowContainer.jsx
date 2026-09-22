@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { getExpenses, deleteExpense } from '../../../redux/expenseSlice';
 import {
   formatMoney,
@@ -29,6 +30,8 @@ import {
 
 export const LendBorrowContainer = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
+  const navigate = useNavigate();
   const confirm = useConfirm();
   const transactionsContainerRef = useRef(null);
 
@@ -228,6 +231,28 @@ export const LendBorrowContainer = () => {
   }, [contactsMap, searchQuery, statusFilter]);
 
   const activeContact = selectedPersonKey ? contactsMap[selectedPersonKey] : null;
+
+  // Handle auto-opening contact detail view when navigated from Dashboard or direct link
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const contactFromParam = searchParams.get('contact');
+    const contactKeyFromState = location.state?.selectedContactKey;
+
+    const rawTarget = contactKeyFromState || contactFromParam;
+    if (rawTarget) {
+      const targetKey = rawTarget.trim().toLowerCase();
+      if (contactsMap[targetKey]) {
+        setSelectedPersonKey(targetKey);
+      }
+    }
+  }, [location, contactsMap]);
+
+  const handleBackToContacts = () => {
+    setSelectedPersonKey(null);
+    if (location.search || location.state?.selectedContactKey) {
+      navigate('/lend-borrow', { replace: true, state: {} });
+    }
+  };
 
   const handleDeleteRecord = async (rec) => {
     const { personName } = parseLendBorrowRecord(rec);
@@ -499,7 +524,7 @@ export const LendBorrowContainer = () => {
             <div className="flex items-center gap-3 min-w-0 flex-1">
               {/* 1. Back Arrow Button */}
               <button
-                onClick={() => setSelectedPersonKey(null)}
+                onClick={handleBackToContacts}
                 className="p-2 rounded-xl text-[var(--text-secondary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)] transition-colors border border-[var(--border)] flex items-center justify-center shrink-0 cursor-pointer"
                 aria-label="Back to contacts list"
                 title="Back to All Contacts"

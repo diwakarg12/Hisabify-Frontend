@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getAllGroup } from '../../../redux/groupSlice';
@@ -133,13 +133,66 @@ export const Dashboard = () => {
     })
     .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
-  const totalLentAmount = lendBorrowRecords
-    .filter((e) => e.category === 'lentMoney' || (e.description || '').toLowerCase().includes('lent'))
-    .reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+  // Aggregate by contact and compute Top 2-3 people by maximum pending amount
+  const { topLendBorrowContacts, totalReceivable, totalPayable, totalContactsCount } = useMemo(() => {
+    const map = {};
 
-  const totalBorrowedAmount = lendBorrowRecords
-    .filter((e) => e.category === 'borrowedMoney' || (e.description || '').toLowerCase().includes('borrowed'))
-    .reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+    lendBorrowRecords.forEach((rec) => {
+      const { isLent, personName } = parseLendBorrowRecord(rec);
+      const key = personName.trim().toLowerCase();
+
+      if (!map[key]) {
+        map[key] = {
+          key,
+          name: personName,
+          lentTotal: 0,
+          borrowedTotal: 0,
+          netBalance: 0,
+          lastDate: rec.createdAt || rec.date || 0,
+          entriesCount: 0,
+        };
+      }
+
+      const amt = Number(rec.amount || 0);
+      if (isLent) {
+        map[key].lentTotal += amt;
+      } else {
+        map[key].borrowedTotal += amt;
+      }
+      map[key].entriesCount += 1;
+
+      const recTime = new Date(rec.createdAt || rec.date || 0).getTime();
+      const lastTime = new Date(map[key].lastDate).getTime();
+      if (recTime > lastTime) {
+        map[key].lastDate = rec.createdAt || rec.date;
+      }
+    });
+
+    let recSum = 0;
+    let paySum = 0;
+    Object.values(map).forEach((c) => {
+      c.netBalance = c.lentTotal - c.borrowedTotal;
+      if (c.netBalance > 0) recSum += c.netBalance;
+      else if (c.netBalance < 0) paySum += Math.abs(c.netBalance);
+    });
+
+    // Rank contacts: unsettled balances first, sorted by highest absolute amount pending
+    const unsettledContacts = Object.values(map)
+      .filter((c) => c.netBalance !== 0)
+      .sort((a, b) => Math.abs(b.netBalance) - Math.abs(a.netBalance));
+
+    // Pick top 2-3 people with max amount (fallback to top volume if all settled)
+    const topContacts = unsettledContacts.length > 0
+      ? unsettledContacts.slice(0, 3)
+      : Object.values(map).sort((a, b) => (b.lentTotal + b.borrowedTotal) - (a.lentTotal + a.borrowedTotal)).slice(0, 3);
+
+    return {
+      topLendBorrowContacts: topContacts,
+      totalReceivable: recSum,
+      totalPayable: paySum,
+      totalContactsCount: Object.keys(map).length,
+    };
+  }, [lendBorrowRecords]);
 
   const top3Categories = getPersonalCategoryBreakdown();
   const hasAnyData = groups.length > 0 || personalExpenses.length > 0;
@@ -519,115 +572,171 @@ export const Dashboard = () => {
               </div>
             </Card>
 
-            {/* Dedicated Section: Lending & Borrowing Ledger */}
-            <div className="pt-2">
-              <div className="flex items-center justify-between px-0.5 mb-2">
-                <h3 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">
-                  Lending & Borrowing
-                </h3>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setIsLendBorrowOpen(true)}
-                  icon={FaPlus}
-                  className="text-xs"
-                >
-                  Record
-                </Button>
+            {/* Redesigned Section: Lending & Borrowing (Top 2-3 People by Amount) */}
+            <div className="pt-2 space-y-3">
+              <div className="flex items-center justify-between px-0.5">
+                <div>
+                  <h3 className="text-base md:text-lg font-bold text-[var(--text-primary)]">
+                    Lend & Borrow
+                  </h3>
+                  <p className="text-xs text-[var(--text-secondary)]">
+                    Top pending balances
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setIsLendBorrowOpen(true)}
+                    icon={FaPlus}
+                    className="text-xs font-semibold"
+                  >
+                    Record
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => navigate('/lend-borrow')}
+                    className="text-xs font-semibold text-[var(--brand)]"
+                  >
+                    View all
+                  </Button>
+                </div>
               </div>
 
-              <Card className="p-5 space-y-4 shadow-sm border-t-4 border-t-[var(--brand)]">
-                <div className="flex items-center justify-between pb-2 border-b border-[var(--border)]">
-                  <h4 className="font-bold text-sm text-[var(--text-primary)] flex items-center gap-2">
-                    <FaHandHoldingUsd className="text-[var(--brand)]" /> Direct Loans Ledger
-                  </h4>
-                  <span className="text-[11px] text-[var(--brand)] font-semibold">
-                    All Active ({lendBorrowRecords.length})
-                  </span>
+              <div className="tactile-card rounded-2xl p-5 bg-[var(--surface-1)] border border-[var(--border)] shadow-[var(--shadow-3d)] space-y-4">
+                {/* Calculated Summary Totals Bar */}
+                <div className="grid grid-cols-2 gap-3 p-3.5 bg-[var(--surface-2)] rounded-xl border border-[var(--border)]">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[var(--positive)] animate-pulse" />
+                      <span className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+                        You Will Get
+                      </span>
+                    </div>
+                    <div className="text-lg sm:text-xl font-black text-[var(--positive)] tabular-nums tracking-tight">
+                      {formatMoney(totalReceivable)}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 border-l border-[var(--border)] pl-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[var(--negative)] animate-pulse" />
+                      <span className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+                        You Will Give
+                      </span>
+                    </div>
+                    <div className="text-lg sm:text-xl font-black text-[var(--negative)] tabular-nums tracking-tight">
+                      {formatMoney(totalPayable)}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Summary totals bar */}
-                <div className="grid grid-cols-2 gap-2 p-3 bg-[var(--surface-2)] rounded-xl border border-[var(--border)] text-xs mb-3">
-                  <div className="border-r border-[var(--border)] pr-2">
-                    <span className="text-[var(--text-secondary)] block text-[10px] font-semibold uppercase">Total Lent</span>
-                    <span className="font-extrabold text-[var(--positive)] tabular-nums text-sm">
-                      {formatMoney(totalLentAmount)}
-                    </span>
+                {/* Top 2-3 Contacts by Max Pending Balance */}
+                <div>
+                  <div className="flex items-center justify-between text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-3">
+                    <span>Top Balances</span>
+                    {totalContactsCount > 0 && (
+                      <span className="text-[10px] text-[var(--text-muted)] font-semibold lowercase">
+                        showing {topLendBorrowContacts.length} of {totalContactsCount} contact{totalContactsCount !== 1 ? 's' : ''}
+                      </span>
+                    )}
                   </div>
-                  <div className="pl-2">
-                    <span className="text-[var(--text-secondary)] block text-[10px] font-semibold uppercase">Total Borrowed</span>
-                    <span className="font-extrabold text-[var(--negative)] tabular-nums text-sm">
-                      {formatMoney(totalBorrowedAmount)}
-                    </span>
-                  </div>
-                </div>
 
-                {/* Records List */}
-                {lendBorrowRecords.length === 0 ? (
-                  <p className="text-xs text-[var(--text-muted)] py-3 text-center">
-                    No active lending or borrowing records logged yet.
-                  </p>
-                ) : (
-                  <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
-                    {lendBorrowRecords.map((rec) => {
-                      const { isLent, personName, note } = parseLendBorrowRecord(rec);
-                      return (
-                        <div
-                          key={rec._id}
-                          className="p-3.5 bg-[var(--surface-2)]/70 rounded-xl border border-[var(--border)] space-y-2 hover:border-[var(--brand)]/40 transition-colors shadow-sm"
-                        >
-                          {/* Top Row: Badge + Person Name + Amount + Delete */}
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <Badge variant={isLent ? 'positive' : 'negative'} size="sm" className="shrink-0 font-bold">
-                                {isLent ? 'LENT' : 'BORROWED'}
-                              </Badge>
-                              <span className="font-bold text-sm text-[var(--text-primary)] truncate">
-                                {personName}
-                              </span>
+                  {topLendBorrowContacts.length === 0 ? (
+                    <div className="py-6 text-center space-y-3">
+                      <p className="text-xs text-[var(--text-muted)] font-medium">
+                        No active lending or borrowing records logged yet.
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => setIsLendBorrowOpen(true)}
+                        icon={FaPlus}
+                        className="text-xs font-bold"
+                      >
+                        Record Entry
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {topLendBorrowContacts.map((contact) => {
+                        const isGet = contact.netBalance > 0;
+                        const isGive = contact.netBalance < 0;
+
+                        return (
+                          <div
+                            key={contact.key}
+                            onClick={() =>
+                              navigate(`/lend-borrow?contact=${encodeURIComponent(contact.key)}`, {
+                                state: { selectedContactKey: contact.key },
+                              })
+                            }
+                            className="p-3 bg-[var(--surface-2)]/60 hover:bg-[var(--surface-2)] rounded-xl border border-[var(--border)] hover:border-[var(--brand)]/40 transition-all cursor-pointer flex items-center justify-between gap-3 group shadow-xs"
+                            title={`Click to open ${contact.name}'s transaction details`}
+                          >
+                            {/* Left: Avatar + Name + Entries count */}
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-9 h-9 rounded-xl bg-[var(--brand-light)] text-[var(--brand)] font-black text-sm flex items-center justify-center shrink-0 border border-[var(--brand)]/20 group-hover:scale-105 transition-transform shadow-xs">
+                                {contact.name.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="min-w-0">
+                                <h5 className="font-bold text-sm text-[var(--text-primary)] truncate group-hover:text-[var(--brand)] transition-colors">
+                                  {contact.name}
+                                </h5>
+                                <p className="text-[11px] text-[var(--text-muted)] font-medium">
+                                  {contact.entriesCount} transaction{contact.entriesCount !== 1 ? 's' : ''}
+                                </p>
+                              </div>
                             </div>
 
-                            <div className="flex items-center gap-2 shrink-0">
-                              <span className={`font-extrabold text-sm tabular-nums ${isLent ? 'text-[var(--positive)]' : 'text-[var(--negative)]'}`}>
-                                {isLent ? '+' : '-'}{formatMoney(rec.amount)}
-                              </span>
-                              <button
-                                onClick={async () => {
-                                  const isConfirmed = await confirm({
-                                    title: "Delete Record",
-                                    message: `Delete record for '${personName}'? This action cannot be undone.`,
-                                    confirmText: "Delete Record",
-                                    cancelText: "Cancel",
-                                    variant: "danger",
-                                  });
-                                  if (isConfirmed) {
-                                    await dispatch(deleteExpense({ expenseId: rec._id, isPersonal: true, groupId: null }));
-                                  }
-                                }}
-                                className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--negative)] hover:bg-[var(--negative-bg)] transition-colors"
-                                title="Delete record"
-                                aria-label="Delete record"
+                            {/* Right: Net Calculation Amount & Label */}
+                            <div className="text-right shrink-0">
+                              <div
+                                className={`text-sm sm:text-base font-black tabular-nums tracking-tight ${
+                                  isGet
+                                    ? 'text-[var(--positive)]'
+                                    : isGive
+                                    ? 'text-[var(--negative)]'
+                                    : 'text-[var(--text-muted)]'
+                                }`}
                               >
-                                <FaTrashAlt className="w-3.5 h-3.5" />
-                              </button>
+                                {isGet && '+'}
+                                {isGive && '-'}
+                                {formatMoney(Math.abs(contact.netBalance))}
+                              </div>
+                              <span
+                                className={`text-[10px] font-bold uppercase tracking-wider block ${
+                                  isGet
+                                    ? 'text-[var(--positive)]'
+                                    : isGive
+                                    ? 'text-[var(--negative)]'
+                                    : 'text-[var(--text-muted)]'
+                                }`}
+                              >
+                                {isGet ? 'You get' : isGive ? 'You give' : 'Settled'}
+                              </span>
                             </div>
                           </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
 
-                          {/* Subtitle Row: Description (Note) & Date */}
-                          <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] pt-1.5 border-t border-[var(--border)]/40">
-                            <span className="truncate pr-2 font-medium">
-                              {note ? note : 'No description'}
-                            </span>
-                            <span className="shrink-0 text-[11px] font-semibold text-[var(--text-muted)]">
-                              {formatRelativeDate(rec.date)}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </Card>
+                {/* Footer Link to Full Lend & Borrow Page */}
+                <div className="pt-1">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    fullWidth
+                    onClick={() => navigate('/lend-borrow')}
+                    className="font-bold text-xs h-10"
+                  >
+                    Open Full Lend & Borrow Ledger →
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
