@@ -148,7 +148,7 @@ export const Dashboard = () => {
           lentTotal: 0,
           borrowedTotal: 0,
           netBalance: 0,
-          lastDate: rec.createdAt || rec.date || 0,
+          lastDate: rec.date || rec.createdAt || 0,
           entriesCount: 0,
         };
       }
@@ -161,10 +161,10 @@ export const Dashboard = () => {
       }
       map[key].entriesCount += 1;
 
-      const recTime = new Date(rec.createdAt || rec.date || 0).getTime();
+      const recTime = new Date(rec.date || rec.createdAt || 0).getTime();
       const lastTime = new Date(map[key].lastDate).getTime();
       if (recTime > lastTime) {
-        map[key].lastDate = rec.createdAt || rec.date;
+        map[key].lastDate = rec.date || rec.createdAt;
       }
     });
 

@@ -146,7 +146,7 @@ export const LendBorrowContainer = () => {
           lentTotal: 0,
           borrowedTotal: 0,
           netBalance: 0,
-          lastDate: rec.createdAt || rec.date || 0,
+          lastDate: rec.date || rec.createdAt || 0,
           transactions: [],
         };
       }
@@ -164,21 +164,24 @@ export const LendBorrowContainer = () => {
         parsedNote: note,
       });
 
-      const recTime = new Date(rec.createdAt || rec.date || 0).getTime();
+      const recTime = new Date(rec.date || rec.createdAt || 0).getTime();
       const lastTime = new Date(map[key].lastDate).getTime();
       if (recTime > lastTime) {
-        map[key].lastDate = rec.createdAt || rec.date;
+        map[key].lastDate = rec.date || rec.createdAt;
       }
     });
 
-    // Sort chronologically and compute running balance
+    // Sort chronologically ascending from top to bottom by lend or borrow date
     Object.values(map).forEach((contact) => {
       contact.netBalance = contact.lentTotal - contact.borrowedTotal;
 
       contact.transactions.sort((a, b) => {
-        const timeA = new Date(a.createdAt || a.date || 0).getTime();
-        const timeB = new Date(b.createdAt || b.date || 0).getTime();
-        return timeA - timeB;
+        const timeA = new Date(a.date || a.createdAt || 0).getTime();
+        const timeB = new Date(b.date || b.createdAt || 0).getTime();
+        if (timeA !== timeB) return timeA - timeB;
+        const createdA = new Date(a.createdAt || 0).getTime();
+        const createdB = new Date(b.createdAt || 0).getTime();
+        return createdA - createdB;
       });
 
       let currBalance = 0;
