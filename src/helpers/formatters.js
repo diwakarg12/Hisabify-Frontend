@@ -118,6 +118,52 @@ export const formatRelativeDate = (dateInput) => {
 };
 
 /**
+ * Format relative date for OKCredit timeline headers ("Aaj", "Yesterday", "22 Sep 2026")
+ */
+export const formatOkCreditDate = (dateInput) => {
+  if (!dateInput) return 'Aaj';
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return String(dateInput);
+
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfTarget = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  const diffTime = startOfToday.getTime() - startOfTarget.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'Aaj';
+  if (diffDays === 1) return 'Yesterday';
+
+  const day = date.getDate();
+  const monthNames = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  const month = monthNames[date.getMonth()];
+  const year = date.getFullYear();
+
+  return `${day} ${month} ${year}`;
+};
+
+/**
+ * Format time only (e.g. 10:42 AM)
+ */
+export const formatTimeOnly = (dateInput) => {
+  if (!dateInput) return '';
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return '';
+
+  let hours = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12;
+
+  return `${hours}:${minutes} ${ampm}`;
+};
+
+
+/**
  * Format added on timestamp with date and time (e.g. 17 Sep 2026 at 2:30 PM)
  */
 export const formatAddedOnDate = (dateInput) => {
@@ -164,3 +210,14 @@ export const getCategoryColor = (categoryName) => {
 
   return CATEGORY_COLORS.other;
 };
+
+/**
+ * Check if an expense object has been updated after its creation
+ */
+export const isExpenseUpdated = (expense) => {
+  if (!expense || !expense.updatedAt || !expense.createdAt) return false;
+  const createdTime = new Date(expense.createdAt).getTime();
+  const updatedTime = new Date(expense.updatedAt).getTime();
+  return !isNaN(updatedTime) && !isNaN(createdTime) && updatedTime - createdTime > 1000;
+};
+

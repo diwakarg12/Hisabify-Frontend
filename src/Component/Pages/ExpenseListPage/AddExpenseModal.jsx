@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addExpense, getExpenses } from '../../../redux/expenseSlice';
+import { addExpense, editExpense, getExpenses } from '../../../redux/expenseSlice';
 import { formatMoney } from '../../../helpers/formatters';
 import Button from '../../Common/Primitives/Button';
 import Input from '../../Common/Primitives/Input';
-import { FaTimes, FaCamera, FaUsers, FaTag, FaCalendarAlt, FaUser } from 'react-icons/fa';
+import { FaTimes, FaCamera, FaUsers, FaTag, FaCalendarAlt, FaUser, FaLock } from 'react-icons/fa';
 
 const CATEGORIES = [
   { id: 'groceries', label: 'Groceries' },
@@ -19,7 +19,7 @@ const CATEGORIES = [
   { id: 'other', label: 'Other' },
 ];
 
-export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
+export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null, expenseToEdit = null }) => {
   const dispatch = useDispatch();
   const amountInputRef = useRef(null);
 
@@ -38,25 +38,36 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Auto-focus amount field on modal open
+  const isEditMode = Boolean(expenseToEdit);
+
+  // Auto-fill form when editing or reset when opening new
   useEffect(() => {
     if (isOpen) {
-      if (user?._id) {
-        setPaidBy(user._id);
+      if (expenseToEdit) {
+        setAmount(expenseToEdit.amount || '');
+        setDescription(expenseToEdit.description || '');
+        setCategory(expenseToEdit.category || 'other');
+        setSelectedGroup(expenseToEdit.groupId || defaultGroupId || '');
+        setPaidBy(expenseToEdit.createdBy?._id || expenseToEdit.createdBy || user?._id || '');
+        setDate(expenseToEdit.date ? expenseToEdit.date.split('T')[0] : new Date().toISOString().split('T')[0]);
+        setReceiptImage(expenseToEdit.receiptImage || '');
+      } else {
+        setAmount('');
+        setDescription('');
+        setCategory(localStorage.getItem('last_category') || 'foodDining');
+        setSelectedGroup(defaultGroupId || '');
+        if (user?._id) setPaidBy(user._id);
+        setDate(new Date().toISOString().split('T')[0]);
+        setReceiptImage('');
+        setTimeout(() => {
+          if (amountInputRef.current) {
+            amountInputRef.current.focus();
+          }
+        }, 100);
       }
-      setTimeout(() => {
-        if (amountInputRef.current) {
-          amountInputRef.current.focus();
-        }
-      }, 100);
+      setErrors({});
     }
-  }, [isOpen, user]);
-
-  useEffect(() => {
-    if (defaultGroupId) {
-      setSelectedGroup(defaultGroupId);
-    }
-  }, [defaultGroupId]);
+  }, [isOpen, expenseToEdit, defaultGroupId, user]);
 
   const currentGroupObj = groups.find((g) => String(g._id) === String(selectedGroup));
 
@@ -142,13 +153,20 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
     };
 
     try {
-      await dispatch(addExpense({ groupId: selectedGroup || null, data: payload })).unwrap();
+      if (isEditMode) {
+        await dispatch(
+          editExpense({
+            expenseId: expenseToEdit._id,
+            data: payload,
+            isPersonal: !selectedGroup,
+            groupId: selectedGroup || null,
+          })
+        ).unwrap();
+      } else {
+        await dispatch(addExpense({ groupId: selectedGroup || null, data: payload })).unwrap();
+      }
       dispatch(getExpenses(selectedGroup || null));
       setIsSubmitting(false);
-      // Reset form fields
-      setAmount('');
-      setDescription('');
-      setReceiptImage('');
       setErrors({});
       onClose();
     } catch (err) {
@@ -177,7 +195,7 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
         {/* Header */}
         <div className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between bg-[var(--surface-2)]/50">
           <h2 id="add-expense-title" className="text-lg font-semibold text-[var(--text-primary)]">
-            {defaultGroupId ? 'Add group expense' : 'Add expense'}
+            {isEditMode ? 'Edit expense' : defaultGroupId ? 'Add group expense' : 'Add expense'}
           </h2>
           <button
             onClick={onClose}
@@ -191,9 +209,9 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4 flex-1">
           {/* Main Amount Input */}
-          <div className="bg-[var(--surface-2)] p-4 rounded-xl border border-[var(--border)] text-center shadow-inner">
+          <div className="bg-[var(--surface-2)] p-4 rounded-xl border border-[var(--border)] text-center shadow-inner relative">
             <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider block mb-1">
-              Amount
+              Amount {isEditMode && '(Locked)'}
             </label>
             <div className="flex items-center justify-center gap-1">
               <span className="text-2xl font-bold text-[var(--brand)]">₹</span>
@@ -205,10 +223,18 @@ export const AddExpenseModal = ({ isOpen, onClose, defaultGroupId = null }) => {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0"
-                className="w-44 text-3xl font-extrabold text-[var(--text-primary)] bg-transparent border-b-2 border-[var(--brand)] text-center focus:outline-none tabular-nums"
+                disabled={isEditMode}
+                className={`w-44 text-3xl font-extrabold text-[var(--text-primary)] bg-transparent border-b-2 border-[var(--brand)] text-center focus:outline-none tabular-nums ${
+                  isEditMode ? 'opacity-70 cursor-not-allowed border-dashed' : ''
+                }`}
                 required
               />
             </div>
+            {isEditMode && (
+              <p className="text-[11px] text-[var(--text-muted)] font-medium mt-1.5 flex items-center justify-center gap-1">
+                <FaLock className="w-3 h-3 text-[var(--brand)]" /> Amount cannot be changed after creation
+              </p>
+            )}
             {errors.amount && (
               <p className="text-xs font-medium text-[var(--negative)] mt-1">{errors.amount}</p>
             )}

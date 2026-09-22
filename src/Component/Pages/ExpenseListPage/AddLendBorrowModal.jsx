@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addExpense } from '../../../redux/expenseSlice';
+import { addExpense, editExpense, getExpenses } from '../../../redux/expenseSlice';
 import Button from '../../Common/Primitives/Button';
 import Input from '../../Common/Primitives/Input';
-import { FaTimes, FaHandHoldingUsd, FaCalendarAlt, FaUser, FaArrowUp, FaArrowDown, FaCheck } from 'react-icons/fa';
+import { FaTimes, FaHandHoldingUsd, FaCalendarAlt, FaUser, FaArrowUp, FaArrowDown, FaCheck, FaLock, FaTrashAlt } from 'react-icons/fa';
 
-export const AddLendBorrowModal = ({ isOpen, onClose }) => {
+export const AddLendBorrowModal = ({
+  isOpen,
+  onClose,
+  initialType = 'lent',
+  initialPersonName = '',
+  recordToEdit = null,
+  onDelete = null,
+}) => {
   const dispatch = useDispatch();
   const amountInputRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -15,8 +22,8 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
   const { groups = [] } = useSelector((state) => state.group);
 
   // Form state
-  const [type, setType] = useState('lent'); // 'lent' (I gave money) | 'borrowed' (I took money)
-  const [personName, setPersonName] = useState('');
+  const [type, setType] = useState(initialType);
+  const [personName, setPersonName] = useState(initialPersonName);
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [note, setNote] = useState('');
@@ -24,15 +31,53 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  const isEditMode = Boolean(recordToEdit);
+
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => {
-        if (amountInputRef.current) {
-          amountInputRef.current.focus();
+      if (recordToEdit) {
+        const isLent =
+          recordToEdit.category === 'lentMoney' ||
+          (recordToEdit.description || '').toLowerCase().includes('lent');
+        let raw = recordToEdit.description || '';
+        raw = raw
+          .replace(/^Lent to\s+/i, '')
+          .replace(/^Borrowed from\s+/i, '')
+          .replace(/^Lent\s+/i, '')
+          .replace(/^Borrowed\s+/i, '');
+
+        let parsedName = raw;
+        let parsedNote = '';
+        if (raw.includes(' (')) {
+          const parts = raw.split(' (');
+          parsedName = parts[0];
+          parsedNote = parts.slice(1).join(' (').replace(/\)$/, '');
+        } else if (raw.includes(' - ')) {
+          const parts = raw.split(' - ');
+          parsedName = parts[0];
+          parsedNote = parts.slice(1).join(' - ');
         }
-      }, 100);
+
+        setType(isLent ? 'lent' : 'borrowed');
+        setPersonName(parsedName.trim());
+        setAmount(recordToEdit.amount || '');
+        setNote(parsedNote.trim());
+        setDate(recordToEdit.date ? recordToEdit.date.split('T')[0] : new Date().toISOString().split('T')[0]);
+      } else {
+        setType(initialType || 'lent');
+        setPersonName(initialPersonName || '');
+        setAmount('');
+        setNote('');
+        setDate(new Date().toISOString().split('T')[0]);
+        setTimeout(() => {
+          if (amountInputRef.current) {
+            amountInputRef.current.focus();
+          }
+        }, 100);
+      }
+      setErrors({});
     }
-  }, [isOpen]);
+  }, [isOpen, initialType, initialPersonName, recordToEdit]);
 
   // Handle click outside to close suggestion dropdown
   useEffect(() => {
@@ -45,13 +90,12 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Deduplicated list of person names from past lend/borrow, group members, and localStorage
+  // Deduplicated list of person names
   const existingPersonNames = useMemo(() => {
-    const nameMap = new Map(); // lowercase -> Display Name
+    const nameMap = new Map();
 
     const addName = (rawName) => {
       if (!rawName || typeof rawName !== 'string') return;
-      // Strip note in parenthesis e.g. "Harsh (Lunch cash)" -> "Harsh"
       let clean = rawName.split('(')[0].trim();
       if (!clean) return;
       const normalized = clean.toLowerCase();
@@ -60,14 +104,12 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
       }
     };
 
-    // 1. From personal lend/borrow expenses
     (personalExpenses || []).forEach((exp) => {
       if (exp.category === 'lentMoney' || exp.category === 'borrowedMoney') {
         addName(exp.description);
       }
     });
 
-    // 2. From group members & guest members
     (groups || []).forEach((g) => {
       (g.members || []).forEach((m) => {
         if (String(m._id) !== String(user?._id)) {
@@ -79,25 +121,21 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
       });
     });
 
-    // 3. From saved localStorage history
     try {
       const saved = JSON.parse(localStorage.getItem('hisabify_lend_borrow_names') || '[]');
       if (Array.isArray(saved)) {
         saved.forEach(addName);
       }
     } catch (e) {
-      // ignore JSON errors
+      // ignore
     }
 
     return Array.from(nameMap.values());
   }, [personalExpenses, groups, user?._id]);
 
-  // Filter suggestions dynamically based on user typing
   const filteredSuggestions = useMemo(() => {
     const query = personName.trim().toLowerCase();
-    if (!query) {
-      return existingPersonNames;
-    }
+    if (!query) return existingPersonNames;
     return existingPersonNames.filter((name) =>
       name.toLowerCase().includes(query)
     );
@@ -143,9 +181,20 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
     };
 
     try {
-      await dispatch(addExpense({ groupId: null, data: payload })).unwrap();
+      if (isEditMode) {
+        await dispatch(
+          editExpense({
+            expenseId: recordToEdit._id,
+            data: payload,
+            isPersonal: true,
+            groupId: null,
+          })
+        ).unwrap();
+      } else {
+        await dispatch(addExpense({ groupId: null, data: payload })).unwrap();
+      }
+      dispatch(getExpenses({ groupId: null }));
 
-      // Save person name to localStorage history (deduplicated)
       try {
         const saved = JSON.parse(localStorage.getItem('hisabify_lend_borrow_names') || '[]');
         const updated = [cleanPersonName, ...saved.filter((n) => n.toLowerCase() !== cleanPersonName.toLowerCase())].slice(0, 25);
@@ -156,11 +205,6 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
 
       setIsSubmitting(false);
       onClose();
-      // Reset form
-      setAmount('');
-      setPersonName('');
-      setNote('');
-      setType('lent');
       setShowSuggestions(false);
     } catch (err) {
       setIsSubmitting(false);
@@ -181,7 +225,7 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
           <div className="flex items-center gap-2">
             <FaHandHoldingUsd className="text-[var(--brand)] w-5 h-5" />
             <h2 id="lend-borrow-title" className="text-lg font-bold text-[var(--text-primary)]">
-              Record Lend / Borrow Amount
+              {isEditMode ? 'Edit Lend / Borrow Record' : 'Record Lend / Borrow Amount'}
             </h2>
           </div>
           <button
@@ -225,9 +269,9 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
           </div>
 
           {/* Amount Input */}
-          <div className="bg-[var(--surface-2)] p-4 rounded-xl border border-[var(--border)] text-center shadow-inner">
+          <div className="bg-[var(--surface-2)] p-4 rounded-xl border border-[var(--border)] text-center shadow-inner relative">
             <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider block mb-1">
-              Amount
+              Amount {isEditMode && '(Locked)'}
             </label>
             <div className="flex items-center justify-center gap-1">
               <span className="text-2xl font-bold text-[var(--brand)]">₹</span>
@@ -239,10 +283,18 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0"
-                className="w-44 text-3xl font-extrabold text-[var(--text-primary)] bg-transparent border-b-2 border-[var(--brand)] text-center focus:outline-none tabular-nums"
+                disabled={isEditMode}
+                className={`w-44 text-3xl font-extrabold text-[var(--text-primary)] bg-transparent border-b-2 border-[var(--brand)] text-center focus:outline-none tabular-nums ${
+                  isEditMode ? 'opacity-70 cursor-not-allowed border-dashed' : ''
+                }`}
                 required
               />
             </div>
+            {isEditMode && (
+              <p className="text-[11px] text-[var(--text-muted)] font-medium mt-1.5 flex items-center justify-center gap-1">
+                <FaLock className="w-3 h-3 text-[var(--brand)]" /> Amount cannot be changed after creation
+              </p>
+            )}
             {errors.amount && (
               <p className="text-xs font-medium text-[var(--negative)] mt-1">{errors.amount}</p>
             )}
@@ -322,15 +374,33 @@ export const AddLendBorrowModal = ({ isOpen, onClose }) => {
           )}
 
           {/* Submit Action */}
-          <div className="pt-2">
+          <div className="pt-2 flex items-center gap-2">
+            {isEditMode && onDelete && (
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => {
+                  onClose();
+                  onDelete(recordToEdit);
+                }}
+                className="h-11 px-4 text-xs font-bold shrink-0"
+              >
+                <FaTrashAlt className="w-3.5 h-3.5 mr-1.5" />
+                Delete
+              </Button>
+            )}
             <Button
               type="submit"
               variant="primary"
               fullWidth
               isLoading={isSubmitting}
-              className="h-11"
+              className="h-11 font-bold"
             >
-              {type === 'lent' ? 'Save Lending Record' : 'Save Borrowing Record'}
+              {isEditMode
+                ? 'Update Record'
+                : type === 'lent'
+                ? 'Save Lending Record'
+                : 'Save Borrowing Record'}
             </Button>
           </div>
         </form>
