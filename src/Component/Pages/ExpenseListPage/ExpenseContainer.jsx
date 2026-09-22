@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getExpenses, deleteExpense } from '../../../redux/expenseSlice';
-import { formatMoney, formatRelativeDate, formatAddedOnDate, CATEGORY_COLORS, isCustomCategory, getCategoryColor } from '../../../helpers/formatters';
+import { formatMoney, formatRelativeDate, formatAddedOnDate, isExpenseUpdated, CATEGORY_COLORS, isCustomCategory, getCategoryColor } from '../../../helpers/formatters';
 import Card from '../../Common/Primitives/Card';
 import Button from '../../Common/Primitives/Button';
 import Badge from '../../Common/Primitives/Badge';
@@ -16,6 +16,7 @@ import {
   FaPlus,
   FaReceipt,
   FaTrashAlt,
+  FaEdit,
   FaTimes,
   FaUser,
   FaCalendarAlt,
@@ -32,6 +33,7 @@ import {
   FaHandHoldingUsd,
   FaTag,
   FaPlane,
+  FaFilter,
 } from 'react-icons/fa';
 
 export const ExpenseContainer = () => {
@@ -52,12 +54,14 @@ export const ExpenseContainer = () => {
   const group = groups.find((g) => String(g._id) === String(groupId));
 
   const [selectedExpense, setSelectedExpense] = useState(null);
+  const [expenseToEdit, setExpenseToEdit] = useState(null);
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [isSettleOpen, setIsSettleOpen] = useState(false);
   const [fullReceiptUrl, setFullReceiptUrl] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedMember, setSelectedMember] = useState('all');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
@@ -77,12 +81,26 @@ export const ExpenseContainer = () => {
     }
   }, [expenses, selectedExpense]);
 
-  // Filtered & Sorted Expenses (Descending Order: Newer spend/added date first)
+  // Group member list options for filtering
+  const memberOptions = useMemo(() => {
+    if (!group) return [];
+    const real = (group.members || []).map((m) => ({
+      id: String(m._id),
+      name: `${m.firstName || ''} ${m.lastName || ''}`.trim() || m.email,
+    }));
+    const dummy = (group.dummyMembers || []).map((d) => ({
+      id: String(d._id),
+      name: `${d.name} (Guest)`,
+    }));
+    return [...real, ...dummy];
+  }, [group]);
+
+  // Filtered & Sorted Expenses (Descending Order by Added on Date / createdAt)
   const filteredExpenses = useMemo(() => {
     const list = expenses.filter((item) => {
       if (!item || item.isDeleted) return false;
 
-      // Exclude direct Lend & Borrow records from personal expenses view (they have their own dedicated /lend-borrow page)
+      // Exclude direct Lend & Borrow records from personal expenses view
       if (!groupId) {
         const cat = (item.category || '').toLowerCase();
         if (cat === 'lentmoney' || cat === 'borrowedmoney' || cat.includes('lent') || cat.includes('borrow')) {
@@ -104,20 +122,26 @@ export const ExpenseContainer = () => {
         selectedCategory === 'all' ||
         (item.category && item.category.toLowerCase() === selectedCategory.toLowerCase());
 
-      return matchMonth && matchYear && matchSearch && matchCategory;
+      let matchMember = true;
+      if (groupId && selectedMember !== 'all') {
+        const creatorId = String(item.createdBy?._id || item.createdBy);
+        const isCreator = creatorId === selectedMember;
+        const inSplits = item.splitInfo?.splits?.some(
+          (s) => String(s.user?._id || s.user || s.dummyId) === selectedMember
+        );
+        matchMember = isCreator || Boolean(inSplits);
+      }
+
+      return matchMonth && matchYear && matchSearch && matchCategory && matchMember;
     });
 
-    // Sort strictly by date descending (Newer spend date first), fallback to createdAt descending
+    // Sort strictly by Added On date descending (createdAt descending)
     return list.sort((a, b) => {
-      const timeA = new Date(a.date || a.createdAt).getTime();
-      const timeB = new Date(b.date || b.createdAt).getTime();
-      if (timeB !== timeA) return timeB - timeA;
-
-      const createdA = new Date(a.createdAt || 0).getTime();
-      const createdB = new Date(b.createdAt || 0).getTime();
+      const createdA = new Date(a.createdAt || a.date || 0).getTime();
+      const createdB = new Date(b.createdAt || b.date || 0).getTime();
       return createdB - createdA;
     });
-  }, [expenses, groupId, selectedMonth, selectedYear, searchQuery, selectedCategory]);
+  }, [expenses, groupId, selectedMonth, selectedYear, searchQuery, selectedCategory, selectedMember]);
 
   // Group by sticky dates (maintains descending order)
   const groupedByDate = useMemo(() => {
@@ -157,7 +181,6 @@ export const ExpenseContainer = () => {
 
   const handleExpenseClick = (item) => {
     setSelectedExpense(item);
-    // On mobile screens, open detail popup modal
     if (window.innerWidth < 1024) {
       setIsMobileDetailOpen(true);
     }
@@ -182,7 +205,6 @@ export const ExpenseContainer = () => {
     if (c === 'education') return FaGraduationCap;
     if (c.includes('lent') || c.includes('lend') || c.includes('friend')) return FaHandHoldingUsd;
     
-    // Distinct tag icon for user-created custom categories!
     return FaTag;
   };
 
@@ -195,6 +217,10 @@ export const ExpenseContainer = () => {
         </Card>
       );
     }
+
+    const creatorId = String(expense.createdBy?._id || expense.createdBy || '');
+    const currentUserId = String(user?._id || '');
+    const isCreator = creatorId === currentUserId;
 
     return (
       <Card className="space-y-4 shadow-[var(--shadow-3d)]">
@@ -210,14 +236,29 @@ export const ExpenseContainer = () => {
           </div>
 
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => handleDelete(expense)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--negative)] hover:bg-[var(--negative-bg)] transition-colors"
-              title="Delete expense"
-              aria-label="Delete expense"
-            >
-              <FaTrashAlt className="w-4 h-4" />
-            </button>
+            {isCreator && (
+              <>
+                <button
+                  onClick={() => {
+                    setExpenseToEdit(expense);
+                    setIsAddExpenseOpen(true);
+                  }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--brand)] hover:bg-[var(--brand-light)] transition-colors"
+                  title="Edit expense (price locked)"
+                  aria-label="Edit expense"
+                >
+                  <FaEdit className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete(expense)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--negative)] hover:bg-[var(--negative-bg)] transition-colors"
+                  title="Delete expense"
+                  aria-label="Delete expense"
+                >
+                  <FaTrashAlt className="w-4 h-4" />
+                </button>
+              </>
+            )}
 
             {onCloseMobile && (
               <button
@@ -265,6 +306,15 @@ export const ExpenseContainer = () => {
               {formatAddedOnDate(expense.createdAt || expense.date)}
             </span>
           </div>
+
+          {isExpenseUpdated(expense) && (
+            <div className="flex justify-between py-1 border-b border-[var(--border)]/50">
+              <span className="text-[var(--text-secondary)]">Updated on</span>
+              <span className="font-semibold text-amber-600 dark:text-amber-400">
+                {formatAddedOnDate(expense.updatedAt)}
+              </span>
+            </div>
+          )}
 
           {/* Split Info Breakdown per person */}
           {expense.splitInfo?.splits?.length > 0 && (
@@ -335,7 +385,7 @@ export const ExpenseContainer = () => {
         </p>
       </div>
 
-      {/* Row 1: Month Selection, Year Selection, and Settle Up Button taking full width */}
+      {/* Row 1: Month Selection, Year Selection, and Settle Up Button */}
       <div className={`grid ${groupId ? 'grid-cols-3' : 'grid-cols-2'} gap-2 w-full`}>
         <select
           value={selectedMonth}
@@ -377,12 +427,14 @@ export const ExpenseContainer = () => {
         className="w-full"
       />
 
-      {/* Row 3: Category Filter (60% width) + Add Expense Button (40% width) - Exact Matching Height */}
-      <div className="flex items-center gap-2 w-full">
+      {/* Row 3: Category Filter + Member Filter (for groups) + Add Expense Button */}
+      <div className="flex items-center gap-2 w-full flex-wrap sm:flex-nowrap">
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          className="tactile-input h-11 px-3 text-xs sm:text-sm font-medium w-[60%] shrink-0 border border-[var(--border)] rounded-lg box-border"
+          className={`tactile-input h-11 px-3 text-xs sm:text-sm font-medium border border-[var(--border)] rounded-lg box-border ${
+            groupId ? 'w-full sm:w-[35%]' : 'w-[60%]'
+          } shrink-0`}
         >
           <option value="all">All categories</option>
           {group?.categories && group.categories.length > 0 ? (
@@ -407,18 +459,36 @@ export const ExpenseContainer = () => {
           )}
         </select>
 
+        {groupId && (
+          <select
+            value={selectedMember}
+            onChange={(e) => setSelectedMember(e.target.value)}
+            className="tactile-input h-11 px-3 text-xs sm:text-sm font-medium w-full sm:w-[35%] shrink-0 border border-[var(--border)] rounded-lg box-border"
+          >
+            <option value="all">All Members</option>
+            {memberOptions.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+        )}
+
         <Button
           size="sm"
           variant="primary"
-          onClick={() => setIsAddExpenseOpen(true)}
+          onClick={() => {
+            setExpenseToEdit(null);
+            setIsAddExpenseOpen(true);
+          }}
           icon={FaPlus}
-          className="w-[40%] shrink-0 whitespace-nowrap h-11 text-xs sm:text-sm font-semibold"
+          className={`${groupId ? 'w-full sm:w-[30%]' : 'w-[40%]'} shrink-0 whitespace-nowrap h-11 text-xs sm:text-sm font-semibold`}
         >
           Add expense
         </Button>
       </div>
 
-      {/* Total Period Spend Card with baseline text alignment & explicit duration indicator */}
+      {/* Total Period Spend Card */}
       <Card className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-8 border-l-4 border-l-[var(--brand)] shadow-[var(--shadow-3d)]">
         <div>
           <span className="text-xs sm:text-sm font-extrabold text-[var(--text-secondary)] uppercase tracking-wider block">
@@ -439,7 +509,10 @@ export const ExpenseContainer = () => {
           title="No expenses found"
           description="No transactions logged for the selected period or filters."
           actionLabel="Add expense"
-          onAction={() => setIsAddExpenseOpen(true)}
+          onAction={() => {
+            setExpenseToEdit(null);
+            setIsAddExpenseOpen(true);
+          }}
           icon={FaReceipt}
         />
       ) : (
@@ -514,6 +587,14 @@ export const ExpenseContainer = () => {
                                 </span>
                               </>
                             )}
+                            {isExpenseUpdated(item) && (
+                              <>
+                                <span>•</span>
+                                <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                                  Updated: {formatAddedOnDate(item.updatedAt)}
+                                </span>
+                              </>
+                            )}
                             {item.receiptImage && (
                               <span className="text-emerald-500 flex items-center gap-1 text-[11px] font-medium ml-1">
                                 <FaImage className="w-3 h-3" /> Receipt
@@ -543,7 +624,7 @@ export const ExpenseContainer = () => {
         </div>
       )}
 
-      {/* Mobile Detail Popup Modal (Appears when tapping an expense on phone screens) */}
+      {/* Mobile Detail Popup Modal */}
       {isMobileDetailOpen && selectedExpense && (
         <div
           className="lg:hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fadeIn overflow-y-auto"
@@ -564,11 +645,15 @@ export const ExpenseContainer = () => {
         </div>
       )}
 
-      {/* Global Add Expense Modal */}
+      {/* Global Add / Edit Expense Modal */}
       <AddExpenseModal
         isOpen={isAddExpenseOpen}
-        onClose={() => setIsAddExpenseOpen(false)}
+        onClose={() => {
+          setIsAddExpenseOpen(false);
+          setExpenseToEdit(null);
+        }}
         defaultGroupId={groupId}
+        expenseToEdit={expenseToEdit}
       />
 
       {/* Settle Up Modal */}
